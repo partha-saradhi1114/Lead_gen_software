@@ -1,20 +1,12 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { UserPlus, Users } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { Button } from "@/components/ui/button";
 import { AddMemberDialog } from "@/components/dashboard/QuickActions";
 import { PerformanceTable, PersonCell } from "@/components/dashboard/PerformanceTable";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { pageHead } from "@/lib/leadgen/head";
 
-export const Route = createFileRoute("/team")({
-  head: () =>
-    pageHead("Team Management", "Manage research analysts and BDEs in the LeadGen Pro team."),
-  component: TeamPage,
-});
-
-function TeamPage() {
+export default function TeamPage() {
   const { state } = useLeadGen();
   const [open, setOpen] = useState(false);
   return (

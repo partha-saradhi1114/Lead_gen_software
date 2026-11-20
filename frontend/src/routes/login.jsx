@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import {
   Briefcase,
   Crown,
@@ -15,14 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { pageHead } from "@/lib/leadgen/head";
-
-export const Route = createFileRoute("/login")({
-  head: () =>
-    pageHead("Sign In", "Sign in to your LeadGen Pro workspace — Master Admin, RA, or BDE."),
-  component: LoginPage,
-});
-
 const DEMO_ROLES = [
   {
     role: "admin",
@@ -56,7 +48,7 @@ const DEMO_ROLES = [
   },
 ];
 
-function LoginPage() {
+export default function LoginPage() {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState(DEMO_ROLES[0]);
   const [email, setEmail] = useState(DEMO_ROLES[0].email);
@@ -78,7 +70,7 @@ function LoginPage() {
     setTimeout(() => {
       setLoading(false);
       toast.success(`Welcome back! Signed in as ${selectedRole.title}`);
-      navigate({ to: selectedRole.path });
+      navigate(selectedRole.path);
     }, 400);
   };
 

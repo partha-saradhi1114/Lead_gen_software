@@ -1,15 +1,33 @@
-import { QueryClient } from "@tanstack/react-query";
-import { createRouter, rootRouteId } from "@tanstack/react-router";
+import React from "react";
 import { describe, expect, it } from "vitest";
-
-import { routeTree } from "@/routeTree.gen.js";
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { AppRoutes } from "@/App";
+import { LeadGenProvider } from "@/lib/leadgen/store";
 
 describe("App routing", () => {
-  it("matches a page for / instead of falling back to not found", () => {
-    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+  it("renders the Master Admin dashboard for / instead of 404", () => {
+    render(
+      <LeadGenProvider>
+        <MemoryRouter initialEntries={["/"]}>
+          <AppRoutes />
+        </MemoryRouter>
+      </LeadGenProvider>,
+    );
 
-    const matches = router.matchRoutes("/");
+    expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
+  });
 
-    expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
+  it("renders 404 page for unmatched routes", () => {
+    render(
+      <LeadGenProvider>
+        <MemoryRouter initialEntries={["/non-existent-route"]}>
+          <AppRoutes />
+        </MemoryRouter>
+      </LeadGenProvider>,
+    );
+
+    expect(screen.getByText("404")).toBeInTheDocument();
+    expect(screen.getByText("Page not found")).toBeInTheDocument();
   });
 });

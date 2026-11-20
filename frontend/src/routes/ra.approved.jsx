@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Panel, PanelHeader } from "@/components/common/Panel";
@@ -9,18 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useRaData } from "@/components/ra/useRaData";
 import { INDUSTRIES, LEAD_SOURCES, fmt, formatDate } from "@/lib/leadgen/data";
 import { exportRows } from "@/lib/leadgen/excel";
-import { pageHead } from "@/lib/leadgen/head";
 
-export const Route = createFileRoute("/ra/approved")({
-  head: () =>
-    pageHead(
-      "Approved Leads",
-      "Leads approved by the Master Admin, with search, filters and export.",
-    ),
-  component: ApprovedLeads,
-});
-
-function ApprovedLeads() {
+export default function ApprovedLeads() {
   const { leads, batches } = useRaData();
   const [q, setQ] = useState("");
   const [industry, setIndustry] = useState("all");

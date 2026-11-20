@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { Eye, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,16 +14,6 @@ import { FilterSelect, SearchBox, TabPills, Toolbar } from "@/components/common/
 import { StatusBadge } from "@/components/dashboard/RaPerformanceCard";
 import { useRaData } from "@/components/ra/useRaData";
 import { INDUSTRIES, formatDate } from "@/lib/leadgen/data";
-import { pageHead } from "@/lib/leadgen/head";
-
-export const Route = createFileRoute("/ra/status")({
-  head: () =>
-    pageHead(
-      "Approval Status",
-      "Track the review status and admin remarks for every lead you submitted.",
-    ),
-  component: ApprovalStatus,
-});
 
 function Remarks({ l }) {
   if (l.status === "rejected")
@@ -44,7 +33,7 @@ function Remarks({ l }) {
   return <span className="text-muted-foreground">Awaiting admin review</span>;
 }
 
-function ApprovalStatus() {
+export default function ApprovalStatus() {
   const { leads } = useRaData();
   const [tab, setTab] = useState("all");
   const [q, setQ] = useState("");

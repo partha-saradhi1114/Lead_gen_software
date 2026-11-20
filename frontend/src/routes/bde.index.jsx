@@ -1,4 +1,3 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlarmClock,
   CalendarCheck,
@@ -17,18 +16,8 @@ import { StageBadge } from "@/components/bde/StageBadge";
 import { useBdeData } from "@/components/bde/useBdeData";
 import { BDE_STAGES } from "@/lib/leadgen/bde";
 import { fmt, formatDate, pct } from "@/lib/leadgen/data";
-import { pageHead } from "@/lib/leadgen/head";
 
-export const Route = createFileRoute("/bde/")({
-  head: () =>
-    pageHead(
-      "BDE Dashboard",
-      "Assigned leads, follow-ups and credit balance for business development executives.",
-    ),
-  component: BdeDashboard,
-});
-
-function BdeDashboard() {
+export default function BdeDashboard() {
   const { kpis, rows } = useBdeData();
   const due = rows
     .filter((r) => r.bucket === "overdue" || r.bucket === "today")

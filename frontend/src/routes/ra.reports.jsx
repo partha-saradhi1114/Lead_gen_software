@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { ClientOnly, createFileRoute } from "@tanstack/react-router";
 import {
   Bar,
   BarChart,
@@ -22,16 +21,6 @@ import { FilterSelect } from "@/components/common/Toolbar";
 import { useRaData } from "@/components/ra/useRaData";
 import { TODAY, fmt, formatDate, isoDaysBefore, pct } from "@/lib/leadgen/data";
 import { exportRows } from "@/lib/leadgen/excel";
-import { pageHead } from "@/lib/leadgen/head";
-
-export const Route = createFileRoute("/ra/reports")({
-  head: () =>
-    pageHead(
-      "RA Performance Report",
-      "Upload trends, approval rates and data quality for research analysts.",
-    ),
-  component: Reports,
-});
 
 const RANGES = ["Last 14 Days", "Last 30 Days", "Last 60 Days"];
 const tooltipStyle = { borderRadius: 8, border: "1px solid var(--border)", fontSize: 12 };
@@ -39,16 +28,14 @@ const tooltipStyle = { borderRadius: 8, border: "1px solid var(--border)", fontS
 function ChartBox({ children }) {
   return (
     <div className="h-64 px-2 pb-3">
-      <ClientOnly fallback={<Skeleton className="mx-2 h-full" />}>
-        <ResponsiveContainer width="100%" height="100%">
-          {children}
-        </ResponsiveContainer>
-      </ClientOnly>
+      <ResponsiveContainer width="100%" height="100%">
+        {children}
+      </ResponsiveContainer>
     </div>
   );
 }
 
-function Reports() {
+export default function Reports() {
   const { leads, batches } = useRaData();
   const [range, setRange] = useState("Last 30 Days");
   const days = range === "Last 14 Days" ? 14 : range === "Last 60 Days" ? 60 : 30;

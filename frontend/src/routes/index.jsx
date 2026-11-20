@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { KpiRow } from "@/components/dashboard/KpiRow";
 import { LeadFlowCard } from "@/components/dashboard/LeadFlowCard";
 import { TeamPerformanceCard } from "@/components/dashboard/TeamPerformanceCard";
@@ -7,18 +6,8 @@ import { FollowUpCard } from "@/components/dashboard/FollowUpCard";
 import { CreditSummaryCard } from "@/components/dashboard/CreditSummaryCard";
 import { LeadReviewTable } from "@/components/dashboard/LeadReviewTable";
 import { QuickActions } from "@/components/dashboard/QuickActions";
-import { pageHead } from "@/lib/leadgen/head";
 
-export const Route = createFileRoute("/")({
-  head: () =>
-    pageHead(
-      "Master Operations Dashboard",
-      "Admin overview of leads, approvals, BDE credits, team performance and follow-ups at Arah Infotech.",
-    ),
-  component: Dashboard,
-});
-
-function Dashboard() {
+export default function Dashboard() {
   return (
     <div className="space-y-4">
       <KpiRow />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Bell,
   CalendarDays,
@@ -49,7 +49,8 @@ const TONE = {
 };
 
 export function AppHeader() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const location = useLocation();
+  const pathname = location.pathname;
   const { state, dispatch } = useLeadGen();
   const [customOpen, setCustomOpen] = useState(false);
   const [from, setFrom] = useState("2026-11-01");
@@ -262,7 +263,7 @@ export function AppHeader() {
               className="text-destructive focus:text-destructive"
               onSelect={() => {
                 toast.success("Signed out");
-                navigate({ to: "/login" });
+                navigate("/login");
               }}
             >
               <LogOut /> Sign out

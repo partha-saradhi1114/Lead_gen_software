@@ -1,4 +1,3 @@
-import { ClientOnly } from "@tanstack/react-router";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 import { fmt } from "@/lib/leadgen/data";
 
@@ -24,29 +23,23 @@ export function DonutChart({ data, centerLabel }) {
     <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center xl:flex-col 2xl:flex-row">
       <div className="relative size-[150px] shrink-0">
         {/* Recharts generates random clip ids, so render it only in the browser to avoid hydration mismatches. */}
-        <ClientOnly
-          fallback={
-            <div className="absolute inset-[3px] rounded-full border-[24px] border-muted" />
-          }
-        >
-          <PieChart width={150} height={150}>
-            <Pie
-              data={data}
-              dataKey="count"
-              nameKey="label"
-              innerRadius={48}
-              outerRadius={72}
-              paddingAngle={2}
-              stroke="none"
-              isAnimationActive={false}
-            >
-              {data.map((d) => (
-                <Cell key={d.key} fill={d.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<DonutTooltip />} wrapperStyle={{ zIndex: 10 }} />
-          </PieChart>
-        </ClientOnly>
+        <PieChart width={150} height={150}>
+          <Pie
+            data={data}
+            dataKey="count"
+            nameKey="label"
+            innerRadius={48}
+            outerRadius={72}
+            paddingAngle={2}
+            stroke="none"
+            isAnimationActive={false}
+          >
+            {data.map((d) => (
+              <Cell key={d.key} fill={d.color} />
+            ))}
+          </Pie>
+          <Tooltip content={<DonutTooltip />} wrapperStyle={{ zIndex: 10 }} />
+        </PieChart>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="num text-lg font-bold leading-none">{fmt(total)}</span>
           <span className="mt-0.5 text-[10px] text-muted-foreground">{centerLabel}</span>

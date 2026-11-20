@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import { Eye, PencilLine, Upload } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { DataTable, EmptyState } from "@/components/common/DataTable";
@@ -17,18 +17,8 @@ import { BATCH_STATUSES, BatchStatusBadge } from "@/components/ra/badges";
 import { useRaData } from "@/components/ra/useRaData";
 import { StatusBadge } from "@/components/dashboard/RaPerformanceCard";
 import { fmt, formatDate } from "@/lib/leadgen/data";
-import { pageHead } from "@/lib/leadgen/head";
 
-export const Route = createFileRoute("/ra/uploads")({
-  head: () =>
-    pageHead(
-      "My Uploads",
-      "Upload history, batch status and review progress for research analysts.",
-    ),
-  component: MyUploads,
-});
-
-function MyUploads() {
+export default function MyUploads() {
   const { batches, leads } = useRaData();
   const navigate = useNavigate();
   const [q, setQ] = useState("");

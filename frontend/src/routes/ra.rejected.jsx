@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { History, PencilLine } from "lucide-react";
 import { toast } from "sonner";
 import { Panel, PanelHeader } from "@/components/common/Panel";
@@ -19,18 +18,8 @@ import {
 import { useRaData } from "@/components/ra/useRaData";
 import { INDUSTRIES, REJECTION_REASONS, fmt, formatDate } from "@/lib/leadgen/data";
 import { isValidEmail, isValidPhone } from "@/lib/leadgen/validation";
-import { pageHead } from "@/lib/leadgen/head";
 
-export const Route = createFileRoute("/ra/rejected")({
-  head: () =>
-    pageHead(
-      "Rejected Leads",
-      "Review rejection reasons, correct lead data and resubmit for approval.",
-    ),
-  component: RejectedLeads,
-});
-
-function RejectedLeads() {
+export default function RejectedLeads() {
   const { leads } = useRaData();
   const [q, setQ] = useState("");
   const [reason, setReason] = useState("all");

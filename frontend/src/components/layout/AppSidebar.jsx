@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useLocation } from "react-router-dom";
 import { Target } from "lucide-react";
 import {
   Sidebar,
@@ -23,7 +23,8 @@ const ROLE_FOOT = { admin: "Admin Console", ra: "Research Analyst", bde: "BDE Wo
 import { CURRENT_RA } from "@/lib/leadgen/data";
 
 export function AppSidebar() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const location = useLocation();
+  const pathname = location.pathname;
   const { kpis, state } = useLeadGen();
   const role = roleForPath(pathname);
   const ra = role === "ra";

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useHydrated } from "@tanstack/react-router";
 import { Inbox } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fmt } from "@/lib/leadgen/data";
@@ -21,7 +20,7 @@ export function EmptyState({ title, hint, action }) {
 
 /** Paginated compact table with loading skeleton and empty state. Resets to page 1 when `resetKey` changes. */
 export function DataTable({ columns, rows, rowKey, pageSize = 10, resetKey, empty, rowClassName }) {
-  const hydrated = useHydrated();
+  const hydrated = true;
   const [page, setPage] = useState(1);
   useEffect(() => setPage(1), [resetKey]);
   const pages = Math.max(1, Math.ceil(rows.length / pageSize));

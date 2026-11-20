@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import {
   BarChart3,
   ChevronRight,
@@ -91,7 +91,7 @@ export function QuickActions({ className }) {
           title="View Reports & Analytics"
           subtitle="Team and funnel insights"
           tone="bg-tint-amber text-tint-amber-foreground"
-          onClick={() => navigate({ to: "/reports" })}
+          onClick={() => navigate("/reports")}
         />
       </div>
       <UploadLeadsDialog

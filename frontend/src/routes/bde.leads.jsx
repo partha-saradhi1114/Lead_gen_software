@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { LockOpen, Pencil } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { DataTable, EmptyState } from "@/components/common/DataTable";
@@ -11,18 +10,8 @@ import { useBdeData } from "@/components/bde/useBdeData";
 import { useUnlock } from "@/components/bde/useUnlock";
 import { BDE_STAGES, UNLOCK_COST } from "@/lib/leadgen/bde";
 import { INDUSTRIES, fmt, formatDate } from "@/lib/leadgen/data";
-import { pageHead } from "@/lib/leadgen/head";
 
-export const Route = createFileRoute("/bde/leads")({
-  head: () =>
-    pageHead(
-      "My Assigned Leads",
-      "Unlock contacts, log calls and move assigned leads through the pipeline.",
-    ),
-  component: BdeLeads,
-});
-
-function BdeLeads() {
+export default function BdeLeads() {
   const data = useBdeData();
   const { rows, kpis, dispatch, bde } = data;
   const unlock = useUnlock(data);

@@ -1,21 +1,28 @@
 # Routes
 
-TanStack Start uses **file-based routing**. Every `.tsx` file in this directory
-defines a route. Do **not** create `src/pages/`, `src/routes/_app/index.tsx`, or
-`app/layout.tsx` — those are Next.js / Remix conventions. The only root layout
-is `src/routes/__root.tsx`.
+The application uses standard `react-router-dom` with routes declared in `frontend/src/App.jsx`.
 
-## Conventions
+## Page Routes
 
-| File                     | URL                                                     |
-| ------------------------ | ------------------------------------------------------- |
-| `index.tsx`              | `/`                                                     |
-| `about.tsx`              | `/about`                                                |
-| `users/index.tsx`        | `/users`                                                |
-| `users/$id.tsx`          | `/users/:id` (dynamic — bare `$`, no curly braces)      |
-| `posts/{-$category}.tsx` | `/posts/:category?` (optional segment)                  |
-| `files/$.tsx`            | `/files/*` (splat — read via `_splat` param, never `*`) |
-| `_layout.tsx`            | layout route (renders children via `<Outlet />`)        |
-| `__root.tsx`             | app shell — wraps every page; preserve `<Outlet />`     |
-
-`routeTree.gen.ts` is auto-generated. Don't edit it by hand.
+| File                  | URL                | Description                          |
+| --------------------- | ------------------ | ------------------------------------ |
+| `login.jsx`           | `/login`           | Persona authentication & login       |
+| `index.jsx`           | `/`                | Master Admin Operations Dashboard    |
+| `leads-review.jsx`    | `/leads-review`    | Master Admin Lead Review & Approvals |
+| `lead-allocation.jsx` | `/lead-allocation` | Lead Allocation by BDE               |
+| `credits.jsx`         | `/credits`         | BDE Credit Management                |
+| `team.jsx`            | `/team`            | Team Directory & Members             |
+| `operations.jsx`      | `/operations`      | System Operations & Pipeline         |
+| `reports.jsx`         | `/reports`         | Performance Analytics                |
+| `settings.jsx`        | `/settings`        | Workspace Settings                   |
+| `ra.index.jsx`        | `/ra`              | RA Dashboard                         |
+| `ra.upload.jsx`       | `/ra/upload`       | Excel Upload Wizard                  |
+| `ra.uploads.jsx`      | `/ra/uploads`      | My Uploads Batch History             |
+| `ra.status.jsx`       | `/ra/status`       | Approval Status                      |
+| `ra.approved.jsx`     | `/ra/approved`     | Approved Leads Archive               |
+| `ra.rejected.jsx`     | `/ra/rejected`     | Rejected Leads Review                |
+| `ra.reports.jsx`      | `/ra/reports`      | RA Quality Reports                   |
+| `bde.index.jsx`       | `/bde`             | BDE Dashboard                        |
+| `bde.leads.jsx`       | `/bde/leads`       | BDE Assigned Leads & Credit Unlocks  |
+| `bde.credits.jsx`     | `/bde/credits`     | BDE Credit Usage & Requests          |
+| `bde.follow-ups.jsx`  | `/bde/follow-ups`  | BDE Follow-ups & Calendar            |

@@ -1,4 +1,3 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2, Clock, Copy, Download, Upload, Users, XCircle } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { Panel, PanelHeader } from "@/components/common/Panel";
@@ -9,19 +8,9 @@ import { BatchStatusBadge } from "@/components/ra/badges";
 import { useRaData } from "@/components/ra/useRaData";
 import { downloadTemplate } from "@/lib/leadgen/excel";
 import { CURRENT_RA, fmt, formatDate, pct } from "@/lib/leadgen/data";
-import { pageHead } from "@/lib/leadgen/head";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/ra/")({
-  head: () =>
-    pageHead(
-      "Research Analyst Dashboard",
-      "Upload, validation and approval overview for research analysts.",
-    ),
-  component: RaDashboard,
-});
-
-function RaDashboard() {
+export default function RaDashboard() {
   const { kpis, batches, leads } = useRaData();
   const reviewed = kpis.approved + kpis.rejected;
   const recentRejected = leads

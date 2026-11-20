@@ -37,5 +37,6 @@ use the editor.
 - Lead-flow rules (approve/reject/upload/allocate) live in the pure reducer and are covered by `src/lib/leadgen/reducer.test.js`. Why: keeps business rules testable and portable to a future backend.
 - App shell (navy sidebar + header) is mounted once in `src/routes/__root.jsx`; menu items are defined in `src/components/layout/nav.js`. Why: one source for navigation and page titles.
 - Recharts charts render inside `<ClientOnly>`. Why: Recharts generates random ids that cause hydration mismatches.
-- Source is plain JavaScript (.js/.jsx); only the auto-generated `src/routeTree.gen.ts` stays TypeScript. Why: the user chose JS, and TanStack Start always emits a TS route tree. `tsconfig.json` (allowJs) stays for the `@/` alias.
+- Source is plain JavaScript (.js/.jsx) with React 19 and Tailwind CSS.
+- Project is decoupled into `frontend/` (React SPA) and `backend/` (Express REST API).
 - Role areas (admin `/`, RA `/ra/*`, BDE `/bde/*`) share one shell; `roleForPath` in nav.js picks the menu, header identity and badges. BDE rules (unlock costs credits, stage counters, follow-ups) live in `src/lib/leadgen/bde.js`, tested in `bde.test.js`. Why: one switchable demo until real roles come with the backend.

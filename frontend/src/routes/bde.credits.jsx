@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { Coins, Gauge, PlusCircle, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { KpiCard } from "@/components/dashboard/KpiCard";
@@ -14,15 +13,8 @@ import { useBdeData } from "@/components/bde/useBdeData";
 import { UNLOCK_COST } from "@/lib/leadgen/bde";
 import { fmt, formatDate, pct } from "@/lib/leadgen/data";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { pageHead } from "@/lib/leadgen/head";
 
-export const Route = createFileRoute("/bde/credits")({
-  head: () =>
-    pageHead("My Credit Usage", "Credit balance, usage history and top-up requests for BDEs."),
-  component: BdeCredits,
-});
-
-function BdeCredits() {
+export default function BdeCredits() {
   const { kpis, log, dispatch, bde } = useBdeData();
   const { state } = useLeadGen();
   const [amount, setAmount] = useState("50");

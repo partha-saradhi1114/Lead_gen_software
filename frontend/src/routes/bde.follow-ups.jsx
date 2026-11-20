@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { Check, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Panel, PanelHeader } from "@/components/common/Panel";
@@ -10,17 +9,10 @@ import { StageBadge } from "@/components/bde/StageBadge";
 import { UpdateLeadDialog } from "@/components/bde/UpdateLeadDialog";
 import { useBdeData } from "@/components/bde/useBdeData";
 import { formatDate } from "@/lib/leadgen/data";
-import { pageHead } from "@/lib/leadgen/head";
-
-export const Route = createFileRoute("/bde/follow-ups")({
-  head: () =>
-    pageHead("My Follow-ups", "Overdue, today's and upcoming follow-up calls for assigned leads."),
-  component: BdeFollowUps,
-});
 
 const LABEL = { overdue: "Overdue", today: "Today", upcoming: "Upcoming", done: "Completed" };
 
-function BdeFollowUps() {
+export default function BdeFollowUps() {
   const { rows, dispatch, bde } = useBdeData();
   const [tab, setTab] = useState("overdue");
   const [editId, setEditId] = useState(null);
