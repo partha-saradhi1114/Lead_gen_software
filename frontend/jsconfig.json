@@ -6,5 +6,10 @@
     },
     "jsx": "react-jsx"
   },
-  "include": ["src/**/*", "vite.config.js", "vitest.config.js", "eslint.config.js"]
+  "include": [
+    "src/**/*",
+    "vite.config.js",
+    "vitest.config.js",
+    "eslint.config.js"
+  ]
 }

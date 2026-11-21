@@ -9,7 +9,11 @@ import {
 } from "@/components/ui/select";
 
 export function Toolbar({ children }) {
-  return <div className="flex flex-wrap items-center gap-2 border-b px-4 pb-2.5">{children}</div>;
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-b px-4 pb-2.5">
+      {children}
+    </div>
+  );
 }
 
 export function SearchBox({ value, onChange, placeholder }) {
@@ -60,10 +64,10 @@ export function TabPills({ value, onChange, tabs }) {
           }
         >
           {t.label}
-          {t.count !== undefined && (
+          {t.count !== undefined && t.count !== null && (
             <span className="num ml-1 text-muted-foreground">
               {" "}
-              ({t.count.toLocaleString("en-IN")})
+              ({typeof t.count === "number" ? t.count.toLocaleString("en-IN") : t.count})
             </span>
           )}
         </button>

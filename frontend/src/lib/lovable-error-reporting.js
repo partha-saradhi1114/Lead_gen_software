@@ -37,7 +37,9 @@ function describeThrown(error) {
   const { message } = error ?? {};
   if (typeof message === "string" && message.length > 0) return message;
   try {
-    return JSON.stringify(error)?.slice(0, MAX_SERIALIZED_LENGTH) ?? String(error);
+    return (
+      JSON.stringify(error)?.slice(0, MAX_SERIALIZED_LENGTH) ?? String(error)
+    );
   } catch {
     return String(error);
   }

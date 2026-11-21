@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { History, PencilLine } from "lucide-react";
 import { toast } from "sonner";
 import { Panel, PanelHeader } from "@/components/common/Panel";
@@ -16,7 +17,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRaData } from "@/components/ra/useRaData";
-import { INDUSTRIES, REJECTION_REASONS, fmt, formatDate } from "@/lib/leadgen/data";
+import {
+  INDUSTRIES,
+  REJECTION_REASONS,
+  fmt,
+  formatDate,
+} from "@/lib/leadgen/data";
 import { isValidEmail, isValidPhone } from "@/lib/leadgen/validation";
 
 export default function RejectedLeads() {
@@ -25,8 +31,13 @@ export default function RejectedLeads() {
   const [reason, setReason] = useState("all");
   const [industry, setIndustry] = useState("all");
   const [edit, setEdit] = useState(null);
-  const rejected = useMemo(() => leads.filter((l) => l.status === "rejected"), [leads]);
-  const resubmitted = leads.filter((l) => l.status === "pending" && l.history?.length).length;
+  const rejected = useMemo(
+    () => leads.filter((l) => l.status === "rejected"),
+    [leads],
+  );
+  const resubmitted = leads.filter(
+    (l) => l.status === "pending" && l.history?.length,
+  ).length;
 
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -34,7 +45,9 @@ export default function RejectedLeads() {
       (l) =>
         (reason === "all" || (l.rejectionReason ?? "").startsWith(reason)) &&
         (industry === "all" || l.industry === industry) &&
-        (!s || l.company.toLowerCase().includes(s) || l.contact.toLowerCase().includes(s)),
+        (!s ||
+          (l.company || "").toLowerCase().includes(s) ||
+          (l.contact || "").toLowerCase().includes(s)),
     );
   }, [rejected, q, reason, industry]);
 
@@ -52,7 +65,11 @@ export default function RejectedLeads() {
         }
       />
       <Toolbar>
-        <SearchBox value={q} onChange={setQ} placeholder="Search company or contact…" />
+        <SearchBox
+          value={q}
+          onChange={setQ}
+          placeholder="Search company or contact…"
+        />
         <FilterSelect
           value={reason}
           onChange={setReason}
@@ -115,7 +132,8 @@ export default function RejectedLeads() {
                 </span>
                 {l.history?.length ? (
                   <div className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <History className="size-3" /> Rejected {l.history.length + 1}×
+                    <History className="size-3" /> Rejected{" "}
+                    {l.history.length + 1}×
                   </div>
                 ) : null}
               </div>
@@ -164,10 +182,13 @@ function ResubmitDialog({ lead, onClose }) {
     const e = {};
     for (const [k, label] of FIELDS)
       if (k !== "email" && !v[k]?.trim()) e[k] = `${label} is required`;
-    if (v.phone && !isValidPhone(v.phone)) e.phone = "Enter a valid 10-digit mobile number";
-    if (v.email && !isValidEmail(v.email)) e.email = "Enter a valid email address";
+    if (v.phone && !isValidPhone(v.phone))
+      e.phone = "Enter a valid 10-digit mobile number";
+    if (v.email && !isValidEmail(v.email))
+      e.email = "Enter a valid email address";
     setErrors(e);
-    if (Object.keys(e).length) return void toast.error("Please fix the highlighted fields");
+    if (Object.keys(e).length)
+      return void toast.error("Please fix the highlighted fields");
     dispatch({
       type: "resubmit",
       id: lead.id,
@@ -192,8 +213,10 @@ function ResubmitDialog({ lead, onClose }) {
             </DialogHeader>
             <div className="rounded-md bg-tint-red px-3 py-2 text-xs text-tint-red-foreground">
               <div className="font-semibold">
-                Rejected{lead.reviewedOn ? ` on ${formatDate(lead.reviewedOn)}` : ""}:{" "}
-                {lead.rejectionReason}
+                Rejected
+                {lead.reviewedOn
+                  ? ` on ${formatDate(lead.reviewedOn)}`
+                  : ""}: {lead.rejectionReason}
               </div>
               {lead.history?.map((h, i) => (
                 <div key={i} className="opacity-80">
@@ -211,11 +234,15 @@ function ResubmitDialog({ lead, onClose }) {
                   <Input
                     id={`rs-${k}`}
                     value={v[k] ?? ""}
-                    onChange={(e) => setV((s) => ({ ...s, [k]: e.target.value }))}
+                    onChange={(e) =>
+                      setV((s) => ({ ...s, [k]: e.target.value }))
+                    }
                     aria-invalid={!!errors[k]}
                     className={errors[k] ? "border-destructive" : ""}
                   />
-                  {errors[k] && <p className="text-[11px] text-destructive">{errors[k]}</p>}
+                  {errors[k] && (
+                    <p className="text-[11px] text-destructive">{errors[k]}</p>
+                  )}
                 </div>
               ))}
             </div>

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildSeedBatches, buildSeedLeads, SEED_BDES, SEED_CREDITS, SEED_TEAM } from "./data";
+import {
+  buildSeedBatches,
+  buildSeedLeads,
+  SEED_BDES,
+  SEED_CREDITS,
+  SEED_TEAM,
+} from "./data";
 import { leadGenReducer, selectKpis } from "./reducer";
 
 const seed = () => {
@@ -31,32 +37,76 @@ describe("LeadGen admin rules", () => {
   });
 
   it("approving a pending lead moves it from Pending to Approved", () => {
-    const k = selectKpis(leadGenReducer(seed(), { type: "approve", ids: [1, 2] }));
+    const k = selectKpis(
+      leadGenReducer(seed(), { type: "approve", ids: [1, 2] }),
+    );
     expect(k.pending).toBe(618);
     expect(k.approved).toBe(3422);
   });
 
   it("rejecting needs a reason", () => {
     const s = seed();
-    expect(leadGenReducer(s, { type: "reject", ids: [1], reason: "  " })).toBe(s);
-    const next = leadGenReducer(s, { type: "reject", ids: [1], reason: "Duplicate lead" });
+    expect(leadGenReducer(s, { type: "reject", ids: [1], reason: "  " })).toBe(
+      s,
+    );
+    const next = leadGenReducer(s, {
+      type: "reject",
+      ids: [1],
+      reason: "Duplicate lead",
+    });
     expect(selectKpis(next).rejected).toBe(241);
-    expect(next.leads.find((l) => l.id === 1)?.rejectionReason).toBe("Duplicate lead");
+    expect(next.leads.find((l) => l.id === 1)?.rejectionReason).toBe(
+      "Duplicate lead",
+    );
   });
 
   it("adding a BDE team member adds them to the BDE performance table", () => {
     const next = leadGenReducer(seed(), {
       type: "addMember",
-      member: { name: "Sandeep Rao", email: "sandeep@arahinfotech.com", phone: "", role: "BDE" },
+      member: {
+        name: "Sandeep Rao",
+        email: "sandeep@arahinfotech.com",
+        phone: "",
+        role: "BDE",
+      },
     });
     expect(next.team).toHaveLength(8);
     expect(next.bdes.map((b) => b.name)).toContain("Sandeep Rao");
   });
 
   it("allocating credits raises the BDE's and the total allocation", () => {
-    const next = leadGenReducer(seed(), { type: "allocate", bde: "Ravi Kumar", amount: 100 });
+    const next = leadGenReducer(seed(), {
+      type: "allocate",
+      bde: "Ravi Kumar",
+      amount: 100,
+    });
     expect(next.bdes.find((b) => b.name === "Ravi Kumar")?.allocated).toBe(600);
     expect(selectKpis(next).creditsAllocated).toBe(2100);
+  });
+
+  it("updating workspace settings updates the settings state properly", () => {
+    const s = seed();
+    const next = leadGenReducer(s, {
+      type: "updateSettings",
+      section: "general",
+      values: { workspaceName: "Lead Generation Software" },
+    });
+    expect(next.settings?.general?.workspaceName).toBe(
+      "Lead Generation Software",
+    );
+  });
+
+  it("allocating leads assigns them to a BDE and adds them to BDE assignments", () => {
+    const s = seed();
+    const next = leadGenReducer(s, {
+      type: "allocateLeads",
+      leadIds: [1, 2],
+      bde: "Ravi Kumar",
+    });
+    expect(next.leads.find((l) => l.id === 1)?.assignedName).toBe("Ravi Kumar");
+    expect(
+      next.assignments?.some((a) => a.leadId === 1 && a.bde === "Ravi Kumar"),
+    ).toBe(true);
   });
 });
 
@@ -76,8 +126,20 @@ describe("Research Analyst rules", () => {
         duplicates: 0,
       },
       rows: [
-        { company: "A", contact: "B", phone: "9000000001", email: "", source: "Web" },
-        { company: "C", contact: "D", phone: "9000000002", email: "", source: "Web" },
+        {
+          company: "A",
+          contact: "B",
+          phone: "9000000001",
+          email: "",
+          source: "Web",
+        },
+        {
+          company: "C",
+          contact: "D",
+          phone: "9000000002",
+          email: "",
+          source: "Web",
+        },
       ],
     });
     expect(selectKpis(next).pending).toBe(622);

@@ -73,7 +73,10 @@ export function RatePill({ value, tone = "green" }) {
       )}
     >
       <span
-        className={cn("size-1.5 rounded-full", tone === "green" ? "bg-success" : "bg-primary")}
+        className={cn(
+          "size-1.5 rounded-full",
+          tone === "green" ? "bg-success" : "bg-primary",
+        )}
       />
       {value.toFixed(1)}%
     </span>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,15 @@ export function UpdateLeadDialog({ row, onClose, dispatch, bde }) {
       note,
       followUpOn: followUpOn || undefined,
     });
+    api
+      .updateLead(row.leadId, {
+        stage,
+        notes: note,
+        followUpDate: followUpOn || undefined,
+      })
+      .catch((err) =>
+        console.warn("[API] updateLead sync failed:", err.message),
+      );
     toast.success(`${row.lead.company} updated`);
     onClose();
   };
@@ -102,7 +112,9 @@ export function UpdateLeadDialog({ row, onClose, dispatch, bde }) {
               <ul className="space-y-1">
                 {[...row.activity].reverse().map((a, i) => (
                   <li key={i} className="text-xs">
-                    <span className="text-muted-foreground">{formatDate(a.on)} · </span>
+                    <span className="text-muted-foreground">
+                      {formatDate(a.on)} ·{" "}
+                    </span>
                     {a.text}
                   </li>
                 ))}

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, PencilLine, Upload } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { DataTable, EmptyState } from "@/components/common/DataTable";
@@ -31,7 +31,9 @@ export default function MyUploads() {
     const s = q.trim().toLowerCase();
     return batches.filter(
       (b) =>
-        (!s || b.id.toLowerCase().includes(s) || b.fileName.toLowerCase().includes(s)) &&
+        (!s ||
+          (b.id || "").toLowerCase().includes(s) ||
+          (b.fileName || "").toLowerCase().includes(s)) &&
         (status === "all" || b.status === status) &&
         (!from || b.uploadedOn >= from) &&
         (!to || b.uploadedOn <= to),
@@ -52,7 +54,11 @@ export default function MyUploads() {
         }
       />
       <Toolbar>
-        <SearchBox value={q} onChange={setQ} placeholder="Search batch ID or file name…" />
+        <SearchBox
+          value={q}
+          onChange={setQ}
+          placeholder="Search batch ID or file name…"
+        />
         <FilterSelect
           value={status}
           onChange={setStatus}
@@ -106,7 +112,9 @@ export default function MyUploads() {
           {
             key: "id",
             header: "Batch ID",
-            render: (b) => <span className="whitespace-nowrap font-semibold">{b.id}</span>,
+            render: (b) => (
+              <span className="whitespace-nowrap font-semibold">{b.id}</span>
+            ),
           },
           {
             key: "f",
@@ -123,20 +131,39 @@ export default function MyUploads() {
               </span>
             ),
           },
-          { key: "t", header: "Total", align: "right", render: (b) => fmt(b.totalRecords) },
-          { key: "v", header: "Valid", align: "right", render: (b) => fmt(b.validRecords) },
-          { key: "p", header: "Pending", align: "right", render: (b) => fmt(b.pending) },
+          {
+            key: "t",
+            header: "Total",
+            align: "right",
+            render: (b) => fmt(b.totalRecords),
+          },
+          {
+            key: "v",
+            header: "Valid",
+            align: "right",
+            render: (b) => fmt(b.validRecords),
+          },
+          {
+            key: "p",
+            header: "Pending",
+            align: "right",
+            render: (b) => fmt(b.pending),
+          },
           {
             key: "a",
             header: "Approved",
             align: "right",
-            render: (b) => <span className="text-success">{fmt(b.approved)}</span>,
+            render: (b) => (
+              <span className="text-success">{fmt(b.approved)}</span>
+            ),
           },
           {
             key: "r",
             header: "Rejected",
             align: "right",
-            render: (b) => <span className="text-destructive">{fmt(b.rejected)}</span>,
+            render: (b) => (
+              <span className="text-destructive">{fmt(b.rejected)}</span>
+            ),
           },
           {
             key: "du",
@@ -155,7 +182,11 @@ export default function MyUploads() {
             align: "right",
             render: (b) =>
               b.draft ? (
-                <Button size="xs" variant="soft" onClick={() => navigate({ to: "/ra/upload" })}>
+                <Button
+                  size="xs"
+                  variant="soft"
+                  onClick={() => navigate("/ra/upload")}
+                >
                   <PencilLine /> Continue
                 </Button>
               ) : (
@@ -207,8 +238,12 @@ export default function MyUploads() {
                       .filter((l) => l.batchId === open.id)
                       .map((l) => (
                         <tr key={l.id} className="border-t">
-                          <td className="px-3 py-1.5 font-medium">{l.company}</td>
-                          <td className="px-3 py-1.5 text-muted-foreground">{l.contact}</td>
+                          <td className="px-3 py-1.5 font-medium">
+                            {l.company}
+                          </td>
+                          <td className="px-3 py-1.5 text-muted-foreground">
+                            {l.contact}
+                          </td>
                           <td className="px-3 py-1.5">
                             <StatusBadge status={l.status} />
                           </td>

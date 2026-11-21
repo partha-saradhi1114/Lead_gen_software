@@ -18,7 +18,12 @@ import {
 } from "lucide-react";
 
 export const NAV_ITEMS = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard, subtitle: "Admin Dashboard" },
+  {
+    title: "Dashboard",
+    url: "/",
+    icon: LayoutDashboard,
+    subtitle: "Admin Dashboard",
+  },
   {
     title: "Leads Review",
     url: "/leads-review",
@@ -43,7 +48,12 @@ export const NAV_ITEMS = [
     icon: Microscope,
     subtitle: "Researcher uploads and quality",
   },
-  { title: "Team Management", url: "/team", icon: Users, subtitle: "Researchers and BDEs" },
+  {
+    title: "Team Management",
+    url: "/team",
+    icon: Users,
+    subtitle: "Researchers and BDEs",
+  },
   {
     title: "Operations",
     url: "/operations",
@@ -56,12 +66,22 @@ export const NAV_ITEMS = [
     icon: BarChart3,
     subtitle: "Performance insights",
   },
-  { title: "Settings", url: "/settings", icon: Settings, subtitle: "Workspace preferences" },
+  {
+    title: "Settings",
+    url: "/settings",
+    icon: Settings,
+    subtitle: "Workspace preferences",
+  },
 ];
 
 /** Research Analyst navigation (role-specific menu, same sidebar design). */
 export const RA_NAV_ITEMS = [
-  { title: "Dashboard", url: "/ra", icon: LayoutDashboard, subtitle: "Research Analyst Dashboard" },
+  {
+    title: "Dashboard",
+    url: "/ra",
+    icon: LayoutDashboard,
+    subtitle: "Research Analyst Dashboard",
+  },
   {
     title: "Upload Leads",
     url: "/ra/upload",
@@ -92,12 +112,22 @@ export const RA_NAV_ITEMS = [
     icon: XCircle,
     subtitle: "Correct and resubmit rejected leads",
   },
-  { title: "Reports", url: "/ra/reports", icon: BarChart3, subtitle: "My performance report" },
+  {
+    title: "Reports",
+    url: "/ra/reports",
+    icon: BarChart3,
+    subtitle: "My performance report",
+  },
 ];
 
 /** BDE navigation (role-specific menu, same sidebar design). */
 export const BDE_NAV_ITEMS = [
-  { title: "Dashboard", url: "/bde", icon: LayoutDashboard, subtitle: "BDE Dashboard" },
+  {
+    title: "Dashboard",
+    url: "/bde",
+    icon: LayoutDashboard,
+    subtitle: "BDE Dashboard",
+  },
   {
     title: "My Leads",
     url: "/bde/leads",
@@ -120,8 +150,13 @@ export const BDE_NAV_ITEMS = [
 
 export const isBdePath = (path) => path === "/bde" || path.startsWith("/bde/");
 /** Which role's area a path belongs to: "admin" | "ra" | "bde". */
-export const roleForPath = (path) => (isRaPath(path) ? "ra" : isBdePath(path) ? "bde" : "admin");
-export const NAV_BY_ROLE = { admin: NAV_ITEMS, ra: RA_NAV_ITEMS, bde: BDE_NAV_ITEMS };
+export const roleForPath = (path) =>
+  isRaPath(path) ? "ra" : isBdePath(path) ? "bde" : "admin";
+export const NAV_BY_ROLE = {
+  admin: NAV_ITEMS,
+  ra: RA_NAV_ITEMS,
+  bde: BDE_NAV_ITEMS,
+};
 
 export const isRaPath = (path) => path === "/ra" || path.startsWith("/ra/");
 

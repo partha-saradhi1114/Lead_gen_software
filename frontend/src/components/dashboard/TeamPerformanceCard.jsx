@@ -71,7 +71,12 @@ export function TeamPerformanceCard() {
     { uploaded: 0, approved: 0, rejected: 0 },
   );
   const raCols = [
-    { key: "name", header: "RA Name", render: (r) => <PersonCell name={r.name} />, total: "Total" },
+    {
+      key: "name",
+      header: "RA Name",
+      render: (r) => <PersonCell name={r.name} />,
+      total: "Total",
+    },
     {
       key: "up",
       header: "Leads Uploaded",
@@ -97,7 +102,9 @@ export function TeamPerformanceCard() {
       key: "rate",
       header: "Approval Rate",
       align: "right",
-      render: (r) => <RatePill value={pct(r.approved, r.uploaded)} tone="blue" />,
+      render: (r) => (
+        <RatePill value={pct(r.approved, r.uploaded)} tone="blue" />
+      ),
       total: <RatePill value={pct(rt.approved, rt.uploaded)} tone="blue" />,
     },
   ];
@@ -125,10 +132,20 @@ export function TeamPerformanceCard() {
           }
         />
         <TabsContent value="bde" className="mt-1">
-          <PerformanceTable columns={bdeCols} rows={bdes} rowKey={(r) => r.name} showTotal />
+          <PerformanceTable
+            columns={bdeCols}
+            rows={bdes}
+            rowKey={(r) => r.name}
+            showTotal
+          />
         </TabsContent>
         <TabsContent value="ra" className="mt-1">
-          <PerformanceTable columns={raCols} rows={ra} rowKey={(r) => r.name} showTotal />
+          <PerformanceTable
+            columns={raCols}
+            rows={ra}
+            rowKey={(r) => r.name}
+            showTotal
+          />
         </TabsContent>
       </Tabs>
     </Panel>

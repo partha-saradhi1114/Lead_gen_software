@@ -1,5 +1,40 @@
-export const LEAD_SOURCES = ["Web", "Event", "Referral", "LinkedIn", "Cold Call"];
-export const RESEARCHERS = ["Priya M", "Arjun K", "Neha R", "Sneha T", "Rahul P"];
+export const LEAD_SOURCES = [
+  "Web",
+  "Event",
+  "Referral",
+  "LinkedIn",
+  "Cold Call",
+];
+export const LEAD_CATEGORIES = [
+  "Students / Education",
+  "IT & Upskilling",
+  "Corporate Training",
+  "Healthcare & Pharma",
+  "General Enquiries",
+];
+export const BDE_CATEGORIES = {
+  "Ravi Kumar": "Students / Education",
+  "Anitha Reddy": "IT & Upskilling",
+  "Kiran Varma": "Corporate Training",
+  "Megha S": "Healthcare & Pharma",
+};
+export const RESEARCHER_CATEGORIES = {
+  "Priya M": ["Healthcare & Pharma", "Students / Education"],
+  "Arjun K": ["IT & Upskilling", "Healthcare & Pharma"],
+  "Neha R": ["Corporate Training", "IT & Upskilling"],
+  "Sneha T": ["Healthcare & Pharma", "General Enquiries"],
+  "Rahul P": ["Students / Education", "General Enquiries"],
+};
+export function getResearcherCategories(researcher = CURRENT_RA) {
+  return RESEARCHER_CATEGORIES[researcher] ?? LEAD_CATEGORIES;
+}
+export const RESEARCHERS = [
+  "Priya M",
+  "Arjun K",
+  "Neha R",
+  "Sneha T",
+  "Rahul P",
+];
 export const REJECTION_REASONS = [
   "Duplicate lead",
   "Invalid phone number",
@@ -12,7 +47,12 @@ export const REJECTION_REASONS = [
 /** Sample-data identity used for the Research Analyst view until real sign-in exists. */
 export const CURRENT_RA = "Priya M";
 /** Sample figures the Research Analyst dashboard must show for CURRENT_RA (duplicates tracked separately). */
-export const RA_SEED_TARGETS = { pending: 196, approved: 1120, rejected: 77, duplicates: 126 };
+export const RA_SEED_TARGETS = {
+  pending: 196,
+  approved: 1120,
+  rejected: 77,
+  duplicates: 126,
+};
 export const INDUSTRIES = [
   "Healthcare",
   "Diagnostics",
@@ -48,6 +88,7 @@ const FEATURED = [
     phone: "+91 98765 43210",
     email: "rajesh@abchospitals.com",
     source: "Web",
+    category: "Healthcare & Pharma",
     uploadedBy: "Priya M",
     uploadedOn: "2026-11-18",
   },
@@ -57,6 +98,7 @@ const FEATURED = [
     phone: "+91 91234 56789",
     email: "neha@vcarelabs.in",
     source: "Event",
+    category: "Healthcare & Pharma",
     uploadedBy: "Arjun K",
     uploadedOn: "2026-11-18",
   },
@@ -66,6 +108,7 @@ const FEATURED = [
     phone: "+91 99887 66554",
     email: "vivek@healthfirst.in",
     source: "Referral",
+    category: "Students / Education",
     uploadedBy: "Priya M",
     uploadedOn: "2026-11-17",
   },
@@ -75,6 +118,7 @@ const FEATURED = [
     phone: "+91 87965 12034",
     email: "karthik@wellnessplus.in",
     source: "Web",
+    category: "Corporate Training",
     uploadedBy: "Neha R",
     uploadedOn: "2026-11-17",
   },
@@ -185,13 +229,14 @@ export function isoDaysBefore(base, days) {
   return d.toISOString().slice(0, 10);
 }
 
-export function makeLead(r, id, status, uploadedOn, uploadedBy) {
+export function makeLead(r, id, status, uploadedOn, uploadedBy, category) {
   const brand = pick(r, BRANDS);
   const kind = pick(r, KINDS);
   const first = pick(r, FIRST);
   const last = pick(r, LAST);
   const domain =
-    brand.toLowerCase().replace(/[^a-z]/g, "") + (kind.split(" ")[0] ?? "").toLowerCase();
+    brand.toLowerCase().replace(/[^a-z]/g, "") +
+    (kind.split(" ")[0] ?? "").toLowerCase();
   const n = () => Math.floor(r() * 10);
   const phone = `+91 ${7 + Math.floor(r() * 3)}${n()}${n()}${n()}${n()} ${n()}${n()}${n()}${n()}${n()}`;
   return {
@@ -201,14 +246,25 @@ export function makeLead(r, id, status, uploadedOn, uploadedBy) {
     phone,
     email: `${first.toLowerCase()}@${domain}.${r() > 0.5 ? "in" : "com"}`,
     source: pick(r, LEAD_SOURCES),
+    category: category ?? LEAD_CATEGORIES[id % LEAD_CATEGORIES.length],
     uploadedBy: uploadedBy ?? pick(r, RESEARCHERS.slice(0, 3)),
     uploadedOn,
     status,
-    rejectionReason: status === "rejected" ? pick(r, REJECTION_REASONS.slice(0, 5)) : undefined,
+    rejectionReason:
+      status === "rejected"
+        ? pick(r, REJECTION_REASONS.slice(0, 5))
+        : undefined,
     designation: pick(r, DESIGNATIONS),
     location: pick(r, LOCATIONS),
     industry: pick(r, INDUSTRIES),
-    reviewedOn: status === "pending" ? undefined : isoDaysBefore(uploadedOn, -1),
+    country: "India",
+    stateCity: pick(r, LOCATIONS),
+    website: `https://www.${domain}.com`,
+    companyAddress: `Plot ${id * 3}, Tech Park, ${pick(r, LOCATIONS)}`,
+    linkedin: `https://linkedin.com/company/${domain}`,
+    description: `Leading organization in ${category ?? "Healthcare"} vertical.`,
+    reviewedOn:
+      status === "pending" ? undefined : isoDaysBefore(uploadedOn, -1),
   };
 }
 
@@ -230,24 +286,47 @@ export function buildSeedLeads() {
     }),
   );
   for (let i = FEATURED.length; i < SEED_COUNTS.pending; i++) {
-    leads.push(makeLead(r, id++, "pending", isoDaysBefore(TODAY, 1 + Math.floor(i / 60))));
+    leads.push(
+      makeLead(
+        r,
+        id++,
+        "pending",
+        isoDaysBefore(TODAY, 1 + Math.floor(i / 60)),
+      ),
+    );
   }
   for (let i = 0; i < SEED_COUNTS.approved; i++) {
-    leads.push(makeLead(r, id++, "approved", isoDaysBefore(TODAY, 2 + Math.floor(i / 60))));
+    leads.push(
+      makeLead(
+        r,
+        id++,
+        "approved",
+        isoDaysBefore(TODAY, 2 + Math.floor(i / 60)),
+      ),
+    );
   }
   for (let i = 0; i < SEED_COUNTS.rejected; i++) {
-    leads.push(makeLead(r, id++, "rejected", isoDaysBefore(TODAY, 2 + Math.floor(i / 6))));
+    leads.push(
+      makeLead(
+        r,
+        id++,
+        "rejected",
+        isoDaysBefore(TODAY, 2 + Math.floor(i / 6)),
+      ),
+    );
   }
   // Give CURRENT_RA exactly the target number of leads per status; others go to the rest of the team.
   const others = RESEARCHERS.slice(1, 3);
   const quota = { ...RA_SEED_TARGETS };
-  for (const l of leads) if (l.uploadedBy === CURRENT_RA && l.featured) quota[l.status]--;
+  for (const l of leads)
+    if (l.uploadedBy === CURRENT_RA && l.featured) quota[l.status]--;
   for (const l of leads) {
     if (l.featured) continue;
     if (quota[l.status] > 0) {
       l.uploadedBy = CURRENT_RA;
       quota[l.status]--;
-    } else if (l.uploadedBy === CURRENT_RA) l.uploadedBy = others[l.id % others.length];
+    } else if (l.uploadedBy === CURRENT_RA)
+      l.uploadedBy = others[l.id % others.length];
   }
   for (const l of leads) delete l.featured;
   for (const l of leads) l.batchId = batchIdFor(l.uploadedBy, l.uploadedOn);
@@ -294,7 +373,8 @@ export function buildSeedBatches(leads) {
   const mine = out.filter((b) => b.researcher === CURRENT_RA);
   mine.forEach((b, i) => {
     const base = Math.floor(RA_SEED_TARGETS.duplicates / mine.length);
-    b.duplicates = base + (i < RA_SEED_TARGETS.duplicates % mine.length ? 1 : 0);
+    b.duplicates =
+      base + (i < RA_SEED_TARGETS.duplicates % mine.length ? 1 : 0);
   });
   out.forEach((b) => {
     b.totalRecords = b.validRecords + b.duplicates + b.invalidRecords;
@@ -316,9 +396,27 @@ export function buildSeedBatches(leads) {
 }
 
 export const SEED_BDES = [
-  { name: "Ravi Kumar", allocated: 500, used: 420, connected: 152, interested: 98 },
-  { name: "Anitha Reddy", allocated: 400, used: 280, connected: 102, interested: 66 },
-  { name: "Kiran Varma", allocated: 300, used: 210, connected: 68, interested: 45 },
+  {
+    name: "Ravi Kumar",
+    allocated: 500,
+    used: 420,
+    connected: 152,
+    interested: 98,
+  },
+  {
+    name: "Anitha Reddy",
+    allocated: 400,
+    used: 280,
+    connected: 102,
+    interested: 66,
+  },
+  {
+    name: "Kiran Varma",
+    allocated: 300,
+    used: 210,
+    connected: 68,
+    interested: 45,
+  },
   { name: "Megha S", allocated: 300, used: 200, connected: 60, interested: 40 },
 ];
 
@@ -340,9 +438,27 @@ export const RA_EXTENDED = [
 export const FUNNEL_STATIC = { viewed: 1320, connected: 920, interested: 310 };
 
 export const STATUS_DISTRIBUTION = [
-  { key: "connected", label: "Connected", percent: 35, count: 462, color: "var(--chart-1)" },
-  { key: "ooc", label: "Out of Coverage", percent: 12, count: 158, color: "var(--chart-2)" },
-  { key: "interested", label: "Interested", percent: 23, count: 304, color: "var(--chart-3)" },
+  {
+    key: "connected",
+    label: "Connected",
+    percent: 35,
+    count: 462,
+    color: "var(--chart-1)",
+  },
+  {
+    key: "ooc",
+    label: "Out of Coverage",
+    percent: 12,
+    count: 158,
+    color: "var(--chart-2)",
+  },
+  {
+    key: "interested",
+    label: "Interested",
+    percent: 23,
+    count: 304,
+    color: "var(--chart-3)",
+  },
   {
     key: "notInterested",
     label: "Not Interested",
@@ -350,7 +466,13 @@ export const STATUS_DISTRIBUTION = [
     count: 238,
     color: "var(--chart-4)",
   },
-  { key: "followUp", label: "Follow-up", percent: 12, count: 158, color: "var(--chart-5)" },
+  {
+    key: "followUp",
+    label: "Follow-up",
+    percent: 12,
+    count: 158,
+    color: "var(--chart-5)",
+  },
 ];
 
 export const FOLLOW_UPS = {
@@ -455,14 +577,39 @@ export const SEED_TEAM = [
     phone: "+91 90000 66666",
     role: "BDE",
   },
-  { name: "Megha S", email: "megha.s@arahinfotech.com", phone: "+91 90000 77777", role: "BDE" },
+  {
+    name: "Megha S",
+    email: "megha.s@arahinfotech.com",
+    phone: "+91 90000 77777",
+    role: "BDE",
+  },
 ];
 
 export const NOTIFICATIONS = [
-  { id: 1, title: "48 leads uploaded by Priya M", time: "10 min ago", tone: "blue" },
-  { id: 2, title: "Ravi Kumar used 84% of allocated credits", time: "1 hr ago", tone: "amber" },
-  { id: 3, title: "12 follow-ups became overdue", time: "3 hrs ago", tone: "red" },
-  { id: 4, title: "Anitha Reddy marked 6 leads Interested", time: "Yesterday", tone: "green" },
+  {
+    id: 1,
+    title: "48 leads uploaded by Priya M",
+    time: "10 min ago",
+    tone: "blue",
+  },
+  {
+    id: 2,
+    title: "Ravi Kumar used 84% of allocated credits",
+    time: "1 hr ago",
+    tone: "amber",
+  },
+  {
+    id: 3,
+    title: "12 follow-ups became overdue",
+    time: "3 hrs ago",
+    tone: "red",
+  },
+  {
+    id: 4,
+    title: "Anitha Reddy marked 6 leads Interested",
+    time: "Yesterday",
+    tone: "green",
+  },
 ];
 
 export function formatDate(iso) {
@@ -484,5 +631,9 @@ export function formatDate(iso) {
   return `${String(d ?? 1).padStart(2, "0")}-${months[(m ?? 1) - 1] ?? ""}-${y ?? ""}`;
 }
 
-export const fmt = (n) => n.toLocaleString("en-IN");
+export const fmt = (n) => {
+  if (n === null || n === undefined) return "0";
+  const num = typeof n === "number" ? n : Number(n);
+  return isNaN(num) ? "0" : num.toLocaleString("en-IN");
+};
 export const pct = (num, den) => (den === 0 ? 0 : (num / den) * 100);

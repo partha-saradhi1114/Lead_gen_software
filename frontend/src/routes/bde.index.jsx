@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
   AlarmClock,
   CalendarCheck,
@@ -18,7 +19,7 @@ import { BDE_STAGES } from "@/lib/leadgen/bde";
 import { fmt, formatDate, pct } from "@/lib/leadgen/data";
 
 export default function BdeDashboard() {
-  const { kpis, rows } = useBdeData();
+  const { kpis, rows, category, bde } = useBdeData();
   const due = rows
     .filter((r) => r.bucket === "overdue" || r.bucket === "today")
     .sort((a, b) => (a.followUp.on < b.followUp.on ? -1 : 1))
@@ -26,6 +27,26 @@ export default function BdeDashboard() {
 
   return (
     <div className="space-y-4">
+      {/* Category Vertical Notice */}
+      <div className="flex flex-col gap-2 rounded-lg border bg-card p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2.5">
+          <span className="flex size-7 items-center justify-center rounded-md bg-tint-blue text-tint-blue-foreground font-semibold text-xs">
+            🎓
+          </span>
+          <div>
+            <div className="text-xs font-semibold text-foreground">
+              Assigned Vertical:{" "}
+              <span className="text-primary font-bold">{category}</span>
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              {bde} is currently assigned exclusively to {category} leads.
+            </div>
+          </div>
+        </div>
+        <span className="self-start rounded-full bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 text-[11px] font-semibold sm:self-auto">
+          {category}
+        </span>
+      </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiCard
           label="Assigned Leads"
@@ -103,7 +124,9 @@ export default function BdeDashboard() {
             {due.map((r) => (
               <li key={r.leadId} className="flex items-center gap-3 py-2">
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] font-semibold">{r.lead.company}</div>
+                  <div className="truncate text-[13px] font-semibold">
+                    {r.lead.company}
+                  </div>
                   <div className="truncate text-[11px] text-muted-foreground">
                     {r.lead.contact} · {r.followUp.note}
                   </div>
@@ -112,10 +135,14 @@ export default function BdeDashboard() {
                 <span
                   className={
                     "whitespace-nowrap text-[11px] font-semibold " +
-                    (r.bucket === "overdue" ? "text-destructive" : "text-primary")
+                    (r.bucket === "overdue"
+                      ? "text-destructive"
+                      : "text-primary")
                   }
                 >
-                  {r.bucket === "overdue" ? `Overdue · ${formatDate(r.followUp.on)}` : "Today"}
+                  {r.bucket === "overdue"
+                    ? `Overdue · ${formatDate(r.followUp.on)}`
+                    : "Today"}
                 </span>
               </li>
             ))}
@@ -145,7 +172,9 @@ export default function BdeDashboard() {
                     <StageBadge stage={s} />
                   </div>
                   <Progress value={pct(n, rows.length)} className="h-1.5" />
-                  <span className="num w-8 text-right text-xs font-semibold">{n}</span>
+                  <span className="num w-8 text-right text-xs font-semibold">
+                    {n}
+                  </span>
                 </div>
               );
             })}

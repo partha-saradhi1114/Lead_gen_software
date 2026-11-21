@@ -25,7 +25,8 @@ export default function BdeCredits() {
   const request = (e) => {
     e.preventDefault();
     const n = Number(amount);
-    if (!Number.isInteger(n) || n <= 0) return void toast.error("Enter a whole number of credits");
+    if (!Number.isInteger(n) || n <= 0)
+      return void toast.error("Enter a whole number of credits");
     if (!reason.trim()) return void toast.error("Add a reason for the request");
     dispatch({ type: "bdeRequestCredits", bde, amount: n, reason });
     setReason("");
@@ -79,7 +80,9 @@ export default function BdeCredits() {
           </div>
           <DataTable
             rows={log}
-            rowKey={(c) => `${c.on}-${c.kind}-${c.leadId ?? c.note}-${log.indexOf(c)}`}
+            rowKey={(c) =>
+              `${c.on}-${c.kind}-${c.leadId ?? c.note}-${log.indexOf(c)}`
+            }
             empty={
               <EmptyState
                 title="No credit activity yet"
@@ -104,7 +107,9 @@ export default function BdeCredits() {
                         : "font-semibold text-primary"
                     }
                   >
-                    {c.kind === "Used" ? "Contact unlocked" : "Top-up requested"}
+                    {c.kind === "Used"
+                      ? "Contact unlocked"
+                      : "Top-up requested"}
                   </span>
                 ),
               },

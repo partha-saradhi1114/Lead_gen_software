@@ -10,18 +10,26 @@ import {
 } from "@/components/ui/dialog";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { DataTable, EmptyState } from "@/components/common/DataTable";
-import { FilterSelect, SearchBox, TabPills, Toolbar } from "@/components/common/Toolbar";
+import {
+  FilterSelect,
+  SearchBox,
+  TabPills,
+  Toolbar,
+} from "@/components/common/Toolbar";
 import { StatusBadge } from "@/components/dashboard/RaPerformanceCard";
 import { useRaData } from "@/components/ra/useRaData";
 import { INDUSTRIES, formatDate } from "@/lib/leadgen/data";
 
 function Remarks({ l }) {
   if (l.status === "rejected")
-    return <span className="text-tint-red-foreground">{l.rejectionReason}</span>;
+    return (
+      <span className="text-tint-red-foreground">{l.rejectionReason}</span>
+    );
   if (l.status === "approved")
     return (
       <span className="text-muted-foreground">
-        Approved by Master Admin{l.reviewedOn ? ` · ${formatDate(l.reviewedOn)}` : ""}
+        Approved by Master Admin
+        {l.reviewedOn ? ` · ${formatDate(l.reviewedOn)}` : ""}
       </span>
     );
   if (l.history?.length)
@@ -62,8 +70,9 @@ export default function ApprovalStatus() {
         subtitle="Review decisions on the leads you've submitted"
       />
       <div className="mx-4 mb-2.5 flex items-center gap-2 rounded-md bg-tint-blue px-3 py-2 text-xs text-tint-blue-foreground">
-        <ShieldCheck className="size-4 shrink-0" /> Only the Master Admin can approve or reject
-        leads. Research Analysts can't approve their own uploads.
+        <ShieldCheck className="size-4 shrink-0" /> Only the Master Admin can
+        approve or reject leads. Research Analysts can't approve their own
+        uploads.
       </div>
       <Toolbar>
         <TabPills
@@ -77,7 +86,11 @@ export default function ApprovalStatus() {
           ]}
         />
         <div className="ml-auto flex flex-wrap gap-2">
-          <SearchBox value={q} onChange={setQ} placeholder="Search company, contact…" />
+          <SearchBox
+            value={q}
+            onChange={setQ}
+            placeholder="Search company, contact…"
+          />
           <FilterSelect
             value={industry}
             onChange={setIndustry}
@@ -101,7 +114,8 @@ export default function ApprovalStatus() {
           {
             key: "c",
             header: "Company Name",
-            className: "sticky left-0 z-[1] max-w-52 truncate bg-card font-semibold",
+            className:
+              "sticky left-0 z-[1] max-w-52 truncate bg-card font-semibold",
             render: (l) => <span title={l.company}>{l.company}</span>,
           },
           {
@@ -125,7 +139,11 @@ export default function ApprovalStatus() {
             className: "whitespace-nowrap text-muted-foreground",
             render: (l) => formatDate(l.resubmittedOn ?? l.uploadedOn),
           },
-          { key: "st", header: "Review Status", render: (l) => <StatusBadge status={l.status} /> },
+          {
+            key: "st",
+            header: "Review Status",
+            render: (l) => <StatusBadge status={l.status} />,
+          },
           {
             key: "r",
             header: "Admin Remarks",
@@ -159,14 +177,21 @@ export default function ApprovalStatus() {
               </DialogHeader>
               <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-[13px]">
                 {[
+                  ["Category", open.category],
                   ["Contact Person", open.contact],
-                  ["Designation", open.designation],
                   ["Phone", open.phone],
-                  ["Email", open.email],
-                  ["Industry", open.industry],
-                  ["Location", open.location],
+                  ["Business Email", open.email],
+                  ["Country", open.country || "India"],
+                  ["State / City", open.stateCity || open.location],
+                  ["Company Address", open.companyAddress],
+                  ["Website", open.website],
+                  ["LinkedIn", open.linkedin],
+                  ["Description", open.description || open.notes],
                   ["Source", open.source],
-                  ["Reviewed On", open.reviewedOn && formatDate(open.reviewedOn)],
+                  [
+                    "Reviewed On",
+                    open.reviewedOn && formatDate(open.reviewedOn),
+                  ],
                 ].map(([k, v]) => (
                   <div key={k} className="contents">
                     <dt className="text-muted-foreground">{k}</dt>

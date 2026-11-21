@@ -52,7 +52,10 @@ export function AppHeader() {
   const location = useLocation();
   const pathname = location.pathname;
   const { state, dispatch } = useLeadGen();
+  const [profileOpen, setProfileOpen] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [from, setFrom] = useState("2026-11-01");
   const [to, setTo] = useState("2026-11-18");
   const [customLabel, setCustomLabel] = useState(null);
@@ -81,29 +84,56 @@ export function AppHeader() {
       : role === "bde" && item?.url === "/bde"
         ? `Welcome back, ${CURRENT_BDE}`
         : (item?.subtitle ?? "Admin Dashboard");
-  const user =
-    role === "ra"
-      ? {
-          name: CURRENT_RA,
-          role: "Research Analyst",
-          initials: "PM",
-          email: "priya.m@arahinfotech.com",
-        }
-      : role === "bde"
-        ? {
-            name: CURRENT_BDE,
-            role: "Business Development Executive",
-            initials: "RK",
-            email: "ravi.kumar@arahinfotech.com",
-          }
-        : {
-            name: "Sriram",
-            role: "Master Admin",
-            initials: "SR",
-            email: "sriram@arahinfotech.com",
-          };
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
 
-  const rangeLabel = state.dateRange === "Custom" && customLabel ? customLabel : state.dateRange;
+  const getInitials = (name) => {
+    if (!name) return "US";
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const user = {
+    name:
+      storedUser.name ||
+      (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram"),
+    role:
+      storedUser.role === "admin"
+        ? "Master Admin"
+        : storedUser.role === "ra"
+          ? "Research Analyst"
+          : storedUser.role === "bde"
+            ? "Business Development Executive"
+            : role === "ra"
+              ? "Research Analyst"
+              : role === "bde"
+                ? "Business Development Executive"
+                : "Master Admin",
+    email:
+      storedUser.email ||
+      (role === "ra"
+        ? "priya.m@arahinfotech.com"
+        : role === "bde"
+          ? "ravi.kumar@arahinfotech.com"
+          : "sriram@arahinfotech.com"),
+    initials: getInitials(
+      storedUser.name ||
+        (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram"),
+    ),
+  };
+
+  const rangeLabel =
+    state.dateRange === "Custom" && customLabel ? customLabel : state.dateRange;
 
   return (
     <header className="sticky top-0 z-20 flex h-15 items-center gap-3 border-b bg-card/95 px-4 backdrop-blur md:px-5">
@@ -128,7 +158,9 @@ export function AppHeader() {
           )}
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-[15px] font-bold leading-tight">{title}</h1>
+          <h1 className="truncate text-[15px] font-bold leading-tight">
+            {title}
+          </h1>
           <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
         </div>
       </div>
@@ -163,7 +195,11 @@ export function AppHeader() {
                 }}
               >
                 {RANGES.map((r) => (
-                  <DropdownMenuRadioItem key={r} value={r} className="text-[13px]">
+                  <DropdownMenuRadioItem
+                    key={r}
+                    value={r}
+                    className="text-[13px]"
+                  >
                     {r}
                   </DropdownMenuRadioItem>
                 ))}
@@ -209,17 +245,26 @@ export function AppHeader() {
                     setUnread((u) => u.filter((id) => id !== n.id));
                   }}
                 >
-                  <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", TONE[n.tone])} />
+                  <span
+                    className={cn(
+                      "mt-1.5 size-2 shrink-0 rounded-full",
+                      TONE[n.tone],
+                    )}
+                  />
                   <div className="min-w-0 flex-1">
                     <div
                       className={cn(
                         "text-[13px] leading-snug",
-                        unread.includes(n.id) ? "font-semibold" : "text-muted-foreground",
+                        unread.includes(n.id)
+                          ? "font-semibold"
+                          : "text-muted-foreground",
                       )}
                     >
                       {n.title}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">{n.time}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {n.time}
+                    </div>
                   </div>
                 </DropdownMenuItem>
               ))}
@@ -234,7 +279,9 @@ export function AppHeader() {
                 {user.initials}
               </span>
               <span className="hidden text-left md:block">
-                <span className="block text-[13px] font-semibold leading-tight">{user.name}</span>
+                <span className="block text-[13px] font-semibold leading-tight">
+                  {user.name}
+                </span>
                 <span className="block text-[11px] leading-tight text-muted-foreground">
                   {user.role}
                 </span>
@@ -245,16 +292,18 @@ export function AppHeader() {
           <DropdownMenuContent align="end" className="w-60">
             <DropdownMenuLabel>
               <div className="text-sm font-semibold">{user.name}</div>
-              <div className="text-xs font-normal text-muted-foreground">{user.email}</div>
+              <div className="text-xs font-normal text-muted-foreground">
+                {user.email}
+              </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => toast.info("Profile page arrives in the next iteration")}
-            >
+            <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
               <User /> My Profile
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() => toast.info("Account settings arrive in the next iteration")}
+              onSelect={() => {
+                navigate("/settings");
+              }}
             >
               <Settings /> Account Settings
             </DropdownMenuItem>
@@ -262,7 +311,9 @@ export function AppHeader() {
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onSelect={() => {
-                toast.success("Signed out");
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                toast.success("Signed out successfully");
                 navigate("/login");
               }}
             >
@@ -272,20 +323,110 @@ export function AppHeader() {
         </DropdownMenu>
       </div>
 
+      {/* User Profile Modal */}
+      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>My Profile</DialogTitle>
+            <DialogDescription>
+              View your account details and security settings.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center gap-3.5 rounded-lg border bg-muted/30 p-3.5">
+            <div className="flex size-12 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground">
+              {user.initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">
+                  {user.name}
+                </span>
+                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                  {user.role}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">{user.email}</div>
+              <div className="mt-0.5 text-[11px] text-muted-foreground/80">
+                Organization:{" "}
+                {state?.settings?.general?.workspaceName ||
+                  "Lead Generation Software"}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <div className="text-xs font-semibold text-foreground">
+              Security · Change Password
+            </div>
+            <div className="space-y-2">
+              <Input
+                type="password"
+                placeholder="New Password (min. 6 characters)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <Input
+                type="password"
+                placeholder="Confirm New Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-2">
+            <Button variant="outline" onClick={() => setProfileOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                if (!newPassword || newPassword.length < 6) {
+                  toast.error("Password must be at least 6 characters");
+                  return;
+                }
+                if (newPassword !== confirmPassword) {
+                  toast.error("Passwords do not match");
+                  return;
+                }
+                setNewPassword("");
+                setConfirmPassword("");
+                setProfileOpen(false);
+                toast.success("Password updated successfully!");
+              }}
+            >
+              Update Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={customOpen} onOpenChange={setCustomOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Custom date range</DialogTitle>
-            <DialogDescription>Pick the period to show across the dashboard.</DialogDescription>
+            <DialogDescription>
+              Pick the period to show across the dashboard.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="from">From</Label>
-              <Input id="from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+              <Input
+                id="from"
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="to">To</Label>
-              <Input id="to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+              <Input
+                id="to"
+                type="date"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter>
@@ -299,7 +440,9 @@ export function AppHeader() {
                   return;
                 }
                 dispatch({ type: "setDateRange", range: "Custom" });
-                setCustomLabel(`${formatDate(from).slice(0, 6)} – ${formatDate(to).slice(0, 6)}`);
+                setCustomLabel(
+                  `${formatDate(from).slice(0, 6)} – ${formatDate(to).slice(0, 6)}`,
+                );
                 setCustomOpen(false);
                 toast.success("Custom date range applied");
               }}

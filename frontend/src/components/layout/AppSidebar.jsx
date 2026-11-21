@@ -18,8 +18,16 @@ import { fmt } from "@/lib/leadgen/data";
 import { NAV_BY_ROLE, findNavItem, roleForPath } from "./nav";
 import { CURRENT_BDE, selectBdeKpis } from "@/lib/leadgen/bde";
 
-const ROLE_LABEL = { admin: "Main Menu", ra: "Research Analyst", bde: "Business Development" };
-const ROLE_FOOT = { admin: "Admin Console", ra: "Research Analyst", bde: "BDE Workspace" };
+const ROLE_LABEL = {
+  admin: "Main Menu",
+  ra: "Research Analyst",
+  bde: "Business Development",
+};
+const ROLE_FOOT = {
+  admin: "Admin Console",
+  ra: "Research Analyst",
+  bde: "BDE Workspace",
+};
 import { CURRENT_RA } from "@/lib/leadgen/data";
 
 export function AppSidebar() {
@@ -29,13 +37,34 @@ export function AppSidebar() {
   const role = roleForPath(pathname);
   const ra = role === "ra";
   const items = NAV_BY_ROLE[role];
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+  const currentBdeName =
+    storedUser.role === "bde" && storedUser.name
+      ? storedUser.name
+      : CURRENT_BDE;
+  const currentRaName =
+    storedUser.role === "ra" && storedUser.name ? storedUser.name : CURRENT_RA;
+
   const bdeDue =
     role === "bde"
-      ? (({ overdue, today }) => overdue + today)(selectBdeKpis(state, CURRENT_BDE))
+      ? (({ overdue, today }) => overdue + today)(
+          selectBdeKpis(state, currentBdeName),
+        )
       : 0;
   const activeUrl = findNavItem(pathname)?.url;
   const raRejected = ra
-    ? state.leads.filter((l) => l.uploadedBy === CURRENT_RA && l.status === "rejected").length
+    ? state.leads.filter(
+        (l) =>
+          (l.uploadedBy === currentRaName ||
+            l.uploaderName === currentRaName) &&
+          l.status === "rejected",
+      ).length
     : 0;
 
   return (
@@ -88,11 +117,13 @@ export function AppSidebar() {
                         {fmt(bdeDue)}
                       </SidebarMenuBadge>
                     )}
-                    {item.url === "/leads-review" && role === "admin" && kpis.pending > 0 && (
-                      <SidebarMenuBadge className="rounded-full bg-warning px-1.5 text-[10px] font-semibold text-warning-foreground peer-data-[active=true]/menu-button:text-warning-foreground">
-                        {fmt(kpis.pending)}
-                      </SidebarMenuBadge>
-                    )}
+                    {item.url === "/leads-review" &&
+                      role === "admin" &&
+                      kpis.pending > 0 && (
+                        <SidebarMenuBadge className="rounded-full bg-warning px-1.5 text-[10px] font-semibold text-warning-foreground peer-data-[active=true]/menu-button:text-warning-foreground">
+                          {fmt(kpis.pending)}
+                        </SidebarMenuBadge>
+                      )}
                   </SidebarMenuItem>
                 );
               })}
@@ -104,10 +135,19 @@ export function AppSidebar() {
       <SidebarFooter className="p-3 group-data-[collapsible=icon]:hidden">
         <div className="rounded-lg bg-sidebar-accent p-3">
           <div className="text-[11px] text-sidebar-muted">Workspace</div>
-          <div className="text-[13px] font-semibold text-sidebar-accent-foreground">
-            Arah Infotech
+          <div
+            className="text-[13px] font-semibold text-sidebar-accent-foreground truncate"
+            title={
+              state?.settings?.general?.workspaceName ||
+              "Lead Generation Software"
+            }
+          >
+            {state?.settings?.general?.workspaceName ||
+              "Lead Generation Software"}
           </div>
-          <div className="mt-0.5 text-[11px] text-sidebar-muted">v1.0 · {ROLE_FOOT[role]}</div>
+          <div className="mt-0.5 text-[11px] text-sidebar-muted">
+            v1.0 · {ROLE_FOOT[role]}
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>

@@ -61,7 +61,9 @@ export function FollowUpCard() {
       <div className="flex flex-1 flex-col px-4 pb-4">
         <div className="flex items-baseline gap-2">
           <span className="num text-2xl font-bold">{total}</span>
-          <span className="text-xs text-muted-foreground">Total pending follow-ups</span>
+          <span className="text-xs text-muted-foreground">
+            Total pending follow-ups
+          </span>
         </div>
         <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-muted">
           {BUCKETS.map((b) => (
@@ -76,11 +78,16 @@ export function FollowUpCard() {
           {BUCKETS.map((b) => (
             <li
               key={b.key}
-              className={cn("flex items-center gap-2 rounded-md px-2.5 py-1.5", b.tint)}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-2.5 py-1.5",
+                b.tint,
+              )}
             >
               <span className={cn("size-2 rounded-full", b.dot)} />
               <span className="flex-1 text-[13px] font-medium">{b.label}</span>
-              <span className={cn("num text-sm font-bold", b.text)}>{FOLLOW_UPS[b.key]}</span>
+              <span className={cn("num text-sm font-bold", b.text)}>
+                {FOLLOW_UPS[b.key]}
+              </span>
             </li>
           ))}
         </ul>
@@ -90,10 +97,17 @@ export function FollowUpCard() {
           </div>
           <ul className="space-y-1.5">
             {FOLLOW_UP_ITEMS.slice(0, 2).map((f) => (
-              <li key={f.company} className="flex items-center justify-between gap-2 text-xs">
+              <li
+                key={f.company}
+                className="flex items-center justify-between gap-2 text-xs"
+              >
                 <span className="min-w-0">
-                  <span className="block truncate font-medium">{f.company}</span>
-                  <span className="text-[11px] text-muted-foreground">{f.bde}</span>
+                  <span className="block truncate font-medium">
+                    {f.company}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {f.bde}
+                  </span>
                 </span>
                 <span className="num shrink-0 font-semibold text-tint-red-foreground">
                   {formatDate(f.due).slice(0, 6)}
@@ -108,7 +122,9 @@ export function FollowUpCard() {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Pending follow-ups ({total})</DialogTitle>
-            <DialogDescription>Most urgent follow-ups across all BDEs.</DialogDescription>
+            <DialogDescription>
+              Most urgent follow-ups across all BDEs.
+            </DialogDescription>
           </DialogHeader>
           <div className="overflow-hidden rounded-lg border">
             <table className="w-full text-[13px]">
@@ -127,7 +143,9 @@ export function FollowUpCard() {
                     <tr key={f.company} className="border-t">
                       <td className="px-3 py-2">
                         <div className="font-medium">{f.company}</div>
-                        <div className="text-[11px] text-muted-foreground">{f.contact}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {f.contact}
+                        </div>
                       </td>
                       <td className="px-3 py-2">{f.bde}</td>
                       <td className="px-3 py-2">
@@ -145,7 +163,9 @@ export function FollowUpCard() {
                         <Button
                           size="xs"
                           variant="outline"
-                          onClick={() => toast.success(`Reminder sent to ${f.bde}`)}
+                          onClick={() =>
+                            toast.success(`Reminder sent to ${f.bde}`)
+                          }
                         >
                           <BellRing /> Remind
                         </Button>

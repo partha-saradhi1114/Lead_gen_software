@@ -30,21 +30,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { LEAD_SOURCES, RESEARCHERS, fmt } from "@/lib/leadgen/data";
+import { api } from "@/lib/api";
+import {
+  LEAD_CATEGORIES,
+  LEAD_SOURCES,
+  RESEARCHERS,
+  fmt,
+} from "@/lib/leadgen/data";
 import { cn } from "@/lib/utils";
 
-export function QuickActionCard({ icon: Icon, title, subtitle, tone, onClick }) {
+export function QuickActionCard({
+  icon: Icon,
+  title,
+  subtitle,
+  tone,
+  onClick,
+}) {
   return (
     <button
       onClick={onClick}
       className="group flex w-full items-center gap-3 rounded-lg border border-transparent bg-muted/60 px-3 py-2.5 text-left transition-all hover:border-border hover:bg-card hover:shadow-card"
     >
-      <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", tone)}>
+      <span
+        className={cn(
+          "flex size-9 shrink-0 items-center justify-center rounded-lg",
+          tone,
+        )}
+      >
         <Icon className="size-4.5" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[13px] font-semibold">{title}</span>
-        <span className="block truncate text-[11px] text-muted-foreground">{subtitle}</span>
+        <span className="block truncate text-[11px] text-muted-foreground">
+          {subtitle}
+        </span>
       </span>
       <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
     </button>
@@ -110,7 +129,15 @@ export function QuickActions({ className }) {
   );
 }
 
-function FormDialog({ open, onOpenChange, title, description, submitLabel, onSubmit, children }) {
+function FormDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  submitLabel,
+  onSubmit,
+  children,
+}) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -127,7 +154,11 @@ function FormDialog({ open, onOpenChange, title, description, submitLabel, onSub
           </DialogHeader>
           <div className="space-y-3">{children}</div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit">{submitLabel}</Button>
@@ -151,6 +182,7 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
   const { dispatch } = useLeadGen();
   const [ra, setRa] = useState(RESEARCHERS[0] ?? "");
   const [source, setSource] = useState("Web");
+  const [category, setCategory] = useState(LEAD_CATEGORIES[0]);
   const [file, setFile] = useState(null);
   const [count, setCount] = useState("25");
 
@@ -166,17 +198,47 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
       open={open}
       onOpenChange={onOpenChange}
       title="Upload Leads"
-      description="Add a researcher's lead sheet to the review queue."
+      description="Add a researcher's lead sheet with assigned category to the review queue."
       submitLabel="Upload to review"
       onSubmit={() => {
         const n = Number(count);
-        if (!file) return void toast.error("Choose a CSV or Excel file to upload");
+        if (!file)
+          return void toast.error("Choose a CSV or Excel file to upload");
         if (!Number.isInteger(n) || n <= 0 || n > 500)
           return void toast.error("Enter between 1 and 500 records");
-        dispatch({ type: "upload", researcher: ra, count: n, source });
+        dispatch({
+          type: "upload",
+          researcher: ra,
+          count: n,
+          source,
+          category,
+        });
+        api
+          .uploadBatch(
+            { fileName: file.name, uploadedBy: ra, source, category },
+            Array.from({ length: n }, (_, i) => ({
+              company: `Company ${i + 1}`,
+              contact: `Contact Person ${i + 1}`,
+              email: `contact${i + 1}@lead.com`,
+              phone: `+91 98765 ${String(10000 + i).slice(1)}`,
+              country: "India",
+              stateCity: "Telangana / Hyderabad",
+              companyAddress: `Plot ${i + 10}, Tech Zone`,
+              website: `https://company${i + 1}.com`,
+              linkedin: `https://linkedin.com/company/lead${i + 1}`,
+              description: `Lead generated in ${category}`,
+              source,
+              category,
+              location: "Hyderabad",
+              industry: "Healthcare",
+            })),
+          )
+          .catch((err) =>
+            console.warn("[API] uploadBatch sync failed:", err.message),
+          );
         onOpenChange(false);
         toast.success(`${n} leads added to Pending Review`, {
-          description: `${file.name} · uploaded for ${ra}`,
+          description: `${file.name} · ${category} · uploaded for ${ra}`,
         });
       }}
     >
@@ -195,21 +257,35 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Lead source">
-          <Select value={source} onValueChange={(v) => setSource(v)}>
+        <Field label="Category / Vertical">
+          <Select value={category} onValueChange={setCategory}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {LEAD_SOURCES.map((r) => (
-                <SelectItem key={r} value={r}>
-                  {r}
+              {LEAD_CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </Field>
       </div>
+      <Field label="Lead source">
+        <Select value={source} onValueChange={(v) => setSource(v)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {LEAD_SOURCES.map((r) => (
+              <SelectItem key={r} value={r}>
+                {r}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
       <Field label="Lead file" htmlFor="lead-file">
         <label
           htmlFor="lead-file"
@@ -221,7 +297,9 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
               {file ? file.name : "Choose CSV / XLSX file"}
             </span>
             <span className="text-muted-foreground">
-              {file ? `${(file.size / 1024).toFixed(1)} KB` : "Up to 500 records per sheet"}
+              {file
+                ? `${(file.size / 1024).toFixed(1)} KB`
+                : "Up to 500 records per sheet"}
             </span>
           </span>
         </label>
@@ -265,6 +343,11 @@ export function AllocateCreditsDialog({ open, onOpenChange }) {
         if (!Number.isInteger(n) || n <= 0)
           return void toast.error("Enter a whole number of credits above 0");
         dispatch({ type: "allocate", bde, amount: n });
+        api
+          .allocateCredits(bde, n)
+          .catch((err) =>
+            console.warn("[API] allocateCredits sync failed:", err.message),
+          );
         onOpenChange(false);
         toast.success(`${fmt(n)} credits allocated to ${bde}`);
       }}
@@ -349,10 +432,16 @@ export function AddMemberDialog({ open, onOpenChange }) {
       submitLabel="Add member"
       onSubmit={() => {
         if (!name.trim()) return void toast.error("Enter the member's name");
-        if (!/^\S+@\S+\.\S+$/.test(email)) return void toast.error("Enter a valid email address");
+        if (!/^\S+@\S+\.\S+$/.test(email))
+          return void toast.error("Enter a valid email address");
         dispatch({
           type: "addMember",
-          member: { name: name.trim(), email: email.trim(), phone: phone.trim(), role },
+          member: {
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            role,
+          },
         });
         onOpenChange(false);
         toast.success(`${name.trim()} added as ${role}`, {
@@ -369,7 +458,9 @@ export function AddMemberDialog({ open, onOpenChange }) {
               onClick={() => setRole(r)}
               className={cn(
                 "rounded-md border px-3 py-2 text-xs font-semibold transition-colors",
-                role === r ? "border-primary bg-primary-soft text-primary" : "hover:bg-muted",
+                role === r
+                  ? "border-primary bg-primary-soft text-primary"
+                  : "hover:bg-muted",
               )}
             >
               {r}

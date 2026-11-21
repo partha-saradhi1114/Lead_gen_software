@@ -7,7 +7,11 @@ import { Pager } from "@/components/common/Pager";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -23,7 +27,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { LEAD_SOURCES, RESEARCHERS, fmt, formatDate } from "@/lib/leadgen/data";
+import { api } from "@/lib/api";
+import {
+  LEAD_CATEGORIES,
+  LEAD_SOURCES,
+  RESEARCHERS,
+  fmt,
+  formatDate,
+} from "@/lib/leadgen/data";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "./RaPerformanceCard";
 import { RejectLeadDialog } from "./RejectLeadDialog";
@@ -42,11 +53,21 @@ const SOURCE_TONE = {
   "Cold Call": "bg-tint-amber text-tint-amber-foreground",
 };
 
+export function getResearcherDisplayName(lead) {
+  const raw = lead?.uploaderName || lead?.uploadedBy || lead?.researcher;
+  if (!raw || typeof raw !== "string") return "Priya M";
+  if (/^[0-9a-fA-F]{24}$/.test(raw) || raw.length > 20) {
+    return "Priya M";
+  }
+  return raw;
+}
+
 export function LeadReviewTable({ pageSize = 6, className }) {
   const { state, dispatch, kpis } = useLeadGen();
   const [tab, setTab] = useState("pending");
   const [query, setQuery] = useState("");
   const [source, setSource] = useState("all");
+  const [category, setCategory] = useState("all");
   const [uploader, setUploader] = useState("all");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(new Set());
@@ -54,7 +75,11 @@ export function LeadReviewTable({ pageSize = 6, className }) {
   const [bulkApprove, setBulkApprove] = useState(false);
   const [detail, setDetail] = useState(null);
 
-  const counts = { pending: kpis.pending, approved: kpis.approved, rejected: kpis.rejected };
+  const counts = {
+    pending: kpis.pending,
+    approved: kpis.approved,
+    rejected: kpis.rejected,
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -62,14 +87,16 @@ export function LeadReviewTable({ pageSize = 6, className }) {
       (l) =>
         l.status === tab &&
         (source === "all" || l.source === source) &&
-        (uploader === "all" || l.uploadedBy === uploader) &&
+        (category === "all" ||
+          (l.category || "Students / Education") === category) &&
+        (uploader === "all" || getResearcherDisplayName(l) === uploader) &&
         (!q ||
           l.company.toLowerCase().includes(q) ||
           l.contact.toLowerCase().includes(q) ||
           l.email.toLowerCase().includes(q) ||
           l.phone.replace(/\s/g, "").includes(q.replace(/\s/g, ""))),
     );
-  }, [state.leads, tab, query, source, uploader]);
+  }, [state.leads, tab, query, source, category, uploader]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(page, pages);
@@ -81,9 +108,13 @@ export function LeadReviewTable({ pageSize = 6, className }) {
   }, [tab, query, source, uploader]);
 
   const pendingRows = rows.filter((r) => r.status === "pending");
-  const allOnPage = pendingRows.length > 0 && pendingRows.every((r) => selected.has(r.id));
+  const allOnPage =
+    pendingRows.length > 0 && pendingRows.every((r) => selected.has(r.id));
   const someOnPage = pendingRows.some((r) => selected.has(r.id));
-  const activeFilters = (source !== "all" ? 1 : 0) + (uploader !== "all" ? 1 : 0);
+  const activeFilters =
+    (source !== "all" ? 1 : 0) +
+    (category !== "all" ? 1 : 0) +
+    (uploader !== "all" ? 1 : 0);
 
   const toggle = (id) =>
     setSelected((s) => {
@@ -102,31 +133,47 @@ export function LeadReviewTable({ pageSize = 6, className }) {
 
   const approve = (ids) => {
     dispatch({ type: "approve", ids });
+    api
+      .approveLeads(ids)
+      .catch((err) =>
+        console.warn("[API] approveLeads sync failed:", err.message),
+      );
     setSelected((s) => {
       const n = new Set(s);
       ids.forEach((id) => n.delete(id));
       return n;
     });
-    toast.success(ids.length > 1 ? `${ids.length} leads approved` : "Lead approved", {
-      description:
-        ids.length === 1
-          ? state.leads.find((l) => l.id === ids[0])?.company
-          : "Moved to the Approved list.",
-    });
+    toast.success(
+      ids.length > 1 ? `${ids.length} leads approved` : "Lead approved",
+      {
+        description:
+          ids.length === 1
+            ? state.leads.find((l) => l.id === ids[0])?.company
+            : "Moved to the Approved list.",
+      },
+    );
   };
 
   const reject = (leads, reason) => {
     const ids = leads.map((l) => l.id);
     dispatch({ type: "reject", ids, reason });
+    api
+      .rejectLeads(ids, reason)
+      .catch((err) =>
+        console.warn("[API] rejectLeads sync failed:", err.message),
+      );
     setSelected((s) => {
       const n = new Set(s);
       ids.forEach((id) => n.delete(id));
       return n;
     });
     setRejectTarget(null);
-    toast.error(leads.length > 1 ? `${leads.length} leads rejected` : "Lead rejected", {
-      description: reason,
-    });
+    toast.error(
+      leads.length > 1 ? `${leads.length} leads rejected` : "Lead rejected",
+      {
+        description: reason,
+      },
+    );
   };
 
   const selectedLeads = state.leads.filter((l) => selected.has(l.id));
@@ -157,7 +204,9 @@ export function LeadReviewTable({ pageSize = 6, className }) {
               )}
             >
               {t.label}{" "}
-              <span className="num ml-0.5 text-muted-foreground">({fmt(counts[t.key])})</span>
+              <span className="num ml-0.5 text-muted-foreground">
+                ({fmt(counts[t.key])})
+              </span>
             </button>
           ))}
         </div>
@@ -201,6 +250,22 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                 </Select>
               </div>
               <div className="space-y-1">
+                <div className="text-xs font-medium">Category / Vertical</div>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {LEAD_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
                 <div className="text-xs font-medium">Uploaded by</div>
                 <Select value={uploader} onValueChange={setUploader}>
                   <SelectTrigger className="h-8 text-xs">
@@ -223,6 +288,7 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                 disabled={activeFilters === 0}
                 onClick={() => {
                   setSource("all");
+                  setCategory("all");
                   setUploader("all");
                 }}
               >
@@ -235,7 +301,9 @@ export function LeadReviewTable({ pageSize = 6, className }) {
 
       {tab === "pending" && selected.size > 0 && (
         <div className="flex items-center gap-2 border-b bg-primary-soft px-4 py-2 text-xs">
-          <span className="num font-semibold text-primary">{selected.size} selected</span>
+          <span className="num font-semibold text-primary">
+            {selected.size} selected
+          </span>
           <button
             className="text-muted-foreground hover:underline"
             onClick={() => setSelected(new Set())}
@@ -243,10 +311,18 @@ export function LeadReviewTable({ pageSize = 6, className }) {
             Clear
           </button>
           <div className="ml-auto flex gap-2">
-            <Button size="xs" variant="success" onClick={() => setBulkApprove(true)}>
+            <Button
+              size="xs"
+              variant="success"
+              onClick={() => setBulkApprove(true)}
+            >
               <Check /> Bulk Approve
             </Button>
-            <Button size="xs" variant="destructive" onClick={() => setRejectTarget(selectedLeads)}>
+            <Button
+              size="xs"
+              variant="destructive"
+              onClick={() => setRejectTarget(selectedLeads)}
+            >
               <X /> Bulk Reject
             </Button>
           </div>
@@ -261,22 +337,39 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                 <Checkbox
                   aria-label="Select all on this page"
                   disabled={tab !== "pending" || pendingRows.length === 0}
-                  checked={allOnPage ? true : someOnPage ? "indeterminate" : false}
+                  checked={
+                    allOnPage ? true : someOnPage ? "indeterminate" : false
+                  }
                   onCheckedChange={toggleAll}
                 />
               </th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">#</th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                #
+              </th>
               <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
                 Company / Entity
               </th>
               <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
                 Contact Person
               </th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Phone</th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Email</th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Source</th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Uploaded By</th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Uploaded On</th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Phone
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Email
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Category
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Source
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Uploaded By
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Uploaded On
+              </th>
               <th className="sticky right-0 bg-muted py-2 pl-3 pr-4 text-right font-semibold shadow-[-8px_0_12px_-10px_var(--color-foreground)]">
                 Action
               </th>
@@ -311,8 +404,17 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                   </button>
                 </td>
                 <td className="whitespace-nowrap px-2 py-2">{l.contact}</td>
-                <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">{l.phone}</td>
-                <td className="max-w-40 truncate px-2 py-2 text-muted-foreground">{l.email}</td>
+                <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">
+                  {l.phone}
+                </td>
+                <td className="max-w-40 truncate px-2 py-2 text-muted-foreground">
+                  {l.email}
+                </td>
+                <td className="px-2 py-2">
+                  <span className="whitespace-nowrap rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground">
+                    {l.category || "Students / Education"}
+                  </span>
+                </td>
                 <td className="px-2 py-2">
                   <span
                     className={cn(
@@ -323,7 +425,9 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                     {l.source}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-2 py-2">{l.uploadedBy}</td>
+                <td className="whitespace-nowrap px-2 py-2">
+                  {getResearcherDisplayName(l)}
+                </td>
                 <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">
                   {formatDate(l.uploadedOn)}
                 </td>
@@ -336,7 +440,8 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                         aria-label="Approve"
                         onClick={() => approve([l.id])}
                       >
-                        <Check /> <span className="hidden md:inline">Approve</span>
+                        <Check />{" "}
+                        <span className="hidden md:inline">Approve</span>
                       </Button>
                       <Button
                         size="xs"
@@ -365,7 +470,10 @@ export function LeadReviewTable({ pageSize = 6, className }) {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                <td
+                  colSpan={11}
+                  className="px-4 py-10 text-center text-sm text-muted-foreground"
+                >
                   No leads match your search or filters.
                 </td>
               </tr>
@@ -377,7 +485,8 @@ export function LeadReviewTable({ pageSize = 6, className }) {
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-xs text-muted-foreground">
         <span className="num">
           Showing {filtered.length === 0 ? 0 : (current - 1) * pageSize + 1}–
-          {Math.min(current * pageSize, filtered.length)} of {fmt(filtered.length)}
+          {Math.min(current * pageSize, filtered.length)} of{" "}
+          {fmt(filtered.length)}
         </span>
         <Pager current={current} pages={pages} onChange={setPage} />
       </div>
@@ -395,11 +504,17 @@ export function LeadReviewTable({ pageSize = 6, className }) {
         open={!!rejectTarget}
         onOpenChange={(o) => !o && setRejectTarget(null)}
         count={rejectTarget?.length ?? 0}
-        companyName={rejectTarget?.length === 1 ? rejectTarget[0]?.company : undefined}
+        companyName={
+          rejectTarget?.length === 1 ? rejectTarget[0]?.company : undefined
+        }
         onConfirm={(reason) => rejectTarget && reject(rejectTarget, reason)}
       />
       <LeadDetailDialog
-        lead={detail ? (state.leads.find((l) => l.id === detail.id) ?? detail) : null}
+        lead={
+          detail
+            ? (state.leads.find((l) => l.id === detail.id) ?? detail)
+            : null
+        }
         onClose={() => setDetail(null)}
         onApprove={(l) => approve([l.id])}
         onReject={(l) => setRejectTarget([l])}
@@ -419,21 +534,30 @@ function LeadDetailDialog({ lead, onClose, onApprove, onReject }) {
                 {lead.company} <StatusBadge status={lead.status} />
               </DialogTitle>
               <DialogDescription>
-                Lead #{lead.id} · uploaded by {lead.uploadedBy}
+                Lead #{lead.id} · uploaded by {getResearcherDisplayName(lead)}
               </DialogDescription>
             </DialogHeader>
-            <dl className="grid grid-cols-[110px_1fr] gap-y-2 text-[13px]">
+            <dl className="grid grid-cols-[120px_1fr] gap-y-2 text-[13px]">
               {[
-                ["Contact", lead.contact],
-                ["Phone", lead.phone],
-                ["Email", lead.email],
-                ["Source", lead.source],
+                ["Category", lead.category],
+                ["Contact Person", lead.contact],
+                ["Phone Number", lead.phone],
+                ["Business Email", lead.email || "—"],
+                ["Country", lead.country || "India"],
+                ["State / City", lead.stateCity || lead.location || "—"],
+                ["Address", lead.companyAddress || "—"],
+                ["Website", lead.website || "—"],
+                ["LinkedIn", lead.linkedin || "—"],
+                ["Description", lead.description || lead.notes || "—"],
+                ["Source", lead.source || "Excel Upload"],
                 ["Uploaded on", formatDate(lead.uploadedOn)],
-                ...(lead.rejectionReason ? [["Reason", lead.rejectionReason]] : []),
+                ...(lead.rejectionReason
+                  ? [["Reason", lead.rejectionReason]]
+                  : []),
               ].map(([k, v]) => (
                 <div key={k} className="contents">
                   <dt className="text-muted-foreground">{k}</dt>
-                  <dd className="font-medium">{v}</dd>
+                  <dd className="font-medium break-words">{v}</dd>
                 </div>
               ))}
             </dl>

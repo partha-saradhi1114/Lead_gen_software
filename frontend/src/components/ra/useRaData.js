@@ -7,13 +7,34 @@ import { batchCounts, batchStatus, selectRaKpis } from "@/lib/leadgen/reducer";
 export function useRaData() {
   const { state, dispatch } = useLeadGen();
   return useMemo(() => {
-    const leads = state.leads.filter((l) => l.uploadedBy === CURRENT_RA);
-    const batches = state.batches
-      .filter((b) => b.researcher === CURRENT_RA)
+    const storedUser = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("user") || "{}");
+      } catch {
+        return {};
+      }
+    })();
+    const ra =
+      storedUser.role === "ra" && storedUser.name
+        ? storedUser.name
+        : CURRENT_RA;
+    const leads = state.leads.filter(
+      (l) =>
+        l.uploadedBy === ra || l.researcher === ra || l.uploaderName === ra,
+    );
+    const batches = (state.batches || [])
+      .filter((b) => b.researcher === ra || b.uploaderName === ra)
       .map((b) => {
-        const c = batchCounts(leads, b.id);
+        const c = batchCounts(leads, b.id || b.batchId);
         return { ...b, ...c, status: batchStatus(b, c) };
       });
-    return { leads, batches, kpis: selectRaKpis(state, CURRENT_RA), state, dispatch };
+    return {
+      ra,
+      leads,
+      batches,
+      kpis: selectRaKpis(state, ra),
+      state,
+      dispatch,
+    };
   }, [state, dispatch]);
 }

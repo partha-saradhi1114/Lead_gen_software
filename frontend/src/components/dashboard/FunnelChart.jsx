@@ -1,8 +1,18 @@
 import { ArrowDownRight } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { fmt, pct } from "@/lib/leadgen/data";
 
-const FILLS = ["bg-funnel-1", "bg-funnel-2", "bg-funnel-3", "bg-funnel-4", "bg-funnel-5"];
+const FILLS = [
+  "bg-funnel-1",
+  "bg-funnel-2",
+  "bg-funnel-3",
+  "bg-funnel-4",
+  "bg-funnel-5",
+];
 
 export function FunnelChart({ stages }) {
   const top = stages[0]?.value ?? 0;
@@ -14,8 +24,13 @@ export function FunnelChart({ stages }) {
         const prev = i > 0 ? (stages[i - 1]?.value ?? null) : null;
         const drop = prev ? 100 - pct(s.value, prev) : null;
         return (
-          <div key={s.label} className="grid grid-cols-[74px_1fr_64px] items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+          <div
+            key={s.label}
+            className="grid grid-cols-[74px_1fr_64px] items-center gap-2"
+          >
+            <span className="text-xs font-medium text-muted-foreground">
+              {s.label}
+            </span>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex justify-center">
@@ -35,7 +50,11 @@ export function FunnelChart({ stages }) {
                   {s.label}: {fmt(s.value)}
                 </div>
                 <div>{share.toFixed(1)}% of uploaded</div>
-                {prev !== null && <div>{pct(s.value, prev).toFixed(1)}% from previous stage</div>}
+                {prev !== null && (
+                  <div>
+                    {pct(s.value, prev).toFixed(1)}% from previous stage
+                  </div>
+                )}
               </TooltipContent>
             </Tooltip>
             <span className="num text-right text-[11px] font-semibold">
