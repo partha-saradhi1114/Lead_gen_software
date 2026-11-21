@@ -23,14 +23,25 @@ export async function readSheetFile(file, onProgress) {
 
 export async function downloadTemplate() {
   const XLSX = await loadXlsx();
-  const head = TEMPLATE_FIELDS.map((f) => (f.required ? `${f.label} *` : `${f.label} (optional)`));
-  const ws = XLSX.utils.aoa_to_sheet([head, TEMPLATE_FIELDS.map((f) => f.example)]);
-  ws["!cols"] = TEMPLATE_FIELDS.map((f) => ({ wch: Math.max(16, f.example.length + 2) }));
+  const head = TEMPLATE_FIELDS.map((f) =>
+    f.required ? `${f.label} *` : `${f.label} (optional)`,
+  );
+  const ws = XLSX.utils.aoa_to_sheet([
+    head,
+    TEMPLATE_FIELDS.map((f) => f.example),
+  ]);
+  ws["!cols"] = TEMPLATE_FIELDS.map((f) => ({
+    wch: Math.max(16, f.example.length + 2),
+  }));
   const guide = XLSX.utils.aoa_to_sheet([
     ["LeadGen Pro – Lead Upload Template"],
     [""],
     ["Field", "Required", "Example"],
-    ...TEMPLATE_FIELDS.map((f) => [f.label, f.required ? "Yes" : "No", f.example]),
+    ...TEMPLATE_FIELDS.map((f) => [
+      f.label,
+      f.required ? "Yes" : "No",
+      f.example,
+    ]),
     [""],
     ["Rules"],
     ["Phone: 10-digit Indian mobile, with or without +91."],

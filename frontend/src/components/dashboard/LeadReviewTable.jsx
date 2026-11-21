@@ -7,7 +7,11 @@ import { Pager } from "@/components/common/Pager";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -54,7 +58,11 @@ export function LeadReviewTable({ pageSize = 6, className }) {
   const [bulkApprove, setBulkApprove] = useState(false);
   const [detail, setDetail] = useState(null);
 
-  const counts = { pending: kpis.pending, approved: kpis.approved, rejected: kpis.rejected };
+  const counts = {
+    pending: kpis.pending,
+    approved: kpis.approved,
+    rejected: kpis.rejected,
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -81,9 +89,11 @@ export function LeadReviewTable({ pageSize = 6, className }) {
   }, [tab, query, source, uploader]);
 
   const pendingRows = rows.filter((r) => r.status === "pending");
-  const allOnPage = pendingRows.length > 0 && pendingRows.every((r) => selected.has(r.id));
+  const allOnPage =
+    pendingRows.length > 0 && pendingRows.every((r) => selected.has(r.id));
   const someOnPage = pendingRows.some((r) => selected.has(r.id));
-  const activeFilters = (source !== "all" ? 1 : 0) + (uploader !== "all" ? 1 : 0);
+  const activeFilters =
+    (source !== "all" ? 1 : 0) + (uploader !== "all" ? 1 : 0);
 
   const toggle = (id) =>
     setSelected((s) => {
@@ -107,12 +117,15 @@ export function LeadReviewTable({ pageSize = 6, className }) {
       ids.forEach((id) => n.delete(id));
       return n;
     });
-    toast.success(ids.length > 1 ? `${ids.length} leads approved` : "Lead approved", {
-      description:
-        ids.length === 1
-          ? state.leads.find((l) => l.id === ids[0])?.company
-          : "Moved to the Approved list.",
-    });
+    toast.success(
+      ids.length > 1 ? `${ids.length} leads approved` : "Lead approved",
+      {
+        description:
+          ids.length === 1
+            ? state.leads.find((l) => l.id === ids[0])?.company
+            : "Moved to the Approved list.",
+      },
+    );
   };
 
   const reject = (leads, reason) => {
@@ -124,9 +137,12 @@ export function LeadReviewTable({ pageSize = 6, className }) {
       return n;
     });
     setRejectTarget(null);
-    toast.error(leads.length > 1 ? `${leads.length} leads rejected` : "Lead rejected", {
-      description: reason,
-    });
+    toast.error(
+      leads.length > 1 ? `${leads.length} leads rejected` : "Lead rejected",
+      {
+        description: reason,
+      },
+    );
   };
 
   const selectedLeads = state.leads.filter((l) => selected.has(l.id));
@@ -157,7 +173,9 @@ export function LeadReviewTable({ pageSize = 6, className }) {
               )}
             >
               {t.label}{" "}
-              <span className="num ml-0.5 text-muted-foreground">({fmt(counts[t.key])})</span>
+              <span className="num ml-0.5 text-muted-foreground">
+                ({fmt(counts[t.key])})
+              </span>
             </button>
           ))}
         </div>
@@ -235,7 +253,9 @@ export function LeadReviewTable({ pageSize = 6, className }) {
 
       {tab === "pending" && selected.size > 0 && (
         <div className="flex items-center gap-2 border-b bg-primary-soft px-4 py-2 text-xs">
-          <span className="num font-semibold text-primary">{selected.size} selected</span>
+          <span className="num font-semibold text-primary">
+            {selected.size} selected
+          </span>
           <button
             className="text-muted-foreground hover:underline"
             onClick={() => setSelected(new Set())}
@@ -243,10 +263,18 @@ export function LeadReviewTable({ pageSize = 6, className }) {
             Clear
           </button>
           <div className="ml-auto flex gap-2">
-            <Button size="xs" variant="success" onClick={() => setBulkApprove(true)}>
+            <Button
+              size="xs"
+              variant="success"
+              onClick={() => setBulkApprove(true)}
+            >
               <Check /> Bulk Approve
             </Button>
-            <Button size="xs" variant="destructive" onClick={() => setRejectTarget(selectedLeads)}>
+            <Button
+              size="xs"
+              variant="destructive"
+              onClick={() => setRejectTarget(selectedLeads)}
+            >
               <X /> Bulk Reject
             </Button>
           </div>
@@ -261,22 +289,36 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                 <Checkbox
                   aria-label="Select all on this page"
                   disabled={tab !== "pending" || pendingRows.length === 0}
-                  checked={allOnPage ? true : someOnPage ? "indeterminate" : false}
+                  checked={
+                    allOnPage ? true : someOnPage ? "indeterminate" : false
+                  }
                   onCheckedChange={toggleAll}
                 />
               </th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">#</th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                #
+              </th>
               <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
                 Company / Entity
               </th>
               <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
                 Contact Person
               </th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Phone</th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Email</th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Source</th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Uploaded By</th>
-              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">Uploaded On</th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Phone
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Email
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Source
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Uploaded By
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Uploaded On
+              </th>
               <th className="sticky right-0 bg-muted py-2 pl-3 pr-4 text-right font-semibold shadow-[-8px_0_12px_-10px_var(--color-foreground)]">
                 Action
               </th>
@@ -311,8 +353,12 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                   </button>
                 </td>
                 <td className="whitespace-nowrap px-2 py-2">{l.contact}</td>
-                <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">{l.phone}</td>
-                <td className="max-w-40 truncate px-2 py-2 text-muted-foreground">{l.email}</td>
+                <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">
+                  {l.phone}
+                </td>
+                <td className="max-w-40 truncate px-2 py-2 text-muted-foreground">
+                  {l.email}
+                </td>
                 <td className="px-2 py-2">
                   <span
                     className={cn(
@@ -336,7 +382,8 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                         aria-label="Approve"
                         onClick={() => approve([l.id])}
                       >
-                        <Check /> <span className="hidden md:inline">Approve</span>
+                        <Check />{" "}
+                        <span className="hidden md:inline">Approve</span>
                       </Button>
                       <Button
                         size="xs"
@@ -365,7 +412,10 @@ export function LeadReviewTable({ pageSize = 6, className }) {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                <td
+                  colSpan={10}
+                  className="px-4 py-10 text-center text-sm text-muted-foreground"
+                >
                   No leads match your search or filters.
                 </td>
               </tr>
@@ -377,7 +427,8 @@ export function LeadReviewTable({ pageSize = 6, className }) {
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-xs text-muted-foreground">
         <span className="num">
           Showing {filtered.length === 0 ? 0 : (current - 1) * pageSize + 1}–
-          {Math.min(current * pageSize, filtered.length)} of {fmt(filtered.length)}
+          {Math.min(current * pageSize, filtered.length)} of{" "}
+          {fmt(filtered.length)}
         </span>
         <Pager current={current} pages={pages} onChange={setPage} />
       </div>
@@ -395,11 +446,17 @@ export function LeadReviewTable({ pageSize = 6, className }) {
         open={!!rejectTarget}
         onOpenChange={(o) => !o && setRejectTarget(null)}
         count={rejectTarget?.length ?? 0}
-        companyName={rejectTarget?.length === 1 ? rejectTarget[0]?.company : undefined}
+        companyName={
+          rejectTarget?.length === 1 ? rejectTarget[0]?.company : undefined
+        }
         onConfirm={(reason) => rejectTarget && reject(rejectTarget, reason)}
       />
       <LeadDetailDialog
-        lead={detail ? (state.leads.find((l) => l.id === detail.id) ?? detail) : null}
+        lead={
+          detail
+            ? (state.leads.find((l) => l.id === detail.id) ?? detail)
+            : null
+        }
         onClose={() => setDetail(null)}
         onApprove={(l) => approve([l.id])}
         onReject={(l) => setRejectTarget([l])}
@@ -429,7 +486,9 @@ function LeadDetailDialog({ lead, onClose, onApprove, onReject }) {
                 ["Email", lead.email],
                 ["Source", lead.source],
                 ["Uploaded on", formatDate(lead.uploadedOn)],
-                ...(lead.rejectionReason ? [["Reason", lead.rejectionReason]] : []),
+                ...(lead.rejectionReason
+                  ? [["Reason", lead.rejectionReason]]
+                  : []),
               ].map(([k, v]) => (
                 <div key={k} className="contents">
                   <dt className="text-muted-foreground">{k}</dt>

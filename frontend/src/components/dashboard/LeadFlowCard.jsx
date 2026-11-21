@@ -1,7 +1,12 @@
 import { GitBranch } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { FUNNEL_STATIC, STATUS_DISTRIBUTION, fmt, pct } from "@/lib/leadgen/data";
+import {
+  FUNNEL_STATIC,
+  STATUS_DISTRIBUTION,
+  fmt,
+  pct,
+} from "@/lib/leadgen/data";
 import { FunnelChart } from "./FunnelChart";
 import { DonutChart } from "./DonutChart";
 
@@ -44,17 +49,25 @@ export function LeadFlowCard() {
               <div className="num text-sm font-bold">
                 {pct(kpis.approved, kpis.total).toFixed(1)}%
               </div>
-              <div className="text-[11px] text-muted-foreground">Approval rate</div>
+              <div className="text-[11px] text-muted-foreground">
+                Approval rate
+              </div>
             </div>
             <div>
               <div className="num text-sm font-bold">
                 {pct(FUNNEL_STATIC.connected, FUNNEL_STATIC.viewed).toFixed(1)}%
               </div>
-              <div className="text-[11px] text-muted-foreground">Connect rate</div>
+              <div className="text-[11px] text-muted-foreground">
+                Connect rate
+              </div>
             </div>
             <div>
-              <div className="num text-sm font-bold">{fmt(FUNNEL_STATIC.interested)}</div>
-              <div className="text-[11px] text-muted-foreground">Interested</div>
+              <div className="num text-sm font-bold">
+                {fmt(FUNNEL_STATIC.interested)}
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Interested
+              </div>
             </div>
           </div>
         </div>

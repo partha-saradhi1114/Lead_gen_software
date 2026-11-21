@@ -14,6 +14,12 @@ export function useRaData() {
         const c = batchCounts(leads, b.id);
         return { ...b, ...c, status: batchStatus(b, c) };
       });
-    return { leads, batches, kpis: selectRaKpis(state, CURRENT_RA), state, dispatch };
+    return {
+      leads,
+      batches,
+      kpis: selectRaKpis(state, CURRENT_RA),
+      state,
+      dispatch,
+    };
   }, [state, dispatch]);
 }

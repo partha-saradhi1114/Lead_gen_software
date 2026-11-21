@@ -103,7 +103,8 @@ export function AppHeader() {
             email: "sriram@arahinfotech.com",
           };
 
-  const rangeLabel = state.dateRange === "Custom" && customLabel ? customLabel : state.dateRange;
+  const rangeLabel =
+    state.dateRange === "Custom" && customLabel ? customLabel : state.dateRange;
 
   return (
     <header className="sticky top-0 z-20 flex h-15 items-center gap-3 border-b bg-card/95 px-4 backdrop-blur md:px-5">
@@ -128,7 +129,9 @@ export function AppHeader() {
           )}
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-[15px] font-bold leading-tight">{title}</h1>
+          <h1 className="truncate text-[15px] font-bold leading-tight">
+            {title}
+          </h1>
           <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
         </div>
       </div>
@@ -163,7 +166,11 @@ export function AppHeader() {
                 }}
               >
                 {RANGES.map((r) => (
-                  <DropdownMenuRadioItem key={r} value={r} className="text-[13px]">
+                  <DropdownMenuRadioItem
+                    key={r}
+                    value={r}
+                    className="text-[13px]"
+                  >
                     {r}
                   </DropdownMenuRadioItem>
                 ))}
@@ -209,17 +216,26 @@ export function AppHeader() {
                     setUnread((u) => u.filter((id) => id !== n.id));
                   }}
                 >
-                  <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", TONE[n.tone])} />
+                  <span
+                    className={cn(
+                      "mt-1.5 size-2 shrink-0 rounded-full",
+                      TONE[n.tone],
+                    )}
+                  />
                   <div className="min-w-0 flex-1">
                     <div
                       className={cn(
                         "text-[13px] leading-snug",
-                        unread.includes(n.id) ? "font-semibold" : "text-muted-foreground",
+                        unread.includes(n.id)
+                          ? "font-semibold"
+                          : "text-muted-foreground",
                       )}
                     >
                       {n.title}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">{n.time}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {n.time}
+                    </div>
                   </div>
                 </DropdownMenuItem>
               ))}
@@ -234,7 +250,9 @@ export function AppHeader() {
                 {user.initials}
               </span>
               <span className="hidden text-left md:block">
-                <span className="block text-[13px] font-semibold leading-tight">{user.name}</span>
+                <span className="block text-[13px] font-semibold leading-tight">
+                  {user.name}
+                </span>
                 <span className="block text-[11px] leading-tight text-muted-foreground">
                   {user.role}
                 </span>
@@ -245,16 +263,22 @@ export function AppHeader() {
           <DropdownMenuContent align="end" className="w-60">
             <DropdownMenuLabel>
               <div className="text-sm font-semibold">{user.name}</div>
-              <div className="text-xs font-normal text-muted-foreground">{user.email}</div>
+              <div className="text-xs font-normal text-muted-foreground">
+                {user.email}
+              </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() => toast.info("Profile page arrives in the next iteration")}
+              onSelect={() =>
+                toast.info("Profile page arrives in the next iteration")
+              }
             >
               <User /> My Profile
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() => toast.info("Account settings arrive in the next iteration")}
+              onSelect={() =>
+                toast.info("Account settings arrive in the next iteration")
+              }
             >
               <Settings /> Account Settings
             </DropdownMenuItem>
@@ -276,16 +300,28 @@ export function AppHeader() {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Custom date range</DialogTitle>
-            <DialogDescription>Pick the period to show across the dashboard.</DialogDescription>
+            <DialogDescription>
+              Pick the period to show across the dashboard.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="from">From</Label>
-              <Input id="from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+              <Input
+                id="from"
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="to">To</Label>
-              <Input id="to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+              <Input
+                id="to"
+                type="date"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter>
@@ -299,7 +335,9 @@ export function AppHeader() {
                   return;
                 }
                 dispatch({ type: "setDateRange", range: "Custom" });
-                setCustomLabel(`${formatDate(from).slice(0, 6)} – ${formatDate(to).slice(0, 6)}`);
+                setCustomLabel(
+                  `${formatDate(from).slice(0, 6)} – ${formatDate(to).slice(0, 6)}`,
+                );
                 setCustomOpen(false);
                 toast.success("Custom date range applied");
               }}

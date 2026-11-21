@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
 import {
   Briefcase,
   Crown,
@@ -14,7 +15,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 const DEMO_ROLES = [
   {
     role: "admin",
@@ -58,20 +65,35 @@ export default function LoginPage() {
   const handleSelectRole = (r) => {
     setSelectedRole(r);
     setEmail(r.email);
+    setPassword("Password@123");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
       toast.error("Please enter a valid email address");
       return;
     }
-    setLoading(true);
-    setTimeout(() => {
+    const pwdToSubmit = password === "••••••••••••" ? "Password@123" : password;
+    try {
+      setLoading(true);
+      const data = await api.login(email.trim(), pwdToSubmit);
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        toast.success(`Welcome back, ${data.user.name}!`);
+        if (data.user.role === "admin") navigate("/");
+        else if (data.user.role === "ra") navigate("/ra");
+        else if (data.user.role === "bde") navigate("/bde");
+        else navigate(selectedRole.path);
+      }
+    } catch (err) {
+      toast.error(
+        err.message || "Failed to sign in. Please check credentials.",
+      );
+    } finally {
       setLoading(false);
-      toast.success(`Welcome back! Signed in as ${selectedRole.title}`);
-      navigate(selectedRole.path);
-    }, 400);
+    }
   };
 
   return (
@@ -85,7 +107,9 @@ export default function LoginPage() {
             </div>
             <span>LeadGen Pro</span>
           </div>
-          <p className="mt-2 text-xs text-slate-400">Enterprise Lead & Analyst Operations</p>
+          <p className="mt-2 text-xs text-slate-400">
+            Enterprise Lead & Analyst Operations
+          </p>
         </div>
 
         <div className="relative z-10 max-w-md space-y-4">
@@ -97,8 +121,8 @@ export default function LoginPage() {
             Streamlined Lead Quality, Allocation & BDE Outreach
           </h2>
           <p className="text-sm leading-relaxed text-slate-400">
-            One unified platform connecting Master Admin operations, Research Analyst data
-            pipelines, and BDE conversion workflows.
+            One unified platform connecting Master Admin operations, Research
+            Analyst data pipelines, and BDE conversion workflows.
           </p>
         </div>
 
@@ -111,7 +135,9 @@ export default function LoginPage() {
       <div className="flex flex-1 flex-col items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-md space-y-6">
           <div className="space-y-1 text-center sm:text-left">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Sign In</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Sign In
+            </h1>
             <p className="text-sm text-muted-foreground">
               Select your role to explore the unified workspace
             </p>
@@ -119,7 +145,9 @@ export default function LoginPage() {
 
           {/* Quick Role Selection Cards */}
           <div className="space-y-2.5">
-            <Label className="text-xs font-semibold text-muted-foreground">Select Persona</Label>
+            <Label className="text-xs font-semibold text-muted-foreground">
+              Select Persona
+            </Label>
             <div className="grid gap-2 sm:grid-cols-3">
               {DEMO_ROLES.map((r) => {
                 const Icon = r.icon;
@@ -140,7 +168,9 @@ export default function LoginPage() {
                     >
                       <Icon className="size-4" />
                     </div>
-                    <span className="text-xs font-semibold text-foreground">{r.title}</span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {r.title}
+                    </span>
                     <span className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
                       {r.role.toUpperCase()}
                     </span>
@@ -155,8 +185,12 @@ export default function LoginPage() {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold">{selectedRole.title}</CardTitle>
-                  <CardDescription className="text-xs">{selectedRole.desc}</CardDescription>
+                  <CardTitle className="text-base font-semibold">
+                    {selectedRole.title}
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    {selectedRole.desc}
+                  </CardDescription>
                 </div>
                 <span
                   className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${selectedRole.badgeColor}`}
@@ -191,7 +225,9 @@ export default function LoginPage() {
                     </Label>
                     <button
                       type="button"
-                      onClick={() => toast.info("Demo mode: password not required")}
+                      onClick={() =>
+                        toast.info("Demo mode: password not required")
+                      }
                       className="text-[11px] text-primary hover:underline"
                     >
                       Forgot?
@@ -228,7 +264,8 @@ export default function LoginPage() {
           </Card>
 
           <div className="text-center text-xs text-muted-foreground">
-            Switching between workspaces is also available inside the header menu anytime.
+            Switching between workspaces is also available inside the header
+            menu anytime.
           </div>
         </div>
       </div>

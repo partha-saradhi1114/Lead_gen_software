@@ -12,14 +12,26 @@ export function EmptyState({ title, hint, action }) {
         <Inbox className="size-5" />
       </div>
       <div className="mt-3 text-sm font-semibold">{title}</div>
-      {hint && <div className="mt-1 max-w-sm text-xs text-muted-foreground">{hint}</div>}
+      {hint && (
+        <div className="mt-1 max-w-sm text-xs text-muted-foreground">
+          {hint}
+        </div>
+      )}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
 
 /** Paginated compact table with loading skeleton and empty state. Resets to page 1 when `resetKey` changes. */
-export function DataTable({ columns, rows, rowKey, pageSize = 10, resetKey, empty, rowClassName }) {
+export function DataTable({
+  columns,
+  rows,
+  rowKey,
+  pageSize = 10,
+  resetKey,
+  empty,
+  rowClassName,
+}) {
   const hydrated = true;
   const [page, setPage] = useState(1);
   useEffect(() => setPage(1), [resetKey]);
@@ -51,7 +63,10 @@ export function DataTable({ columns, rows, rowKey, pageSize = 10, resetKey, empt
               ? Array.from({ length: Math.min(pageSize, 6) }, (_, i) => (
                   <tr key={i} className="border-b border-border/70">
                     {columns.map((c) => (
-                      <td key={c.key} className="px-2.5 py-3 first:pl-4 last:pr-4">
+                      <td
+                        key={c.key}
+                        className="px-2.5 py-3 first:pl-4 last:pr-4"
+                      >
                         <Skeleton className="h-3.5 w-full max-w-28" />
                       </td>
                     ))}
@@ -84,14 +99,17 @@ export function DataTable({ columns, rows, rowKey, pageSize = 10, resetKey, empt
         {hydrated &&
           rows.length === 0 &&
           (empty ?? (
-            <EmptyState title="Nothing to show" hint="Try changing your search or filters." />
+            <EmptyState
+              title="Nothing to show"
+              hint="Try changing your search or filters."
+            />
           ))}
       </div>
       {rows.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-xs text-muted-foreground">
           <span className="num">
-            Showing {(current - 1) * pageSize + 1}–{Math.min(current * pageSize, rows.length)} of{" "}
-            {fmt(rows.length)}
+            Showing {(current - 1) * pageSize + 1}–
+            {Math.min(current * pageSize, rows.length)} of {fmt(rows.length)}
           </span>
           <Pager current={current} pages={pages} onChange={setPage} />
         </div>

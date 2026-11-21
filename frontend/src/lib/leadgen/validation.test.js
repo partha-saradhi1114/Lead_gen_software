@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { checkFile, rowsFromSheet, sampleSheet, summarize, validateRows } from "./validation";
+import {
+  checkFile,
+  rowsFromSheet,
+  sampleSheet,
+  summarize,
+  validateRows,
+} from "./validation";
 
 const existing = [
   {
@@ -39,11 +45,18 @@ describe("RA upload validation", () => {
   });
 
   it("flags missing required fields, invalid phone and invalid email", () => {
-    const { rows } = rowsFromSheet([head, row({ l: "", ph: "12345", e: "bad@x" })]);
+    const { rows } = rowsFromSheet([
+      head,
+      row({ l: "", ph: "12345", e: "bad@x" }),
+    ]);
     const [r] = validateRows(rows, []);
     expect(r?.status).toBe("invalid");
     expect(r?.errors).toEqual(
-      expect.arrayContaining(["Missing Location", "Invalid phone number", "Invalid email"]),
+      expect.arrayContaining([
+        "Missing Location",
+        "Invalid phone number",
+        "Invalid email",
+      ]),
     );
   });
 
@@ -63,13 +76,19 @@ describe("RA upload validation", () => {
   it("flags records that already exist in LeadGen Pro", () => {
     const { rows } = rowsFromSheet([
       head,
-      row({ c: "ABC Hospitals Pvt Ltd", p: "Mr. Rajesh Kumar", ph: "98765 43210" }),
+      row({
+        c: "ABC Hospitals Pvt Ltd",
+        p: "Mr. Rajesh Kumar",
+        ph: "98765 43210",
+      }),
     ]);
     expect(validateRows(rows, existing)[0]?.duplicates).toHaveLength(2);
   });
 
   it("sample sheet produces a mix of valid, invalid and duplicate rows", () => {
-    const s = summarize(validateRows(rowsFromSheet(sampleSheet()).rows, existing));
+    const s = summarize(
+      validateRows(rowsFromSheet(sampleSheet()).rows, existing),
+    );
     expect(s.total).toBe(25);
     expect(s.valid + s.invalid + s.duplicate).toBe(25);
     expect(s.invalid).toBeGreaterThan(0);

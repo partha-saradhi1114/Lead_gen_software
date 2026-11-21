@@ -40,7 +40,11 @@ export default function BdeLeads() {
         subtitle={`Unlocking a contact uses ${UNLOCK_COST} credit · ${fmt(kpis.available)} credits available`}
       />
       <Toolbar>
-        <SearchBox value={q} onChange={setQ} placeholder="Search company or contact…" />
+        <SearchBox
+          value={q}
+          onChange={setQ}
+          placeholder="Search company or contact…"
+        />
         <FilterSelect
           value={stage}
           onChange={setStage}
@@ -60,7 +64,12 @@ export default function BdeLeads() {
         rows={list}
         rowKey={(r) => r.leadId}
         resetKey={`${q}|${stage}|${industry}`}
-        empty={<EmptyState title="No leads match" hint="Change the search or filters." />}
+        empty={
+          <EmptyState
+            title="No leads match"
+            hint="Change the search or filters."
+          />
+        }
         columns={[
           {
             key: "c",
@@ -74,7 +83,11 @@ export default function BdeLeads() {
             className: "whitespace-nowrap",
             render: (r) => r.lead.contact,
           },
-          { key: "i", header: "Industry", render: (r) => r.lead.industry ?? "—" },
+          {
+            key: "i",
+            header: "Industry",
+            render: (r) => r.lead.industry ?? "—",
+          },
           {
             key: "ph",
             header: "Phone",
@@ -93,12 +106,17 @@ export default function BdeLeads() {
             className: "whitespace-nowrap text-muted-foreground",
             render: (r) => formatDate(r.assignedOn),
           },
-          { key: "s", header: "Stage", render: (r) => <StageBadge stage={r.stage} /> },
+          {
+            key: "s",
+            header: "Stage",
+            render: (r) => <StageBadge stage={r.stage} />,
+          },
           {
             key: "f",
             header: "Next follow-up",
             className: "whitespace-nowrap text-muted-foreground",
-            render: (r) => (r.followUp && !r.followUp.done ? formatDate(r.followUp.on) : "—"),
+            render: (r) =>
+              r.followUp && !r.followUp.done ? formatDate(r.followUp.on) : "—",
           },
           {
             key: "x",
@@ -106,7 +124,11 @@ export default function BdeLeads() {
             align: "right",
             render: (r) =>
               r.unlocked ? (
-                <Button size="xs" variant="soft" onClick={() => setEditId(r.leadId)}>
+                <Button
+                  size="xs"
+                  variant="soft"
+                  onClick={() => setEditId(r.leadId)}
+                >
                   <Pencil /> Update
                 </Button>
               ) : (

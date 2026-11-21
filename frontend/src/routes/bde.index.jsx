@@ -103,7 +103,9 @@ export default function BdeDashboard() {
             {due.map((r) => (
               <li key={r.leadId} className="flex items-center gap-3 py-2">
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] font-semibold">{r.lead.company}</div>
+                  <div className="truncate text-[13px] font-semibold">
+                    {r.lead.company}
+                  </div>
                   <div className="truncate text-[11px] text-muted-foreground">
                     {r.lead.contact} · {r.followUp.note}
                   </div>
@@ -112,10 +114,14 @@ export default function BdeDashboard() {
                 <span
                   className={
                     "whitespace-nowrap text-[11px] font-semibold " +
-                    (r.bucket === "overdue" ? "text-destructive" : "text-primary")
+                    (r.bucket === "overdue"
+                      ? "text-destructive"
+                      : "text-primary")
                   }
                 >
-                  {r.bucket === "overdue" ? `Overdue · ${formatDate(r.followUp.on)}` : "Today"}
+                  {r.bucket === "overdue"
+                    ? `Overdue · ${formatDate(r.followUp.on)}`
+                    : "Today"}
                 </span>
               </li>
             ))}
@@ -145,7 +151,9 @@ export default function BdeDashboard() {
                     <StageBadge stage={s} />
                   </div>
                   <Progress value={pct(n, rows.length)} className="h-1.5" />
-                  <span className="num w-8 text-right text-xs font-semibold">{n}</span>
+                  <span className="num w-8 text-right text-xs font-semibold">
+                    {n}
+                  </span>
                 </div>
               );
             })}

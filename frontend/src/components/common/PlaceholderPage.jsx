@@ -11,7 +11,9 @@ export function PlaceholderPage({ title, description, children }) {
           <Construction className="size-6" />
         </div>
         <h2 className="mt-4 text-base font-semibold">{title}</h2>
-        <p className="mt-1 max-w-md text-sm text-muted-foreground">{description}</p>
+        <p className="mt-1 max-w-md text-sm text-muted-foreground">
+          {description}
+        </p>
         <Button asChild variant="soft" size="sm" className="mt-5">
           <Link to="/">Back to Dashboard</Link>
         </Button>

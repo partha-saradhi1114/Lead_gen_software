@@ -3,7 +3,10 @@ import { UserPlus, Users } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { Button } from "@/components/ui/button";
 import { AddMemberDialog } from "@/components/dashboard/QuickActions";
-import { PerformanceTable, PersonCell } from "@/components/dashboard/PerformanceTable";
+import {
+  PerformanceTable,
+  PersonCell,
+} from "@/components/dashboard/PerformanceTable";
 import { useLeadGen } from "@/lib/leadgen/store";
 
 export default function TeamPage() {
@@ -29,7 +32,11 @@ export default function TeamPage() {
         rows={state.team}
         rowKey={(m) => m.email}
         columns={[
-          { key: "n", header: "Name", render: (m) => <PersonCell name={m.name} /> },
+          {
+            key: "n",
+            header: "Name",
+            render: (m) => <PersonCell name={m.name} />,
+          },
           {
             key: "r",
             header: "Role",
@@ -44,12 +51,16 @@ export default function TeamPage() {
           {
             key: "e",
             header: "Email",
-            render: (m) => <span className="text-muted-foreground">{m.email}</span>,
+            render: (m) => (
+              <span className="text-muted-foreground">{m.email}</span>
+            ),
           },
           {
             key: "p",
             header: "Phone",
-            render: (m) => <span className="text-muted-foreground">{m.phone || "—"}</span>,
+            render: (m) => (
+              <span className="text-muted-foreground">{m.phone || "—"}</span>
+            ),
           },
         ]}
       />

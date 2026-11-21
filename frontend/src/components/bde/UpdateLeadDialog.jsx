@@ -102,7 +102,9 @@ export function UpdateLeadDialog({ row, onClose, dispatch, bde }) {
               <ul className="space-y-1">
                 {[...row.activity].reverse().map((a, i) => (
                   <li key={i} className="text-xs">
-                    <span className="text-muted-foreground">{formatDate(a.on)} · </span>
+                    <span className="text-muted-foreground">
+                      {formatDate(a.on)} ·{" "}
+                    </span>
                     {a.text}
                   </li>
                 ))}

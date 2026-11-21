@@ -15,6 +15,10 @@ dist-ssr
 .tanstack
 **/.tanstack
 .nitro
+.env
+**/.env
+backend/.env
+.env.*
 *.local
 
 # Wrangler / Cloudflare

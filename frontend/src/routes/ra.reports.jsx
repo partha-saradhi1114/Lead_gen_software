@@ -11,7 +11,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CheckCircle2, Copy, Download, Gauge, Percent, Upload, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Copy,
+  Download,
+  Gauge,
+  Percent,
+  Upload,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { KpiCard } from "@/components/dashboard/KpiCard";
@@ -23,7 +31,11 @@ import { TODAY, fmt, formatDate, isoDaysBefore, pct } from "@/lib/leadgen/data";
 import { exportRows } from "@/lib/leadgen/excel";
 
 const RANGES = ["Last 14 Days", "Last 30 Days", "Last 60 Days"];
-const tooltipStyle = { borderRadius: 8, border: "1px solid var(--border)", fontSize: 12 };
+const tooltipStyle = {
+  borderRadius: 8,
+  border: "1px solid var(--border)",
+  fontSize: 12,
+};
 
 function ChartBox({ children }) {
   return (
@@ -38,7 +50,8 @@ function ChartBox({ children }) {
 export default function Reports() {
   const { leads, batches } = useRaData();
   const [range, setRange] = useState("Last 30 Days");
-  const days = range === "Last 14 Days" ? 14 : range === "Last 60 Days" ? 60 : 30;
+  const days =
+    range === "Last 14 Days" ? 14 : range === "Last 60 Days" ? 60 : 30;
   const start = isoDaysBefore(TODAY, days - 1);
 
   const data = useMemo(() => {
@@ -46,7 +59,13 @@ export default function Reports() {
     const bs = batches.filter((b) => !b.draft && b.uploadedOn >= start);
     const daily = Array.from({ length: days }, (_, i) => {
       const d = isoDaysBefore(TODAY, days - 1 - i);
-      return { date: formatDate(d).slice(0, 6), iso: d, uploaded: 0, approved: 0, rejected: 0 };
+      return {
+        date: formatDate(d).slice(0, 6),
+        iso: d,
+        uploaded: 0,
+        approved: 0,
+        rejected: 0,
+      };
     });
     const idx = new Map(daily.map((d, i) => [d.iso, i]));
     for (const l of inRange) {
@@ -129,7 +148,12 @@ export default function Reports() {
           icon={CheckCircle2}
           tone="green"
         />
-        <KpiCard label="Leads Rejected" value={fmt(data.rejected)} icon={XCircle} tone="red" />
+        <KpiCard
+          label="Leads Rejected"
+          value={fmt(data.rejected)}
+          icon={XCircle}
+          tone="red"
+        />
         <KpiCard
           label="Duplicate Rate"
           value={`${data.dupRate.toFixed(1)}%`}
@@ -154,11 +178,22 @@ export default function Reports() {
       </div>
       <div className="grid gap-4 xl:grid-cols-2">
         <Panel>
-          <PanelHeader title="Daily upload trend" subtitle="Leads uploaded per day" />
+          <PanelHeader
+            title="Daily upload trend"
+            subtitle="Leads uploaded per day"
+          />
           <ChartBox>
             <AreaChart data={data.daily} margin={{ left: -16, right: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--border)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11 }}
+                interval="preserveStartEnd"
+              />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip contentStyle={tooltipStyle} />
               <Area
@@ -173,15 +208,31 @@ export default function Reports() {
           </ChartBox>
         </Panel>
         <Panel>
-          <PanelHeader title="Approval vs rejection" subtitle="Review outcomes by upload date" />
+          <PanelHeader
+            title="Approval vs rejection"
+            subtitle="Review outcomes by upload date"
+          />
           <ChartBox>
             <BarChart data={data.daily} margin={{ left: -16, right: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--border)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11 }}
+                interval="preserveStartEnd"
+              />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="approved" name="Approved" stackId="a" fill="var(--chart-3)" />
+              <Bar
+                dataKey="approved"
+                name="Approved"
+                stackId="a"
+                fill="var(--chart-3)"
+              />
               <Bar
                 dataKey="rejected"
                 name="Rejected"
@@ -194,16 +245,33 @@ export default function Reports() {
         </Panel>
       </div>
       <Panel>
-        <PanelHeader title="Upload batch performance" subtitle="Latest 10 batches in this period" />
+        <PanelHeader
+          title="Upload batch performance"
+          subtitle="Latest 10 batches in this period"
+        />
         <ChartBox>
           <BarChart data={data.batchPerf} margin={{ left: -16, right: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="var(--border)"
+              vertical={false}
+            />
             <XAxis dataKey="batch" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
             <Tooltip contentStyle={tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="approved" name="Approved" stackId="b" fill="var(--chart-3)" />
-            <Bar dataKey="rejected" name="Rejected" stackId="b" fill="var(--chart-4)" />
+            <Bar
+              dataKey="approved"
+              name="Approved"
+              stackId="b"
+              fill="var(--chart-3)"
+            />
+            <Bar
+              dataKey="rejected"
+              name="Rejected"
+              stackId="b"
+              fill="var(--chart-4)"
+            />
             <Bar
               dataKey="pending"
               name="Pending"

@@ -18,8 +18,16 @@ import { fmt } from "@/lib/leadgen/data";
 import { NAV_BY_ROLE, findNavItem, roleForPath } from "./nav";
 import { CURRENT_BDE, selectBdeKpis } from "@/lib/leadgen/bde";
 
-const ROLE_LABEL = { admin: "Main Menu", ra: "Research Analyst", bde: "Business Development" };
-const ROLE_FOOT = { admin: "Admin Console", ra: "Research Analyst", bde: "BDE Workspace" };
+const ROLE_LABEL = {
+  admin: "Main Menu",
+  ra: "Research Analyst",
+  bde: "Business Development",
+};
+const ROLE_FOOT = {
+  admin: "Admin Console",
+  ra: "Research Analyst",
+  bde: "BDE Workspace",
+};
 import { CURRENT_RA } from "@/lib/leadgen/data";
 
 export function AppSidebar() {
@@ -31,11 +39,15 @@ export function AppSidebar() {
   const items = NAV_BY_ROLE[role];
   const bdeDue =
     role === "bde"
-      ? (({ overdue, today }) => overdue + today)(selectBdeKpis(state, CURRENT_BDE))
+      ? (({ overdue, today }) => overdue + today)(
+          selectBdeKpis(state, CURRENT_BDE),
+        )
       : 0;
   const activeUrl = findNavItem(pathname)?.url;
   const raRejected = ra
-    ? state.leads.filter((l) => l.uploadedBy === CURRENT_RA && l.status === "rejected").length
+    ? state.leads.filter(
+        (l) => l.uploadedBy === CURRENT_RA && l.status === "rejected",
+      ).length
     : 0;
 
   return (
@@ -88,11 +100,13 @@ export function AppSidebar() {
                         {fmt(bdeDue)}
                       </SidebarMenuBadge>
                     )}
-                    {item.url === "/leads-review" && role === "admin" && kpis.pending > 0 && (
-                      <SidebarMenuBadge className="rounded-full bg-warning px-1.5 text-[10px] font-semibold text-warning-foreground peer-data-[active=true]/menu-button:text-warning-foreground">
-                        {fmt(kpis.pending)}
-                      </SidebarMenuBadge>
-                    )}
+                    {item.url === "/leads-review" &&
+                      role === "admin" &&
+                      kpis.pending > 0 && (
+                        <SidebarMenuBadge className="rounded-full bg-warning px-1.5 text-[10px] font-semibold text-warning-foreground peer-data-[active=true]/menu-button:text-warning-foreground">
+                          {fmt(kpis.pending)}
+                        </SidebarMenuBadge>
+                      )}
                   </SidebarMenuItem>
                 );
               })}
@@ -107,7 +121,9 @@ export function AppSidebar() {
           <div className="text-[13px] font-semibold text-sidebar-accent-foreground">
             Arah Infotech
           </div>
-          <div className="mt-0.5 text-[11px] text-sidebar-muted">v1.0 · {ROLE_FOOT[role]}</div>
+          <div className="mt-0.5 text-[11px] text-sidebar-muted">
+            v1.0 · {ROLE_FOOT[role]}
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>

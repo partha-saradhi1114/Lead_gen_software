@@ -1,4 +1,12 @@
-import { CheckCircle2, Clock, Copy, Download, Upload, Users, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  Copy,
+  Download,
+  Upload,
+  Users,
+  XCircle,
+} from "lucide-react";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { Button } from "@/components/ui/button";
@@ -90,7 +98,12 @@ export default function RaDashboard() {
                   </span>
                 ),
               },
-              { key: "t", header: "Records", align: "right", render: (b) => fmt(b.totalRecords) },
+              {
+                key: "t",
+                header: "Records",
+                align: "right",
+                render: (b) => fmt(b.totalRecords),
+              },
               {
                 key: "p",
                 header: "Review progress",
@@ -107,14 +120,21 @@ export default function RaDashboard() {
                   );
                 },
               },
-              { key: "s", header: "Status", render: (b) => <BatchStatusBadge status={b.status} /> },
+              {
+                key: "s",
+                header: "Status",
+                render: (b) => <BatchStatusBadge status={b.status} />,
+              },
             ]}
           />
         </Panel>
 
         <div className="space-y-4 xl:col-span-4">
           <Panel>
-            <PanelHeader title="Upload new leads" subtitle="Excel or CSV, up to 5 MB" />
+            <PanelHeader
+              title="Upload new leads"
+              subtitle="Excel or CSV, up to 5 MB"
+            />
             <div className="grid gap-2 px-4 pb-4 sm:grid-cols-2 xl:grid-cols-1">
               <Button asChild>
                 <Link to="/ra/upload">
@@ -123,7 +143,11 @@ export default function RaDashboard() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => downloadTemplate().then(() => toast.success("Template downloaded"))}
+                onClick={() =>
+                  downloadTemplate().then(() =>
+                    toast.success("Template downloaded"),
+                  )
+                }
               >
                 <Download /> Download template
               </Button>
@@ -141,8 +165,13 @@ export default function RaDashboard() {
             />
             <ul className="space-y-2 px-4 pb-4">
               {recentRejected.map((l) => (
-                <li key={l.id} className="rounded-md bg-tint-red/60 px-2.5 py-1.5">
-                  <div className="truncate text-[13px] font-medium">{l.company}</div>
+                <li
+                  key={l.id}
+                  className="rounded-md bg-tint-red/60 px-2.5 py-1.5"
+                >
+                  <div className="truncate text-[13px] font-medium">
+                    {l.company}
+                  </div>
                   <div className="truncate text-[11px] text-tint-red-foreground">
                     {l.rejectionReason}
                   </div>

@@ -10,7 +10,12 @@ import { UpdateLeadDialog } from "@/components/bde/UpdateLeadDialog";
 import { useBdeData } from "@/components/bde/useBdeData";
 import { formatDate } from "@/lib/leadgen/data";
 
-const LABEL = { overdue: "Overdue", today: "Today", upcoming: "Upcoming", done: "Completed" };
+const LABEL = {
+  overdue: "Overdue",
+  today: "Today",
+  upcoming: "Upcoming",
+  done: "Completed",
+};
 
 export default function BdeFollowUps() {
   const { rows, dispatch, bde } = useBdeData();
@@ -83,15 +88,25 @@ export default function BdeFollowUps() {
             className: "max-w-56 truncate text-muted-foreground",
             render: (r) => r.followUp.note,
           },
-          { key: "s", header: "Stage", render: (r) => <StageBadge stage={r.stage} /> },
+          {
+            key: "s",
+            header: "Stage",
+            render: (r) => <StageBadge stage={r.stage} />,
+          },
           {
             key: "d",
             header: tab === "done" ? "Completed" : "Due",
             className:
               "whitespace-nowrap " +
-              (tab === "overdue" ? "font-semibold text-destructive" : "text-muted-foreground"),
+              (tab === "overdue"
+                ? "font-semibold text-destructive"
+                : "text-muted-foreground"),
             render: (r) =>
-              formatDate(tab === "done" ? (r.followUp.doneOn ?? r.followUp.on) : r.followUp.on),
+              formatDate(
+                tab === "done"
+                  ? (r.followUp.doneOn ?? r.followUp.on)
+                  : r.followUp.on,
+              ),
           },
           {
             key: "x",
@@ -100,10 +115,18 @@ export default function BdeFollowUps() {
             render: (r) =>
               tab === "done" ? null : (
                 <div className="flex justify-end gap-1.5">
-                  <Button size="xs" variant="success-soft" onClick={() => done(r)}>
+                  <Button
+                    size="xs"
+                    variant="success-soft"
+                    onClick={() => done(r)}
+                  >
                     <Check /> Done
                   </Button>
-                  <Button size="xs" variant="soft" onClick={() => setEditId(r.leadId)}>
+                  <Button
+                    size="xs"
+                    variant="soft"
+                    onClick={() => setEditId(r.leadId)}
+                  >
                     <Pencil /> Update
                   </Button>
                 </div>

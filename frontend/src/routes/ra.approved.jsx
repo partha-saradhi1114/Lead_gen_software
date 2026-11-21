@@ -16,8 +16,14 @@ export default function ApprovedLeads() {
   const [source, setSource] = useState("all");
   const [batch, setBatch] = useState("all");
   const [exporting, setExporting] = useState(false);
-  const approved = useMemo(() => leads.filter((l) => l.status === "approved"), [leads]);
-  const batchIds = useMemo(() => batches.filter((b) => b.approved > 0).map((b) => b.id), [batches]);
+  const approved = useMemo(
+    () => leads.filter((l) => l.status === "approved"),
+    [leads],
+  );
+  const batchIds = useMemo(
+    () => batches.filter((b) => b.approved > 0).map((b) => b.id),
+    [batches],
+  );
 
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -34,7 +40,8 @@ export default function ApprovedLeads() {
   }, [approved, q, industry, source, batch]);
 
   const doExport = async () => {
-    if (rows.length === 0) return void toast.error("Nothing to export with the current filters");
+    if (rows.length === 0)
+      return void toast.error("Nothing to export with the current filters");
     setExporting(true);
     try {
       await exportRows(
@@ -67,13 +74,23 @@ export default function ApprovedLeads() {
         title={`Approved Leads (${fmt(approved.length)})`}
         subtitle="Approved by the Master Admin and ready for BDE allocation"
         actions={
-          <Button size="sm" variant="outline" onClick={doExport} disabled={exporting}>
-            {exporting ? <Loader2 className="animate-spin" /> : <Download />} Export
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={doExport}
+            disabled={exporting}
+          >
+            {exporting ? <Loader2 className="animate-spin" /> : <Download />}{" "}
+            Export
           </Button>
         }
       />
       <Toolbar>
-        <SearchBox value={q} onChange={setQ} placeholder="Search company, contact, email…" />
+        <SearchBox
+          value={q}
+          onChange={setQ}
+          placeholder="Search company, contact, email…"
+        />
         <FilterSelect
           value={industry}
           onChange={setIndustry}

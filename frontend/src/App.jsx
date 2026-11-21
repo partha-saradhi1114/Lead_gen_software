@@ -33,12 +33,54 @@ import BdeFollowUps from "./routes/bde.follow-ups";
 // Login route
 import LoginPage from "./routes/login";
 
+export class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
+          <h2 className="text-xl font-bold text-foreground">
+            Something went wrong
+          </h2>
+          <p className="mt-2 max-w-md text-xs text-muted-foreground">
+            {this.state.error?.message || "An unexpected error occurred."}
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }}
+            className="mt-4 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+          >
+            Reload Page
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function NotFound() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">
+          Page not found
+        </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           The page you're looking for doesn't exist or has been moved.
         </p>
@@ -98,11 +140,13 @@ export function AppRoutes() {
 
 export default function App() {
   return (
-    <LeadGenProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-      <Toaster position="top-right" richColors closeButton />
-    </LeadGenProvider>
+    <ErrorBoundary>
+      <LeadGenProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+        <Toaster position="top-right" richColors closeButton />
+      </LeadGenProvider>
+    </ErrorBoundary>
   );
 }

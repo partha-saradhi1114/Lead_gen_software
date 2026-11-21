@@ -13,7 +13,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { REJECTION_REASONS } from "@/lib/leadgen/data";
 import { cn } from "@/lib/utils";
 
-export function RejectLeadDialog({ open, onOpenChange, count, companyName, onConfirm }) {
+export function RejectLeadDialog({
+  open,
+  onOpenChange,
+  count,
+  companyName,
+  onConfirm,
+}) {
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState(false);
@@ -28,7 +34,9 @@ export function RejectLeadDialog({ open, onOpenChange, count, companyName, onCon
 
   const submit = () => {
     const final =
-      reason === "Other" ? notes.trim() : [reason, notes.trim()].filter(Boolean).join(" — ");
+      reason === "Other"
+        ? notes.trim()
+        : [reason, notes.trim()].filter(Boolean).join(" — ");
     if (!reason || (reason === "Other" && !notes.trim())) {
       setError(true);
       return;
@@ -40,7 +48,9 @@ export function RejectLeadDialog({ open, onOpenChange, count, companyName, onCon
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{count > 1 ? `Reject ${count} leads` : "Reject lead"}</DialogTitle>
+          <DialogTitle>
+            {count > 1 ? `Reject ${count} leads` : "Reject lead"}
+          </DialogTitle>
           <DialogDescription>
             {companyName ? (
               <>
@@ -92,7 +102,8 @@ export function RejectLeadDialog({ open, onOpenChange, count, companyName, onCon
           </div>
           {error && (
             <p className="text-xs font-medium text-destructive">
-              Please choose a reason{reason === "Other" ? " and add a note" : ""}.
+              Please choose a reason
+              {reason === "Other" ? " and add a note" : ""}.
             </p>
           )}
         </div>

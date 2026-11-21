@@ -46,7 +46,10 @@ export function buildSeedAssignments(leads, bdes) {
       const stage = pattern[i % pattern.length];
       const assignedOn = isoDaysBefore(TODAY, (i % 14) + 1);
       const due =
-        i % 3 === 0 && stage !== "Not Interested" && stage !== "Converted" && stage !== "New"
+        i % 3 === 0 &&
+        stage !== "Not Interested" &&
+        stage !== "Converted" &&
+        stage !== "New"
           ? {
               on: isoDaysBefore(TODAY, (i % 7) - 3),
               note: "Call back to discuss requirement",
@@ -62,7 +65,9 @@ export function buildSeedAssignments(leads, bdes) {
         followUp: due,
         activity: [
           { on: assignedOn, text: "Lead assigned by Master Admin" },
-          ...(stage !== "New" ? [{ on: assignedOn, text: `Marked ${stage}` }] : []),
+          ...(stage !== "New"
+            ? [{ on: assignedOn, text: `Marked ${stage}` }]
+            : []),
         ],
       });
     });
@@ -79,7 +84,9 @@ const touch = (state, leadId, bde, fn) => ({
 
 export function bdeReducer(state, action) {
   const list = state.assignments ?? [];
-  const a = list.find((x) => x.leadId === action.leadId && x.bde === action.bde);
+  const a = list.find(
+    (x) => x.leadId === action.leadId && x.bde === action.bde,
+  );
   switch (action.type) {
     case "bdeUnlock": {
       if (!a || a.unlocked) return state;
@@ -88,7 +95,10 @@ export function bdeReducer(state, action) {
       const s = touch(state, a.leadId, a.bde, (x) => ({
         ...x,
         unlocked: true,
-        activity: [...x.activity, { on: TODAY, text: `Contact unlocked (${UNLOCK_COST} credit)` }],
+        activity: [
+          ...x.activity,
+          { on: TODAY, text: `Contact unlocked (${UNLOCK_COST} credit)` },
+        ],
       }));
       return {
         ...s,
@@ -97,7 +107,13 @@ export function bdeReducer(state, action) {
         ),
         credits: { ...state.credits, used: state.credits.used + UNLOCK_COST },
         creditLog: [
-          { on: TODAY, bde: action.bde, kind: "Used", amount: UNLOCK_COST, leadId: a.leadId },
+          {
+            on: TODAY,
+            bde: action.bde,
+            kind: "Used",
+            amount: UNLOCK_COST,
+            leadId: a.leadId,
+          },
           ...(state.creditLog ?? []),
         ],
       };
@@ -105,18 +121,28 @@ export function bdeReducer(state, action) {
     case "bdeUpdate": {
       if (!a || !a.unlocked || !BDE_STAGES.includes(action.stage)) return state;
       const followUp = action.followUpOn
-        ? { on: action.followUpOn, note: action.note?.trim() || "Follow up", done: false }
+        ? {
+            on: action.followUpOn,
+            note: action.note?.trim() || "Follow up",
+            done: false,
+          }
         : a.followUp;
-      const newlyConnected = !isConnected(a.stage) && isConnected(action.stage) ? 1 : 0;
-      const newlyInterested = !isInterested(a.stage) && isInterested(action.stage) ? 1 : 0;
+      const newlyConnected =
+        !isConnected(a.stage) && isConnected(action.stage) ? 1 : 0;
+      const newlyInterested =
+        !isInterested(a.stage) && isInterested(action.stage) ? 1 : 0;
       const s = touch(state, a.leadId, a.bde, (x) => ({
         ...x,
         stage: action.stage,
         followUp,
         activity: [
           ...x.activity,
-          ...(action.stage !== x.stage ? [{ on: TODAY, text: `Marked ${action.stage}` }] : []),
-          ...(action.note?.trim() ? [{ on: TODAY, text: action.note.trim() }] : []),
+          ...(action.stage !== x.stage
+            ? [{ on: TODAY, text: `Marked ${action.stage}` }]
+            : []),
+          ...(action.note?.trim()
+            ? [{ on: TODAY, text: action.note.trim() }]
+            : []),
           ...(action.followUpOn
             ? [{ on: TODAY, text: `Follow-up set for ${action.followUpOn}` }]
             : []),
@@ -150,7 +176,11 @@ export function bdeReducer(state, action) {
       }));
     }
     case "bdeRequestCredits": {
-      if (!Number.isInteger(action.amount) || action.amount <= 0 || !action.reason?.trim())
+      if (
+        !Number.isInteger(action.amount) ||
+        action.amount <= 0 ||
+        !action.reason?.trim()
+      )
         return state;
       return {
         ...state,
@@ -181,7 +211,10 @@ export function followUpBucket(f) {
 
 export function selectBdeKpis(state, bde) {
   const mine = (state.assignments ?? []).filter((a) => a.bde === bde);
-  const row = state.bdes.find((b) => b.name === bde) ?? { allocated: 0, used: 0 };
+  const row = state.bdes.find((b) => b.name === bde) ?? {
+    allocated: 0,
+    used: 0,
+  };
   const count = (fn) => mine.filter(fn).length;
   return {
     assigned: mine.length,

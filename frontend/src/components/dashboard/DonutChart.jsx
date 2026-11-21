@@ -41,17 +41,28 @@ export function DonutChart({ data, centerLabel }) {
           <Tooltip content={<DonutTooltip />} wrapperStyle={{ zIndex: 10 }} />
         </PieChart>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="num text-lg font-bold leading-none">{fmt(total)}</span>
-          <span className="mt-0.5 text-[10px] text-muted-foreground">{centerLabel}</span>
+          <span className="num text-lg font-bold leading-none">
+            {fmt(total)}
+          </span>
+          <span className="mt-0.5 text-[10px] text-muted-foreground">
+            {centerLabel}
+          </span>
         </div>
       </div>
       <ul className="w-full min-w-0 flex-1 space-y-1.5">
         {data.map((d) => (
           <li key={d.key} className="flex items-center gap-2 text-xs">
-            <span className="size-2.5 shrink-0 rounded-sm" style={{ background: d.color }} />
-            <span className="min-w-0 flex-1 truncate text-muted-foreground">{d.label}</span>
+            <span
+              className="size-2.5 shrink-0 rounded-sm"
+              style={{ background: d.color }}
+            />
+            <span className="min-w-0 flex-1 truncate text-muted-foreground">
+              {d.label}
+            </span>
             <span className="num font-semibold">{d.percent}%</span>
-            <span className="num w-9 text-right text-muted-foreground">{fmt(d.count)}</span>
+            <span className="num w-9 text-right text-muted-foreground">
+              {fmt(d.count)}
+            </span>
           </li>
         ))}
       </ul>

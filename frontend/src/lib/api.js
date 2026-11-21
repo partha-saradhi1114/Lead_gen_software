@@ -1,18 +1,26 @@
 const API_BASE = "/api";
 
-async function request(path, options) {
+async function request(path, options = {}) {
   try {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const headers = {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const res = await fetch(`${API_BASE}${path}`, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...(options?.headers || {}),
-      },
+      headers,
     });
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
+      throw new Error(err.message || err.error || `HTTP ${res.status}`);
     }
 
     return await res.json();
@@ -23,8 +31,19 @@ async function request(path, options) {
 }
 
 export const api = {
+  // Auth
+  login: (email, password) =>
+    request("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+  getMe: () => request("/auth/me"),
+
+  // System
   checkHealth: () => request("/health"),
   getFullState: () => request("/leads/full-state"),
+
+  // Leads
   getLeads: (query) => {
     const params = new URLSearchParams();
     if (query?.status) params.set("status", query.status);

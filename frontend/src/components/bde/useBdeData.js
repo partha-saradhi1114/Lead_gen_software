@@ -9,9 +9,19 @@ export function useBdeData() {
     const byId = new Map(state.leads.map((l) => [l.id, l]));
     const rows = (state.assignments ?? [])
       .filter((a) => a.bde === CURRENT_BDE)
-      .map((a) => ({ ...a, lead: byId.get(a.leadId), bucket: followUpBucket(a.followUp) }))
+      .map((a) => ({
+        ...a,
+        lead: byId.get(a.leadId),
+        bucket: followUpBucket(a.followUp),
+      }))
       .filter((a) => a.lead);
     const log = (state.creditLog ?? []).filter((c) => c.bde === CURRENT_BDE);
-    return { rows, log, kpis: selectBdeKpis(state, CURRENT_BDE), dispatch, bde: CURRENT_BDE };
+    return {
+      rows,
+      log,
+      kpis: selectBdeKpis(state, CURRENT_BDE),
+      dispatch,
+      bde: CURRENT_BDE,
+    };
   }, [state, dispatch]);
 }

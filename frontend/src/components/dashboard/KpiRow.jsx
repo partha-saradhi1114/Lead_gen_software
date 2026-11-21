@@ -1,4 +1,12 @@
-import { CheckCircle2, Clock, Coins, Database, TrendingUp, Users, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  Coins,
+  Database,
+  TrendingUp,
+  Users,
+  XCircle,
+} from "lucide-react";
 import { useLeadGen } from "@/lib/leadgen/store";
 import { fmt, pct } from "@/lib/leadgen/data";
 import { KpiCard } from "./KpiCard";

@@ -9,7 +9,11 @@ import {
 } from "@/components/ui/select";
 
 export function Toolbar({ children }) {
-  return <div className="flex flex-wrap items-center gap-2 border-b px-4 pb-2.5">{children}</div>;
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-b px-4 pb-2.5">
+      {children}
+    </div>
+  );
 }
 
 export function SearchBox({ value, onChange, placeholder }) {

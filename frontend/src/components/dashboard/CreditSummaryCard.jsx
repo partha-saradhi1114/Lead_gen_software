@@ -55,10 +55,14 @@ export function CreditSummaryCard() {
         <ul className="space-y-2">
           {rows.map((r) => (
             <li key={r.label} className="flex items-center gap-2.5">
-              <span className={`flex size-7 items-center justify-center rounded-md ${r.cls}`}>
+              <span
+                className={`flex size-7 items-center justify-center rounded-md ${r.cls}`}
+              >
                 <r.icon className="size-3.5" />
               </span>
-              <span className="flex-1 text-[13px] text-muted-foreground">{r.label}</span>
+              <span className="flex-1 text-[13px] text-muted-foreground">
+                {r.label}
+              </span>
               <span className="num text-sm font-bold">{fmt(r.value)}</span>
             </li>
           ))}
@@ -99,7 +103,8 @@ export function CreditSummaryCard() {
           <DialogHeader>
             <DialogTitle>Credit breakdown by BDE</DialogTitle>
             <DialogDescription>
-              {fmt(kpis.creditsUsed)} of {fmt(kpis.creditsAllocated)} credits used across the team.
+              {fmt(kpis.creditsUsed)} of {fmt(kpis.creditsAllocated)} credits
+              used across the team.
             </DialogDescription>
           </DialogHeader>
           <ul className="space-y-3">

@@ -1,6 +1,18 @@
-import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from "react";
 import { api } from "../api";
-import { buildSeedBatches, buildSeedLeads, SEED_BDES, SEED_CREDITS, SEED_TEAM } from "./data";
+import {
+  buildSeedBatches,
+  buildSeedLeads,
+  SEED_BDES,
+  SEED_CREDITS,
+  SEED_TEAM,
+} from "./data";
 import { buildSeedAssignments } from "./bde";
 import { leadGenReducer, selectKpis } from "./reducer";
 
@@ -22,14 +34,22 @@ function initState() {
 const LeadGenContext = createContext(null);
 
 export function LeadGenProvider({ children }) {
-  const [state, localDispatch] = useReducer(leadGenReducer, undefined, initState);
+  const [state, localDispatch] = useReducer(
+    leadGenReducer,
+    undefined,
+    initState,
+  );
 
   useEffect(() => {
     // Attempt to sync full state from Express backend if running
     api
       .getFullState()
       .then((serverState) => {
-        if (serverState && Array.isArray(serverState.leads) && serverState.leads.length > 0) {
+        if (
+          serverState &&
+          Array.isArray(serverState.leads) &&
+          serverState.leads.length > 0
+        ) {
           localDispatch({ type: "hydrate", state: serverState });
         }
       })
@@ -66,7 +86,9 @@ export function LeadGenProvider({ children }) {
         api.updateLead(action.leadId, action.updates).catch(() => {});
         break;
       case "bde/requestCredits":
-        api.requestCredits(action.bde, action.amount, action.reason).catch(() => {});
+        api
+          .requestCredits(action.bde, action.amount, action.reason)
+          .catch(() => {});
         break;
       default:
         break;
@@ -75,7 +97,9 @@ export function LeadGenProvider({ children }) {
 
   const kpis = useMemo(() => selectKpis(state), [state]);
   const value = useMemo(() => ({ state, dispatch, kpis }), [state, kpis]);
-  return <LeadGenContext.Provider value={value}>{children}</LeadGenContext.Provider>;
+  return (
+    <LeadGenContext.Provider value={value}>{children}</LeadGenContext.Provider>
+  );
 }
 
 export function useLeadGen() {

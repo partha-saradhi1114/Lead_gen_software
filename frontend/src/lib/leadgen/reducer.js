@@ -24,7 +24,12 @@ export function leadGenReducer(state, action) {
         ...state,
         leads: state.leads.map((l) =>
           ids.has(l.id) && l.status === "pending"
-            ? { ...l, status: "rejected", rejectionReason: reason, reviewedOn: TODAY }
+            ? {
+                ...l,
+                status: "rejected",
+                rejectionReason: reason,
+                reviewedOn: TODAY,
+              }
             : l,
         ),
       };
@@ -38,10 +43,20 @@ export function leadGenReducer(state, action) {
       };
       const fresh = [];
       for (let i = 0; i < action.count; i++) {
-        const lead = makeLead(r, state.nextId + i, "pending", TODAY, action.researcher);
+        const lead = makeLead(
+          r,
+          state.nextId + i,
+          "pending",
+          TODAY,
+          action.researcher,
+        );
         fresh.push({ ...lead, source: action.source });
       }
-      return { ...state, leads: [...fresh, ...state.leads], nextId: state.nextId + action.count };
+      return {
+        ...state,
+        leads: [...fresh, ...state.leads],
+        nextId: state.nextId + action.count,
+      };
     }
     case "allocate": {
       if (!Number.isInteger(action.amount) || action.amount <= 0) return state;
@@ -49,9 +64,14 @@ export function leadGenReducer(state, action) {
       return {
         ...state,
         bdes: state.bdes.map((b) =>
-          b.name === action.bde ? { ...b, allocated: b.allocated + action.amount } : b,
+          b.name === action.bde
+            ? { ...b, allocated: b.allocated + action.amount }
+            : b,
         ),
-        credits: { ...state.credits, allocated: state.credits.allocated + action.amount },
+        credits: {
+          ...state.credits,
+          allocated: state.credits.allocated + action.amount,
+        },
       };
     }
     case "addMember": {
@@ -59,14 +79,26 @@ export function leadGenReducer(state, action) {
       if (!m.name.trim() || !m.email.trim()) return state;
       const bdes =
         m.role === "BDE"
-          ? [...state.bdes, { name: m.name, allocated: 0, used: 0, connected: 0, interested: 0 }]
+          ? [
+              ...state.bdes,
+              {
+                name: m.name,
+                allocated: 0,
+                used: 0,
+                connected: 0,
+                interested: 0,
+              },
+            ]
           : state.bdes;
       return { ...state, team: [...state.team, m], bdes };
     }
     case "setDateRange":
       return { ...state, dateRange: action.range };
     case "submitBatch": {
-      if (action.rows.length === 0 || state.batches.some((b) => b.id === action.batch.id))
+      if (
+        action.rows.length === 0 ||
+        state.batches.some((b) => b.id === action.batch.id)
+      )
         return state;
       const fresh = action.rows.map((r, i) => ({
         ...r,
@@ -95,7 +127,10 @@ export function leadGenReducer(state, action) {
                 status: "pending",
                 history: [
                   ...(l.history ?? []),
-                  { reason: l.rejectionReason ?? "Rejected", rejectedOn: l.reviewedOn ?? TODAY },
+                  {
+                    reason: l.rejectionReason ?? "Rejected",
+                    rejectedOn: l.reviewedOn ?? TODAY,
+                  },
                 ],
                 rejectionReason: undefined,
                 reviewedOn: undefined,
@@ -112,20 +147,24 @@ export function selectKpis(state) {
   let pending = 0;
   let approved = 0;
   let rejected = 0;
-  for (const l of state.leads) {
+  const leads = state?.leads || [];
+  for (const l of leads) {
     if (l.status === "pending") pending++;
     else if (l.status === "approved") approved++;
     else rejected++;
   }
-  const { allocated, used } = state.credits;
+  const credits = state?.credits || {};
+  const allocated =
+    typeof credits.allocated === "number" ? credits.allocated : 0;
+  const used = typeof credits.used === "number" ? credits.used : 0;
   return {
-    total: state.leads.length,
+    total: leads.length,
     pending,
     approved,
     rejected,
     creditsAllocated: allocated,
     creditsUsed: used,
-    creditsAvailable: allocated - used,
+    creditsAvailable: Math.max(0, allocated - used),
     utilization: allocated === 0 ? 0 : Math.round((used / allocated) * 100),
   };
 }

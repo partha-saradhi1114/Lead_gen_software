@@ -1,22 +1,67 @@
 export const TEMPLATE_FIELDS = [
-  { key: "company", label: "Company Name", required: true, example: "ABC Hospitals Pvt Ltd" },
-  { key: "contact", label: "Contact Person", required: true, example: "Mr. Rajesh Kumar" },
-  { key: "designation", label: "Designation", required: true, example: "Purchase Manager" },
-  { key: "phone", label: "Phone Number", required: true, example: "+91 98765 43210" },
+  {
+    key: "company",
+    label: "Company Name",
+    required: true,
+    example: "ABC Hospitals Pvt Ltd",
+  },
+  {
+    key: "contact",
+    label: "Contact Person",
+    required: true,
+    example: "Mr. Rajesh Kumar",
+  },
+  {
+    key: "designation",
+    label: "Designation",
+    required: true,
+    example: "Purchase Manager",
+  },
+  {
+    key: "phone",
+    label: "Phone Number",
+    required: true,
+    example: "+91 98765 43210",
+  },
   { key: "location", label: "Location", required: true, example: "Hyderabad" },
   { key: "industry", label: "Industry", required: true, example: "Healthcare" },
   { key: "source", label: "Lead Source", required: true, example: "Web" },
-  { key: "email", label: "Email", required: false, example: "rajesh@abchospitals.com" },
-  { key: "website", label: "Website", required: false, example: "www.abchospitals.com" },
+  {
+    key: "email",
+    label: "Email",
+    required: false,
+    example: "rajesh@abchospitals.com",
+  },
+  {
+    key: "website",
+    label: "Website",
+    required: false,
+    example: "www.abchospitals.com",
+  },
   {
     key: "linkedin",
     label: "LinkedIn Profile",
     required: false,
     example: "linkedin.com/in/rajeshkumar",
   },
-  { key: "companySize", label: "Company Size", required: false, example: "201-500" },
-  { key: "department", label: "Department", required: false, example: "Procurement" },
-  { key: "notes", label: "Notes", required: false, example: "Met at MedExpo 2026" },
+  {
+    key: "companySize",
+    label: "Company Size",
+    required: false,
+    example: "201-500",
+  },
+  {
+    key: "department",
+    label: "Department",
+    required: false,
+    example: "Procurement",
+  },
+  {
+    key: "notes",
+    label: "Notes",
+    required: false,
+    example: "Met at MedExpo 2026",
+  },
 ];
 
 export const MAX_FILE_MB = 5;
@@ -45,7 +90,8 @@ export function fileExtension(name) {
 export function checkFile(file) {
   if (!ACCEPTED_EXT.includes(fileExtension(file.name)))
     return "Only .xlsx, .xls or .csv files are supported.";
-  if (file.size > MAX_FILE_MB * 1024 * 1024) return `File is larger than ${MAX_FILE_MB} MB.`;
+  if (file.size > MAX_FILE_MB * 1024 * 1024)
+    return `File is larger than ${MAX_FILE_MB} MB.`;
   if (file.size === 0) return "The file is empty.";
   return null;
 }
@@ -53,19 +99,24 @@ export function checkFile(file) {
 /** Turn a sheet (array of rows) into upload rows, mapping template headers to fields. */
 export function rowsFromSheet(aoa) {
   const headerIdx = aoa.findIndex((r) =>
-    r.some((c) => ALIASES[norm(String(c ?? "").replace(/\*|\(.*?\)/g, ""))] === "company"),
+    r.some(
+      (c) =>
+        ALIASES[norm(String(c ?? "").replace(/\*|\(.*?\)/g, ""))] === "company",
+    ),
   );
   if (headerIdx < 0)
     return {
       rows: [],
-      missingColumns: TEMPLATE_FIELDS.filter((f) => f.required).map((f) => f.label),
+      missingColumns: TEMPLATE_FIELDS.filter((f) => f.required).map(
+        (f) => f.label,
+      ),
     };
   const header = (aoa[headerIdx] ?? []).map(
     (c) => ALIASES[norm(String(c ?? "").replace(/\*|\(.*?\)/g, ""))],
   );
-  const missingColumns = TEMPLATE_FIELDS.filter((f) => f.required && !header.includes(f.key)).map(
-    (f) => f.label,
-  );
+  const missingColumns = TEMPLATE_FIELDS.filter(
+    (f) => f.required && !header.includes(f.key),
+  ).map((f) => f.label);
   const rows = [];
   aoa.slice(headerIdx + 1).forEach((r, i) => {
     const values = Object.fromEntries(TEMPLATE_FIELDS.map((f) => [f.key, ""]));
@@ -78,7 +129,8 @@ export function rowsFromSheet(aoa) {
   return { rows, missingColumns };
 }
 
-export const phoneDigits = (p) => p.replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
+export const phoneDigits = (p) =>
+  p.replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
 export const isValidPhone = (p) => /^[6-9]\d{9}$/.test(phoneDigits(p));
 export const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(e);
 const pairKey = (company, contact) =>
@@ -112,7 +164,8 @@ export function validateRows(rows, existing) {
     const v = row.values;
     const errors = [];
     const duplicates = [];
-    for (const [k, msg] of Object.entries(REQUIRED_MSG)) if (!v[k]) errors.push(msg);
+    for (const [k, msg] of Object.entries(REQUIRED_MSG))
+      if (!v[k]) errors.push(msg);
     if (v.phone && !isValidPhone(v.phone)) errors.push("Invalid phone number");
     if (v.email && !isValidEmail(v.email)) errors.push("Invalid email");
 
@@ -120,23 +173,35 @@ export function validateRows(rows, existing) {
     const em = v.email.toLowerCase();
     const pk = v.company && v.contact ? pairKey(v.company, v.contact) : "";
     if (ph) {
-      if (seenPhone.has(ph)) duplicates.push(`Duplicate phone (same as row ${seenPhone.get(ph)})`);
-      else if (exPhone.has(ph)) duplicates.push(`Phone already exists (lead #${exPhone.get(ph)})`);
+      if (seenPhone.has(ph))
+        duplicates.push(`Duplicate phone (same as row ${seenPhone.get(ph)})`);
+      else if (exPhone.has(ph))
+        duplicates.push(`Phone already exists (lead #${exPhone.get(ph)})`);
       else seenPhone.set(ph, row.rowNo);
     }
     if (em) {
-      if (seenEmail.has(em)) duplicates.push(`Duplicate email (same as row ${seenEmail.get(em)})`);
-      else if (exEmail.has(em)) duplicates.push(`Email already exists (lead #${exEmail.get(em)})`);
+      if (seenEmail.has(em))
+        duplicates.push(`Duplicate email (same as row ${seenEmail.get(em)})`);
+      else if (exEmail.has(em))
+        duplicates.push(`Email already exists (lead #${exEmail.get(em)})`);
       else seenEmail.set(em, row.rowNo);
     }
     if (pk) {
       if (seenPair.has(pk))
-        duplicates.push(`Duplicate company + contact (same as row ${seenPair.get(pk)})`);
+        duplicates.push(
+          `Duplicate company + contact (same as row ${seenPair.get(pk)})`,
+        );
       else if (exPair.has(pk))
-        duplicates.push(`Company + contact already exists (lead #${exPair.get(pk)})`);
+        duplicates.push(
+          `Company + contact already exists (lead #${exPair.get(pk)})`,
+        );
       else seenPair.set(pk, row.rowNo);
     }
-    const status = errors.length ? "invalid" : duplicates.length ? "duplicate" : "valid";
+    const status = errors.length
+      ? "invalid"
+      : duplicates.length
+        ? "duplicate"
+        : "valid";
     return { ...row, errors, duplicates, status };
   });
 }
@@ -280,5 +345,8 @@ export function sampleSheet() {
       `${first}@${company.toLowerCase().replace(/[^a-z0-9]/g, "")}.in`,
     ]);
   });
-  return [head, ...base.map((r) => [...r, "", "", "", "", ""].slice(0, head.length))];
+  return [
+    head,
+    ...base.map((r) => [...r, "", "", "", "", ""].slice(0, head.length)),
+  ];
 }

@@ -33,18 +33,31 @@ import { useLeadGen } from "@/lib/leadgen/store";
 import { LEAD_SOURCES, RESEARCHERS, fmt } from "@/lib/leadgen/data";
 import { cn } from "@/lib/utils";
 
-export function QuickActionCard({ icon: Icon, title, subtitle, tone, onClick }) {
+export function QuickActionCard({
+  icon: Icon,
+  title,
+  subtitle,
+  tone,
+  onClick,
+}) {
   return (
     <button
       onClick={onClick}
       className="group flex w-full items-center gap-3 rounded-lg border border-transparent bg-muted/60 px-3 py-2.5 text-left transition-all hover:border-border hover:bg-card hover:shadow-card"
     >
-      <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", tone)}>
+      <span
+        className={cn(
+          "flex size-9 shrink-0 items-center justify-center rounded-lg",
+          tone,
+        )}
+      >
         <Icon className="size-4.5" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[13px] font-semibold">{title}</span>
-        <span className="block truncate text-[11px] text-muted-foreground">{subtitle}</span>
+        <span className="block truncate text-[11px] text-muted-foreground">
+          {subtitle}
+        </span>
       </span>
       <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
     </button>
@@ -110,7 +123,15 @@ export function QuickActions({ className }) {
   );
 }
 
-function FormDialog({ open, onOpenChange, title, description, submitLabel, onSubmit, children }) {
+function FormDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  submitLabel,
+  onSubmit,
+  children,
+}) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -127,7 +148,11 @@ function FormDialog({ open, onOpenChange, title, description, submitLabel, onSub
           </DialogHeader>
           <div className="space-y-3">{children}</div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit">{submitLabel}</Button>
@@ -170,7 +195,8 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
       submitLabel="Upload to review"
       onSubmit={() => {
         const n = Number(count);
-        if (!file) return void toast.error("Choose a CSV or Excel file to upload");
+        if (!file)
+          return void toast.error("Choose a CSV or Excel file to upload");
         if (!Number.isInteger(n) || n <= 0 || n > 500)
           return void toast.error("Enter between 1 and 500 records");
         dispatch({ type: "upload", researcher: ra, count: n, source });
@@ -221,7 +247,9 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
               {file ? file.name : "Choose CSV / XLSX file"}
             </span>
             <span className="text-muted-foreground">
-              {file ? `${(file.size / 1024).toFixed(1)} KB` : "Up to 500 records per sheet"}
+              {file
+                ? `${(file.size / 1024).toFixed(1)} KB`
+                : "Up to 500 records per sheet"}
             </span>
           </span>
         </label>
@@ -349,10 +377,16 @@ export function AddMemberDialog({ open, onOpenChange }) {
       submitLabel="Add member"
       onSubmit={() => {
         if (!name.trim()) return void toast.error("Enter the member's name");
-        if (!/^\S+@\S+\.\S+$/.test(email)) return void toast.error("Enter a valid email address");
+        if (!/^\S+@\S+\.\S+$/.test(email))
+          return void toast.error("Enter a valid email address");
         dispatch({
           type: "addMember",
-          member: { name: name.trim(), email: email.trim(), phone: phone.trim(), role },
+          member: {
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            role,
+          },
         });
         onOpenChange(false);
         toast.success(`${name.trim()} added as ${role}`, {
@@ -369,7 +403,9 @@ export function AddMemberDialog({ open, onOpenChange }) {
               onClick={() => setRole(r)}
               className={cn(
                 "rounded-md border px-3 py-2 text-xs font-semibold transition-colors",
-                role === r ? "border-primary bg-primary-soft text-primary" : "hover:bg-muted",
+                role === r
+                  ? "border-primary bg-primary-soft text-primary"
+                  : "hover:bg-muted",
               )}
             >
               {r}

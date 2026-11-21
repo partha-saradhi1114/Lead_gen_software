@@ -24,7 +24,13 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { CURRENT_RA, LEAD_SOURCES, TODAY, batchIdFor, fmt } from "@/lib/leadgen/data";
+import {
+  CURRENT_RA,
+  LEAD_SOURCES,
+  TODAY,
+  batchIdFor,
+  fmt,
+} from "@/lib/leadgen/data";
 import { downloadTemplate, readSheetFile } from "@/lib/leadgen/excel";
 import {
   MAX_FILE_MB,
@@ -37,7 +43,13 @@ import {
 } from "@/lib/leadgen/validation";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Upload File", "Preview Data", "Validation", "Upload Summary", "Submit"];
+const STEPS = [
+  "Upload File",
+  "Preview Data",
+  "Validation",
+  "Upload Summary",
+  "Submit",
+];
 
 export function UploadWizard() {
   const { state, dispatch } = useLeadGen();
@@ -55,10 +67,17 @@ export function UploadWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [doneBatch, setDoneBatch] = useState(null);
 
-  const kept = useMemo(() => rows.filter((r) => !removed.has(r.rowNo)), [rows, removed]);
-  const validated = useMemo(() => validateRows(kept, state.leads), [kept, state.leads]);
+  const kept = useMemo(
+    () => rows.filter((r) => !removed.has(r.rowNo)),
+    [rows, removed],
+  );
+  const validated = useMemo(
+    () => validateRows(kept, state.leads),
+    [kept, state.leads],
+  );
   const summary = summarize(validated);
-  const visible = filter === "all" ? validated : validated.filter((r) => r.status === filter);
+  const visible =
+    filter === "all" ? validated : validated.filter((r) => r.status === filter);
 
   const reset = () => {
     setStep(0);
@@ -110,7 +129,9 @@ export function UploadWizard() {
       await new Promise((r) => setTimeout(r, 300));
       loadRows(aoa, file.name, file.size);
     } catch {
-      setError("We couldn't read this file. Make sure it is a valid Excel or CSV file.");
+      setError(
+        "We couldn't read this file. Make sure it is a valid Excel or CSV file.",
+      );
       toast.error("Could not read the file");
     } finally {
       setProgress(null);
@@ -137,13 +158,18 @@ export function UploadWizard() {
   const submit = async () => {
     const valid = validated.filter((r) => r.status === "valid");
     let seq = 1;
-    while (state.batches.some((b) => b.id === batchIdFor(CURRENT_RA, TODAY, seq))) seq++;
+    while (
+      state.batches.some((b) => b.id === batchIdFor(CURRENT_RA, TODAY, seq))
+    )
+      seq++;
     const id = batchIdFor(CURRENT_RA, TODAY, seq);
     setSubmitting(true);
     await new Promise((r) => setTimeout(r, 700));
     const toLead = (r) => {
       const v = r.values;
-      const source = LEAD_SOURCES.find((s) => s.toLowerCase() === v.source.toLowerCase()) ?? "Web";
+      const source =
+        LEAD_SOURCES.find((s) => s.toLowerCase() === v.source.toLowerCase()) ??
+        "Web";
       return {
         company: v.company,
         contact: v.contact,
@@ -207,7 +233,9 @@ export function UploadWizard() {
                 }}
                 className={cn(
                   "flex flex-col items-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
-                  drag ? "border-primary bg-primary-soft" : "border-input bg-muted/40",
+                  drag
+                    ? "border-primary bg-primary-soft"
+                    : "border-input bg-muted/40",
                   error && "border-destructive/60",
                 )}
               >
@@ -249,7 +277,8 @@ export function UploadWizard() {
                   <div className="mt-5 w-full max-w-sm">
                     <div className="mb-1 flex justify-between text-xs">
                       <span className="flex items-center gap-1.5">
-                        <Loader2 className="size-3.5 animate-spin" /> Reading file…
+                        <Loader2 className="size-3.5 animate-spin" /> Reading
+                        file…
                       </span>
                       <span className="num">{progress}%</span>
                     </div>
@@ -275,7 +304,9 @@ export function UploadWizard() {
                   size="xs"
                   variant="soft"
                   onClick={() =>
-                    downloadTemplate().then(() => toast.success("Template downloaded"))
+                    downloadTemplate().then(() =>
+                      toast.success("Template downloaded"),
+                    )
                   }
                 >
                   <Download /> Sample template
@@ -285,7 +316,9 @@ export function UploadWizard() {
             <div className="space-y-3 px-4 pb-4 text-[13px]">
               <ol className="list-decimal space-y-1 pl-4 text-muted-foreground">
                 <li>Download the sample template and keep its header row.</li>
-                <li>Fill one lead per row. Phone must be a 10-digit Indian mobile.</li>
+                <li>
+                  Fill one lead per row. Phone must be a 10-digit Indian mobile.
+                </li>
                 <li>Upload, preview, fix issues, then submit valid records.</li>
               </ol>
               <div>
@@ -350,9 +383,12 @@ export function UploadWizard() {
             }
           />
           <RowsTable
-            rows={rows
-              .slice(0, 20)
-              .map((r) => ({ ...r, errors: [], duplicates: [], status: "valid" }))}
+            rows={rows.slice(0, 20).map((r) => ({
+              ...r,
+              errors: [],
+              duplicates: [],
+              status: "valid",
+            }))}
             plain
           />
         </Panel>
@@ -368,7 +404,11 @@ export function UploadWizard() {
                 <Button size="sm" variant="outline" onClick={() => setStep(1)}>
                   Back
                 </Button>
-                <Button size="sm" onClick={() => setStep(3)} disabled={summary.total === 0}>
+                <Button
+                  size="sm"
+                  onClick={() => setStep(3)}
+                  disabled={summary.total === 0}
+                >
                   Continue
                 </Button>
               </>
@@ -382,7 +422,11 @@ export function UploadWizard() {
                 { key: "all", label: "All", count: summary.total },
                 { key: "valid", label: "Valid", count: summary.valid },
                 { key: "invalid", label: "Invalid", count: summary.invalid },
-                { key: "duplicate", label: "Duplicates", count: summary.duplicate },
+                {
+                  key: "duplicate",
+                  label: "Duplicates",
+                  count: summary.duplicate,
+                },
               ]}
             />
             <div className="ml-auto flex flex-wrap gap-2">
@@ -392,7 +436,9 @@ export function UploadWizard() {
                 disabled={summary.duplicate === 0}
                 onClick={() =>
                   removeRows(
-                    validated.filter((r) => r.status === "duplicate").map((r) => r.rowNo),
+                    validated
+                      .filter((r) => r.status === "duplicate")
+                      .map((r) => r.rowNo),
                     "duplicate records",
                   )
                 }
@@ -405,7 +451,9 @@ export function UploadWizard() {
                 disabled={summary.invalid === 0}
                 onClick={() =>
                   removeRows(
-                    validated.filter((r) => r.status === "invalid").map((r) => r.rowNo),
+                    validated
+                      .filter((r) => r.status === "invalid")
+                      .map((r) => r.rowNo),
                     "invalid records",
                   )
                 }
@@ -413,13 +461,20 @@ export function UploadWizard() {
                 <Trash2 /> Remove invalid
               </Button>
               {removed.size > 0 && (
-                <Button size="xs" variant="ghost" onClick={() => setRemoved(new Set())}>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => setRemoved(new Set())}
+                >
                   <RotateCcw /> Restore {removed.size} removed
                 </Button>
               )}
             </div>
           </div>
-          <RowsTable rows={visible} onRemove={(no) => removeRows([no], "record")} />
+          <RowsTable
+            rows={visible}
+            onRemove={(no) => removeRows([no], "record")}
+          />
         </Panel>
       )}
 
@@ -433,7 +488,11 @@ export function UploadWizard() {
                 <Button size="sm" variant="outline" onClick={() => setStep(2)}>
                   Back to validation
                 </Button>
-                <Button size="sm" onClick={() => setStep(4)} disabled={summary.valid === 0}>
+                <Button
+                  size="sm"
+                  onClick={() => setStep(4)}
+                  disabled={summary.valid === 0}
+                >
                   Continue
                 </Button>
               </>
@@ -496,10 +555,16 @@ export function UploadWizard() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="batch-note">Note for the reviewer (optional)</Label>
-              <Input id="batch-note" placeholder="e.g. Leads from MedExpo Hyderabad" />
+              <Label htmlFor="batch-note">
+                Note for the reviewer (optional)
+              </Label>
+              <Input
+                id="batch-note"
+                placeholder="e.g. Leads from MedExpo Hyderabad"
+              />
               <p className="text-xs text-muted-foreground">
-                You can't approve your own leads. The Master Admin reviews each record.
+                You can't approve your own leads. The Master Admin reviews each
+                record.
               </p>
             </div>
           </div>
@@ -507,9 +572,13 @@ export function UploadWizard() {
             <Button variant="outline" size="sm" onClick={() => setStep(3)}>
               Back
             </Button>
-            <Button size="sm" onClick={() => setConfirm(true)} disabled={submitting}>
-              {submitting ? <Loader2 className="animate-spin" /> : <Send />} Submit{" "}
-              {fmt(summary.valid)} records for review
+            <Button
+              size="sm"
+              onClick={() => setConfirm(true)}
+              disabled={submitting}
+            >
+              {submitting ? <Loader2 className="animate-spin" /> : <Send />}{" "}
+              Submit {fmt(summary.valid)} records for review
             </Button>
           </div>
         </Panel>
@@ -521,7 +590,9 @@ export function UploadWizard() {
             <div className="flex size-14 items-center justify-center rounded-2xl bg-tint-green text-tint-green-foreground">
               <PartyPopper className="size-7" />
             </div>
-            <h2 className="mt-3 text-base font-semibold">Submitted for review</h2>
+            <h2 className="mt-3 text-base font-semibold">
+              Submitted for review
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {fmt(doneBatch.count)} records were sent to the Master Admin.
             </p>
@@ -564,7 +635,12 @@ function Row({ k, v }) {
 function SummaryTile({ label, value, tone, icon: Icon }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border px-3 py-3">
-      <span className={cn("flex size-9 items-center justify-center rounded-lg", tone)}>
+      <span
+        className={cn(
+          "flex size-9 items-center justify-center rounded-lg",
+          tone,
+        )}
+      >
         <Icon className="size-4" />
       </span>
       <div>
@@ -618,9 +694,14 @@ function RowsTable({ rows, plain, onRemove }) {
           <tr className="bg-muted text-[11px] uppercase tracking-wide text-muted-foreground">
             <th className="px-2.5 py-2 pl-4 text-left">Row</th>
             {!plain && <th className="px-2.5 py-2 text-left">Status</th>}
-            {!plain && <th className="min-w-56 px-2.5 py-2 text-left">Issues</th>}
+            {!plain && (
+              <th className="min-w-56 px-2.5 py-2 text-left">Issues</th>
+            )}
             {TEMPLATE_FIELDS.map((f) => (
-              <th key={f.key} className="whitespace-nowrap px-2.5 py-2 text-left">
+              <th
+                key={f.key}
+                className="whitespace-nowrap px-2.5 py-2 text-left"
+              >
                 {f.label}
                 {f.required && " *"}
               </th>
@@ -638,7 +719,9 @@ function RowsTable({ rows, plain, onRemove }) {
                 r.status === "duplicate" && "bg-tint-amber/60",
               )}
             >
-              <td className="num px-2.5 py-2 pl-4 text-muted-foreground">{r.rowNo}</td>
+              <td className="num px-2.5 py-2 pl-4 text-muted-foreground">
+                {r.rowNo}
+              </td>
               {!plain && (
                 <td className="px-2.5 py-2">
                   <span
@@ -667,7 +750,9 @@ function RowsTable({ rows, plain, onRemove }) {
                       • {e}
                     </div>
                   ))}
-                  {r.status === "valid" && <span className="text-muted-foreground">—</span>}
+                  {r.status === "valid" && (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </td>
               )}
               {TEMPLATE_FIELDS.map((f) => (
@@ -675,7 +760,10 @@ function RowsTable({ rows, plain, onRemove }) {
                   key={f.key}
                   className={cn(
                     "max-w-48 truncate whitespace-nowrap px-2.5 py-2",
-                    f.required && !r.values[f.key] && !plain && "font-semibold text-destructive",
+                    f.required &&
+                      !r.values[f.key] &&
+                      !plain &&
+                      "font-semibold text-destructive",
                   )}
                 >
                   {r.values[f.key] ||
@@ -731,7 +819,9 @@ function Stepper({ step }) {
           >
             {s}
           </span>
-          {i < STEPS.length - 1 && <span className="mx-1 h-px min-w-4 flex-1 bg-border" />}
+          {i < STEPS.length - 1 && (
+            <span className="mx-1 h-px min-w-4 flex-1 bg-border" />
+          )}
         </div>
       ))}
     </div>
