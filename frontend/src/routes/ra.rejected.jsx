@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { History, PencilLine } from "lucide-react";
 import { toast } from "sonner";
 import { Panel, PanelHeader } from "@/components/common/Panel";
@@ -45,8 +46,8 @@ export default function RejectedLeads() {
         (reason === "all" || (l.rejectionReason ?? "").startsWith(reason)) &&
         (industry === "all" || l.industry === industry) &&
         (!s ||
-          l.company.toLowerCase().includes(s) ||
-          l.contact.toLowerCase().includes(s)),
+          (l.company || "").toLowerCase().includes(s) ||
+          (l.contact || "").toLowerCase().includes(s)),
     );
   }, [rejected, q, reason, industry]);
 

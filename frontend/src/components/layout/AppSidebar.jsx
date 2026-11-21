@@ -37,16 +37,33 @@ export function AppSidebar() {
   const role = roleForPath(pathname);
   const ra = role === "ra";
   const items = NAV_BY_ROLE[role];
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+  const currentBdeName =
+    storedUser.role === "bde" && storedUser.name
+      ? storedUser.name
+      : CURRENT_BDE;
+  const currentRaName =
+    storedUser.role === "ra" && storedUser.name ? storedUser.name : CURRENT_RA;
+
   const bdeDue =
     role === "bde"
       ? (({ overdue, today }) => overdue + today)(
-          selectBdeKpis(state, CURRENT_BDE),
+          selectBdeKpis(state, currentBdeName),
         )
       : 0;
   const activeUrl = findNavItem(pathname)?.url;
   const raRejected = ra
     ? state.leads.filter(
-        (l) => l.uploadedBy === CURRENT_RA && l.status === "rejected",
+        (l) =>
+          (l.uploadedBy === currentRaName ||
+            l.uploaderName === currentRaName) &&
+          l.status === "rejected",
       ).length
     : 0;
 
@@ -118,8 +135,15 @@ export function AppSidebar() {
       <SidebarFooter className="p-3 group-data-[collapsible=icon]:hidden">
         <div className="rounded-lg bg-sidebar-accent p-3">
           <div className="text-[11px] text-sidebar-muted">Workspace</div>
-          <div className="text-[13px] font-semibold text-sidebar-accent-foreground">
-            Arah Infotech
+          <div
+            className="text-[13px] font-semibold text-sidebar-accent-foreground truncate"
+            title={
+              state?.settings?.general?.workspaceName ||
+              "Lead Generation Software"
+            }
+          >
+            {state?.settings?.general?.workspaceName ||
+              "Lead Generation Software"}
           </div>
           <div className="mt-0.5 text-[11px] text-sidebar-muted">
             v1.0 · {ROLE_FOOT[role]}

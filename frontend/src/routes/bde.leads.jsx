@@ -28,8 +28,8 @@ export default function BdeLeads() {
         (stage === "all" || r.stage === stage) &&
         (industry === "all" || r.lead.industry === industry) &&
         (!s ||
-          r.lead.company.toLowerCase().includes(s) ||
-          r.lead.contact.toLowerCase().includes(s)),
+          (r.lead?.company || "").toLowerCase().includes(s) ||
+          (r.lead?.contact || "").toLowerCase().includes(s)),
     );
   }, [rows, q, stage, industry]);
 
@@ -37,7 +37,7 @@ export default function BdeLeads() {
     <Panel>
       <PanelHeader
         title={`My Assigned Leads (${fmt(rows.length)})`}
-        subtitle={`Unlocking a contact uses ${UNLOCK_COST} credit · ${fmt(kpis.available)} credits available`}
+        subtitle={`Vertical: ${data.category || "Students / Education"} · Unlocking a contact uses ${UNLOCK_COST} credit · ${fmt(kpis.available)} credits available`}
       />
       <Toolbar>
         <SearchBox
@@ -75,7 +75,14 @@ export default function BdeLeads() {
             key: "c",
             header: "Company",
             className: "max-w-48 truncate font-semibold",
-            render: (r) => r.lead.company,
+            render: (r) => (
+              <div>
+                <div className="font-semibold">{r.lead.company}</div>
+                <span className="inline-block rounded-xs bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground font-normal">
+                  {r.lead.category || data.category}
+                </span>
+              </div>
+            ),
           },
           {
             key: "p",

@@ -2,17 +2,25 @@ import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   AlertTriangle,
+  Building2,
   CheckCircle2,
   Copy,
   Download,
   FileSpreadsheet,
+  Globe,
+  Info,
   Loader2,
+  Mail,
+  MapPin,
   PartyPopper,
+  Phone,
+  PlusCircle,
   RotateCcw,
   Send,
   Sparkles,
   Trash2,
   UploadCloud,
+  User,
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -23,19 +31,32 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useLeadGen } from "@/lib/leadgen/store";
+import { api } from "@/lib/api";
 import {
   CURRENT_RA,
   LEAD_SOURCES,
   TODAY,
   batchIdFor,
   fmt,
+  getResearcherCategories,
 } from "@/lib/leadgen/data";
 import { downloadTemplate, readSheetFile } from "@/lib/leadgen/excel";
 import {
   MAX_FILE_MB,
   TEMPLATE_FIELDS,
   checkFile,
+  isValidEmail,
+  isValidPhone,
+  phoneDigits,
   rowsFromSheet,
   sampleSheet,
   summarize,
@@ -54,6 +75,7 @@ const STEPS = [
 export function UploadWizard() {
   const { state, dispatch } = useLeadGen();
   const inputRef = useRef(null);
+  const [mode, setMode] = useState("bulk"); // "bulk" | "manual"
   const [step, setStep] = useState(0);
   const [drag, setDrag] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -67,13 +89,28 @@ export function UploadWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [doneBatch, setDoneBatch] = useState(null);
 
+  const storedUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  }, []);
+  const currentRa =
+    storedUser.role === "ra" && storedUser.name ? storedUser.name : CURRENT_RA;
+
+  const assignedCategories = useMemo(
+    () => getResearcherCategories(currentRa),
+    [currentRa],
+  );
+
   const kept = useMemo(
     () => rows.filter((r) => !removed.has(r.rowNo)),
     [rows, removed],
   );
   const validated = useMemo(
-    () => validateRows(kept, state.leads),
-    [kept, state.leads],
+    () => validateRows(kept, state.leads, assignedCategories),
+    [kept, state.leads, assignedCategories],
   );
   const summary = summarize(validated);
   const visible =
@@ -95,7 +132,7 @@ export function UploadWizard() {
     const { rows: parsed, missingColumns } = rowsFromSheet(aoa);
     if (missingColumns.length) {
       setError(
-        `Missing required column${missingColumns.length > 1 ? "s" : ""}: ${missingColumns.join(", ")}. Please use the sample template.`,
+        `Missing required column${missingColumns.length > 1 ? "s" : ""}: ${missingColumns.join(", ")}. Please download the latest template.`,
       );
       toast.error("File doesn't match the template");
       return;
@@ -146,7 +183,7 @@ export function UploadWizard() {
       await new Promise((r) => setTimeout(r, 120));
     }
     setProgress(null);
-    loadRows(sampleSheet(), "sample_hospitals_south_india.xlsx", 18_432);
+    loadRows(sampleSheet(), "sample_healthcare_leads.xlsx", 18_432);
   };
 
   const removeRows = (nos, label) => {
@@ -159,40 +196,51 @@ export function UploadWizard() {
     const valid = validated.filter((r) => r.status === "valid");
     let seq = 1;
     while (
-      state.batches.some((b) => b.id === batchIdFor(CURRENT_RA, TODAY, seq))
+      state.batches.some((b) => b.id === batchIdFor(currentRa, TODAY, seq))
     )
       seq++;
-    const id = batchIdFor(CURRENT_RA, TODAY, seq);
+    const id = batchIdFor(currentRa, TODAY, seq);
     setSubmitting(true);
     await new Promise((r) => setTimeout(r, 700));
+
     const toLead = (r) => {
       const v = r.values;
-      const source =
-        LEAD_SOURCES.find((s) => s.toLowerCase() === v.source.toLowerCase()) ??
-        "Web";
+      const category =
+        v.category || assignedCategories[0] || "Healthcare & Pharma";
       return {
         company: v.company,
+        category,
         contact: v.contact,
-        designation: v.designation,
+        email: v.email || "",
         phone: v.phone,
-        email: v.email,
-        location: v.location,
-        industry: v.industry,
-        source,
         website: v.website || undefined,
+        country: v.country || "India",
+        stateCity: v.stateCity || undefined,
+        companyAddress: v.companyAddress || undefined,
         linkedin: v.linkedin || undefined,
-        companySize: v.companySize || undefined,
-        department: v.department || undefined,
-        notes: v.notes || undefined,
+        description: v.description || undefined,
+        // Legacy compatibility:
+        source: v.source || "Excel Upload",
+        designation: v.designation || undefined,
+        industry: v.industry || undefined,
+        location: v.stateCity || v.country || "India",
+        notes: v.description || undefined,
       };
     };
+
+    const batchCategory =
+      valid[0]?.values?.category ||
+      assignedCategories[0] ||
+      "Healthcare & Pharma";
+
     dispatch({
       type: "submitBatch",
       batch: {
         id,
         fileName,
+        category: batchCategory,
         uploadedOn: TODAY,
-        researcher: CURRENT_RA,
+        researcher: currentRa,
         totalRecords: rows.length,
         validRecords: valid.length,
         invalidRecords: summary.invalid,
@@ -200,6 +248,21 @@ export function UploadWizard() {
       },
       rows: valid.map(toLead),
     });
+
+    api
+      .uploadBatch(
+        {
+          id,
+          fileName,
+          category: batchCategory,
+          uploadedBy: currentRa,
+        },
+        valid.map(toLead),
+      )
+      .catch((err) =>
+        console.warn("[API] uploadBatch sync failed:", err.message),
+      );
+
     setSubmitting(false);
     setConfirm(false);
     setDoneBatch({ id, count: valid.length });
@@ -210,416 +273,1016 @@ export function UploadWizard() {
 
   return (
     <div className="space-y-4">
-      <Stepper step={doneBatch ? 5 : step} />
+      {/* Top Bar with Mode Switch and Researcher Assigned Categories Info */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-sm">
+        <div className="flex rounded-md border bg-muted/50 p-1">
+          <button
+            type="button"
+            onClick={() => setMode("bulk")}
+            className={cn(
+              "flex items-center gap-2 rounded px-3 py-1.5 text-xs font-semibold transition-all",
+              mode === "bulk"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <FileSpreadsheet className="size-4" />
+            Excel / CSV Bulk Upload
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("manual")}
+            className={cn(
+              "flex items-center gap-2 rounded px-3 py-1.5 text-xs font-semibold transition-all",
+              mode === "manual"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <PlusCircle className="size-4" />
+            Manual Single Lead Entry
+          </button>
+        </div>
 
-      {step === 0 && (
-        <div className="grid gap-4 xl:grid-cols-12">
-          <Panel className="xl:col-span-8">
-            <PanelHeader
-              title="Step 1 · Upload File"
-              subtitle="Drag a lead sheet here or browse your computer"
-            />
-            <div className="px-4 pb-4">
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDrag(true);
-                }}
-                onDragLeave={() => setDrag(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDrag(false);
-                  handleFile(e.dataTransfer.files[0]);
-                }}
-                className={cn(
-                  "flex flex-col items-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
-                  drag
-                    ? "border-primary bg-primary-soft"
-                    : "border-input bg-muted/40",
-                  error && "border-destructive/60",
-                )}
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span>
+            Research Analyst:{" "}
+            <strong className="text-foreground">{currentRa}</strong>
+          </span>
+          <span className="text-border">|</span>
+          <span className="font-medium text-foreground">
+            Assigned Categories:
+          </span>
+          <div className="flex flex-wrap gap-1">
+            {assignedCategories.map((c) => (
+              <span
+                key={c}
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary"
               >
-                <div className="flex size-14 items-center justify-center rounded-2xl bg-tint-blue text-tint-blue-foreground">
-                  <UploadCloud className="size-7" />
-                </div>
-                <div className="mt-3 text-sm font-semibold">
-                  Drag and drop your Excel or CSV file
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  Supported: .xlsx, .xls, .csv · Maximum {MAX_FILE_MB} MB
-                </div>
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => inputRef.current?.click()}
-                    disabled={progress !== null}
-                  >
-                    <FileSpreadsheet /> Browse file
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={useSample}
-                    disabled={progress !== null}
-                  >
-                    <Sparkles /> Try with sample data
-                  </Button>
-                </div>
-                <input
-                  ref={inputRef}
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  className="sr-only"
-                  aria-label="Lead file"
-                  onChange={(e) => handleFile(e.target.files?.[0])}
-                />
-                {progress !== null && (
-                  <div className="mt-5 w-full max-w-sm">
-                    <div className="mb-1 flex justify-between text-xs">
-                      <span className="flex items-center gap-1.5">
-                        <Loader2 className="size-3.5 animate-spin" /> Reading
-                        file…
-                      </span>
-                      <span className="num">{progress}%</span>
-                    </div>
-                    <Progress value={progress} className="h-2" />
-                  </div>
-                )}
-                {error && (
-                  <div
-                    className="mt-4 flex max-w-md items-start gap-2 rounded-md bg-tint-red px-3 py-2 text-left text-xs font-medium text-tint-red-foreground"
-                    role="alert"
-                  >
-                    <XCircle className="mt-0.5 size-4 shrink-0" /> {error}
-                  </div>
-                )}
-              </div>
-            </div>
-          </Panel>
-          <Panel className="xl:col-span-4">
-            <PanelHeader
-              title="Upload instructions"
-              actions={
-                <Button
-                  size="xs"
-                  variant="soft"
-                  onClick={() =>
-                    downloadTemplate().then(() =>
-                      toast.success("Template downloaded"),
-                    )
-                  }
-                >
-                  <Download /> Sample template
-                </Button>
-              }
-            />
-            <div className="space-y-3 px-4 pb-4 text-[13px]">
-              <ol className="list-decimal space-y-1 pl-4 text-muted-foreground">
-                <li>Download the sample template and keep its header row.</li>
-                <li>
-                  Fill one lead per row. Phone must be a 10-digit Indian mobile.
-                </li>
-                <li>Upload, preview, fix issues, then submit valid records.</li>
-              </ol>
-              <div>
-                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Required fields
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {TEMPLATE_FIELDS.filter((f) => f.required).map((f) => (
-                    <span
-                      key={f.key}
-                      className="rounded-full bg-tint-blue px-2 py-0.5 text-[11px] font-semibold text-tint-blue-foreground"
-                    >
-                      {f.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Optional fields
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {TEMPLATE_FIELDS.filter((f) => !f.required).map((f) => (
-                    <span
-                      key={f.key}
-                      className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
-                    >
-                      {f.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Panel>
-        </div>
-      )}
-
-      {step >= 1 && !doneBatch && (
-        <div className="panel flex flex-wrap items-center gap-3 px-4 py-2.5">
-          <FileSpreadsheet className="size-5 text-success" />
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] font-semibold">{fileName}</div>
-            <div className="num text-[11px] text-muted-foreground">
-              {(fileSize / 1024).toFixed(1)} KB · {fmt(rows.length)} records
-            </div>
+                <span className="size-1.5 rounded-full bg-primary" />
+                {c}
+              </span>
+            ))}
           </div>
-          <Button size="xs" variant="ghost" onClick={reset}>
-            <RotateCcw /> Choose another file
-          </Button>
         </div>
-      )}
+      </div>
 
-      {step === 1 && (
-        <Panel>
-          <PanelHeader
-            title="Step 2 · Preview Data"
-            subtitle={`First ${Math.min(20, rows.length)} of ${rows.length} records`}
-            actions={
-              <Button size="sm" onClick={() => setStep(2)}>
-                Run validation
+      {mode === "manual" ? (
+        <ManualLeadForm
+          assignedCategories={assignedCategories}
+          currentRa={currentRa}
+          leads={state.leads}
+          onSubmitSuccess={(lead) => {
+            // Can switch or stay
+          }}
+          onSwitchToBulk={() => setMode("bulk")}
+        />
+      ) : (
+        <>
+          <Stepper step={doneBatch ? 5 : step} />
+
+          {step === 0 && (
+            <div className="grid gap-4 xl:grid-cols-12">
+              <Panel className="xl:col-span-7">
+                <PanelHeader
+                  title="Step 1 · Upload Lead Sheet"
+                  subtitle="Drag a lead sheet here or browse your computer"
+                />
+                <div className="px-4 pb-4">
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDrag(true);
+                    }}
+                    onDragLeave={() => setDrag(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDrag(false);
+                      handleFile(e.dataTransfer.files[0]);
+                    }}
+                    className={cn(
+                      "flex flex-col items-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
+                      drag
+                        ? "border-primary bg-primary-soft"
+                        : "border-input bg-muted/40",
+                      error && "border-destructive/60",
+                    )}
+                  >
+                    <div className="flex size-14 items-center justify-center rounded-2xl bg-tint-blue text-tint-blue-foreground">
+                      <UploadCloud className="size-7" />
+                    </div>
+                    <div className="mt-3 text-sm font-semibold">
+                      Drag and drop your Excel or CSV file
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Supported: .xlsx, .xls, .csv · Maximum {MAX_FILE_MB} MB
+                    </div>
+                    <div className="mt-4 flex flex-wrap justify-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => inputRef.current?.click()}
+                        disabled={progress !== null}
+                      >
+                        <FileSpreadsheet /> Browse file
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={useSample}
+                        disabled={progress !== null}
+                      >
+                        <Sparkles /> Try with sample data
+                      </Button>
+                    </div>
+                    <input
+                      ref={inputRef}
+                      type="file"
+                      accept=".xlsx,.xls,.csv"
+                      className="sr-only"
+                      aria-label="Lead file"
+                      onChange={(e) => handleFile(e.target.files?.[0])}
+                    />
+                    {progress !== null && (
+                      <div className="mt-5 w-full max-w-sm">
+                        <div className="mb-1 flex justify-between text-xs">
+                          <span className="flex items-center gap-1.5">
+                            <Loader2 className="size-3.5 animate-spin" />{" "}
+                            Reading file…
+                          </span>
+                          <span className="num">{progress}%</span>
+                        </div>
+                        <Progress value={progress} className="h-2" />
+                      </div>
+                    )}
+                    {error && (
+                      <div
+                        className="mt-4 flex max-w-md items-start gap-2 rounded-md bg-tint-red px-3 py-2 text-left text-xs font-medium text-tint-red-foreground"
+                        role="alert"
+                      >
+                        <XCircle className="mt-0.5 size-4 shrink-0" /> {error}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Panel>
+
+              <Panel className="xl:col-span-5">
+                <PanelHeader
+                  title="Lead Management Plan"
+                  subtitle="Field requirements for lead upload"
+                  actions={
+                    <Button
+                      size="xs"
+                      variant="soft"
+                      onClick={() =>
+                        downloadTemplate(assignedCategories).then(() =>
+                          toast.success("Standard template downloaded"),
+                        )
+                      }
+                    >
+                      <Download /> Sample template
+                    </Button>
+                  }
+                />
+                <div className="space-y-3 px-4 pb-4 text-[13px]">
+                  <div className="overflow-hidden rounded-lg border bg-card">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b bg-muted/60 text-left font-semibold text-muted-foreground">
+                          <th className="px-3 py-2">Field</th>
+                          <th className="px-3 py-2">Requirement</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/60">
+                        {TEMPLATE_FIELDS.map((f) => (
+                          <tr key={f.key} className="hover:bg-muted/30">
+                            <td className="px-3 py-1.5 font-medium">
+                              {f.label}
+                            </td>
+                            <td className="px-3 py-1.5">
+                              <span
+                                className={cn(
+                                  "inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                                  f.required
+                                    ? "bg-tint-blue text-tint-blue-foreground"
+                                    : f.requirement === "Valid format"
+                                      ? "bg-tint-amber text-tint-amber-foreground"
+                                      : "bg-muted text-muted-foreground",
+                                )}
+                              >
+                                {f.requirement ||
+                                  (f.required ? "Mandatory" : "Optional")}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="rounded-lg border bg-muted/20 p-3 text-xs space-y-1.5">
+                    <div className="font-semibold text-foreground flex items-center gap-1.5">
+                      <Info className="size-3.5 text-primary" /> Category
+                      Restriction
+                    </div>
+                    <p className="text-muted-foreground text-[11px] leading-relaxed">
+                      You are assigned to upload leads exclusively for{" "}
+                      <strong className="text-foreground">
+                        {assignedCategories.join(", ")}
+                      </strong>
+                      . Rows with other categories will be flagged during
+                      validation.
+                    </p>
+                  </div>
+                </div>
+              </Panel>
+            </div>
+          )}
+
+          {step >= 1 && !doneBatch && (
+            <div className="panel flex flex-wrap items-center gap-3 px-4 py-2.5">
+              <FileSpreadsheet className="size-5 text-success" />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[13px] font-semibold">
+                  {fileName}
+                </div>
+                <div className="num text-[11px] text-muted-foreground">
+                  {(fileSize / 1024).toFixed(1)} KB · {fmt(rows.length)} records
+                </div>
+              </div>
+              <Button size="xs" variant="ghost" onClick={reset}>
+                <RotateCcw /> Choose another file
               </Button>
-            }
-          />
-          <RowsTable
-            rows={rows.slice(0, 20).map((r) => ({
-              ...r,
-              errors: [],
-              duplicates: [],
-              status: "valid",
-            }))}
-            plain
-          />
-        </Panel>
-      )}
+            </div>
+          )}
 
-      {step === 2 && (
-        <Panel>
-          <PanelHeader
-            title="Step 3 · Validation"
-            subtitle="Fix the file or remove problem rows. Duplicates are never merged into existing leads."
-            actions={
-              <>
-                <Button size="sm" variant="outline" onClick={() => setStep(1)}>
+          {step === 1 && (
+            <Panel>
+              <PanelHeader
+                title="Step 2 · Preview Data"
+                subtitle={`First ${Math.min(20, rows.length)} of ${rows.length} records`}
+                actions={
+                  <Button size="sm" onClick={() => setStep(2)}>
+                    Run validation
+                  </Button>
+                }
+              />
+              <RowsTable
+                rows={rows.slice(0, 20).map((r) => ({
+                  ...r,
+                  errors: [],
+                  duplicates: [],
+                  status: "valid",
+                }))}
+                plain
+              />
+            </Panel>
+          )}
+
+          {step === 2 && (
+            <Panel>
+              <PanelHeader
+                title="Step 3 · Validation"
+                subtitle="Fix the file or remove problem rows. Duplicates are never merged into existing leads."
+                actions={
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setStep(1)}
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => setStep(3)}
+                      disabled={summary.total === 0}
+                    >
+                      Continue
+                    </Button>
+                  </>
+                }
+              />
+              <div className="flex flex-wrap items-center gap-2 border-b px-4 pb-2.5">
+                <TabPills
+                  value={filter}
+                  onChange={setFilter}
+                  tabs={[
+                    { key: "all", label: "All", count: summary.total },
+                    { key: "valid", label: "Valid", count: summary.valid },
+                    {
+                      key: "invalid",
+                      label: "Invalid",
+                      count: summary.invalid,
+                    },
+                    {
+                      key: "duplicate",
+                      label: "Duplicates",
+                      count: summary.duplicate,
+                    },
+                  ]}
+                />
+                <div className="ml-auto flex flex-wrap gap-2">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    disabled={summary.duplicate === 0}
+                    onClick={() =>
+                      removeRows(
+                        validated
+                          .filter((r) => r.status === "duplicate")
+                          .map((r) => r.rowNo),
+                        "duplicate records",
+                      )
+                    }
+                  >
+                    <Copy /> Remove duplicates
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    disabled={summary.invalid === 0}
+                    onClick={() =>
+                      removeRows(
+                        validated
+                          .filter((r) => r.status === "invalid")
+                          .map((r) => r.rowNo),
+                        "invalid records",
+                      )
+                    }
+                  >
+                    <Trash2 /> Remove invalid
+                  </Button>
+                  {removed.size > 0 && (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => setRemoved(new Set())}
+                    >
+                      <RotateCcw /> Restore {removed.size} removed
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <RowsTable
+                rows={visible}
+                onRemove={(no) => removeRows([no], "record")}
+              />
+            </Panel>
+          )}
+
+          {step === 3 && (
+            <Panel>
+              <PanelHeader
+                title="Step 4 · Upload Summary"
+                subtitle="Only valid records will be sent for admin review"
+                actions={
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setStep(2)}
+                    >
+                      Back to validation
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => setStep(4)}
+                      disabled={summary.valid === 0}
+                    >
+                      Continue
+                    </Button>
+                  </>
+                }
+              />
+              <div className="grid gap-3 px-4 pb-4 sm:grid-cols-2 xl:grid-cols-4">
+                <SummaryTile
+                  label="Total Records"
+                  value={rows.length}
+                  tone="bg-tint-blue text-tint-blue-foreground"
+                  icon={FileSpreadsheet}
+                />
+                <SummaryTile
+                  label="Valid Records"
+                  value={summary.valid}
+                  tone="bg-tint-green text-tint-green-foreground"
+                  icon={CheckCircle2}
+                />
+                <SummaryTile
+                  label="Invalid Records"
+                  value={summary.invalid}
+                  tone="bg-tint-red text-tint-red-foreground"
+                  icon={AlertTriangle}
+                />
+                <SummaryTile
+                  label="Duplicate Records"
+                  value={summary.duplicate}
+                  tone="bg-tint-violet text-tint-violet-foreground"
+                  icon={Copy}
+                />
+              </div>
+              {removed.size > 0 && (
+                <p className="px-4 pb-2 text-xs text-muted-foreground">
+                  {removed.size} rows removed by you are excluded from this
+                  upload.
+                </p>
+              )}
+              <IssueBreakdown rows={validated} />
+              {summary.valid === 0 && (
+                <p className="px-4 pb-4 text-xs font-medium text-destructive">
+                  There are no valid records to submit. Go back and fix the
+                  file.
+                </p>
+              )}
+            </Panel>
+          )}
+
+          {step === 4 && !doneBatch && (
+            <Panel>
+              <PanelHeader
+                title="Step 5 · Final Submission"
+                subtitle="Send valid records to the Master Admin for review"
+              />
+              <div className="grid gap-4 px-4 pb-4 md:grid-cols-2">
+                <div className="space-y-2 rounded-lg bg-muted/60 p-3 text-[13px]">
+                  <Row k="File" v={fileName} />
+                  <Row k="Research Analyst" v={currentRa} />
+                  <Row k="Records to submit" v={fmt(summary.valid)} />
+                  <Row
+                    k="Excluded (invalid / duplicate)"
+                    v={`${summary.invalid} / ${summary.duplicate}`}
+                  />
+                  <Row
+                    k="Assigned Categories"
+                    v={assignedCategories.join(", ")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="batch-note">
+                    Note for the reviewer (optional)
+                  </Label>
+                  <Input
+                    id="batch-note"
+                    placeholder="e.g. Leads from MedExpo Hyderabad"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    You can't approve your own leads. The Master Admin reviews
+                    each record.
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 border-t px-4 py-3">
+                <Button variant="outline" size="sm" onClick={() => setStep(3)}>
                   Back
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => setStep(3)}
-                  disabled={summary.total === 0}
+                  onClick={() => setConfirm(true)}
+                  disabled={submitting}
                 >
-                  Continue
+                  {submitting ? <Loader2 className="animate-spin" /> : <Send />}{" "}
+                  Submit {fmt(summary.valid)} records for review
                 </Button>
-              </>
-            }
+              </div>
+            </Panel>
+          )}
+
+          {doneBatch && (
+            <Panel>
+              <div className="flex flex-col items-center px-6 py-10 text-center">
+                <div className="flex size-14 items-center justify-center rounded-2xl bg-tint-green text-tint-green-foreground">
+                  <PartyPopper className="size-7" />
+                </div>
+                <h2 className="mt-3 text-base font-semibold">
+                  Submitted for review
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {fmt(doneBatch.count)} records were sent to the Master Admin.
+                </p>
+                <div className="mt-3 rounded-md bg-muted px-3 py-1.5 text-sm">
+                  Batch ID: <span className="font-bold">{doneBatch.id}</span>
+                </div>
+                <div className="mt-5 flex flex-wrap justify-center gap-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/ra/uploads">View in My Uploads</Link>
+                  </Button>
+                  <Button size="sm" onClick={reset}>
+                    <UploadCloud /> Upload another file
+                  </Button>
+                </div>
+              </div>
+            </Panel>
+          )}
+
+          <ConfirmDialog
+            open={confirm}
+            onOpenChange={setConfirm}
+            title={`Submit ${summary.valid} records for review?`}
+            description={`${summary.invalid + summary.duplicate} invalid or duplicate records will be left out. Submitted leads can't be edited until the admin reviews them.`}
+            confirmLabel={submitting ? "Submitting…" : "Submit for review"}
+            onConfirm={submit}
           />
-          <div className="flex flex-wrap items-center gap-2 border-b px-4 pb-2.5">
-            <TabPills
-              value={filter}
-              onChange={setFilter}
-              tabs={[
-                { key: "all", label: "All", count: summary.total },
-                { key: "valid", label: "Valid", count: summary.valid },
-                { key: "invalid", label: "Invalid", count: summary.invalid },
-                {
-                  key: "duplicate",
-                  label: "Duplicates",
-                  count: summary.duplicate,
-                },
-              ]}
-            />
-            <div className="ml-auto flex flex-wrap gap-2">
-              <Button
-                size="xs"
-                variant="outline"
-                disabled={summary.duplicate === 0}
-                onClick={() =>
-                  removeRows(
-                    validated
-                      .filter((r) => r.status === "duplicate")
-                      .map((r) => r.rowNo),
-                    "duplicate records",
-                  )
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Manual single lead entry form with all 11 required fields */
+function ManualLeadForm({
+  assignedCategories,
+  currentRa,
+  leads,
+  onSubmitSuccess,
+  onSwitchToBulk,
+}) {
+  const { state, dispatch } = useLeadGen();
+  const [formData, setFormData] = useState({
+    company: "",
+    category: assignedCategories[0] || "Healthcare & Pharma",
+    contact: "",
+    email: "",
+    phone: "",
+    website: "",
+    country: "India",
+    stateCity: "",
+    companyAddress: "",
+    linkedin: "",
+    description: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(null);
+
+  const phoneDuplicate = useMemo(() => {
+    if (!formData.phone || formData.phone.trim().length < 7) return null;
+    const digits = phoneDigits(formData.phone);
+    return leads.find((l) => l.phone && phoneDigits(l.phone) === digits);
+  }, [formData.phone, leads]);
+
+  const emailDuplicate = useMemo(() => {
+    if (!formData.email || !formData.email.includes("@")) return null;
+    const target = formData.email.toLowerCase().trim();
+    return leads.find(
+      (l) => l.email && l.email.toLowerCase().trim() === target,
+    );
+  }, [formData.email, leads]);
+
+  const resetForm = () => {
+    setFormData({
+      company: "",
+      category: assignedCategories[0] || "Healthcare & Pharma",
+      contact: "",
+      email: "",
+      phone: "",
+      website: "",
+      country: "India",
+      stateCity: "",
+      companyAddress: "",
+      linkedin: "",
+      description: "",
+    });
+    setErrors({});
+    setSuccess(null);
+  };
+
+  const validate = () => {
+    const errs = {};
+    if (!formData.company.trim()) errs.company = "Company Name is mandatory";
+    if (!formData.category.trim()) errs.category = "Category is mandatory";
+    if (!formData.contact.trim()) errs.contact = "Contact Person is mandatory";
+    if (!formData.country.trim()) errs.country = "Country is mandatory";
+    if (!formData.phone.trim()) errs.phone = "Phone Number is mandatory";
+    else if (!isValidPhone(formData.phone))
+      errs.phone = "Enter a valid phone number (e.g. 10-digit mobile)";
+
+    if (formData.email.trim() && !isValidEmail(formData.email)) {
+      errs.email =
+        "Enter a valid business email format (e.g. name@company.com)";
+    }
+    return errs;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      toast.error("Please fill all mandatory fields properly");
+      return;
+    }
+    setErrors({});
+    setSubmitting(true);
+    await new Promise((r) => setTimeout(r, 600));
+
+    let seq = 1;
+    while (
+      state.batches.some((b) => b.id === batchIdFor(currentRa, TODAY, seq))
+    ) {
+      seq++;
+    }
+    const batchId = batchIdFor(currentRa, TODAY, seq);
+
+    const leadRecord = {
+      company: formData.company.trim(),
+      category: formData.category.trim(),
+      contact: formData.contact.trim(),
+      email: formData.email.trim() || "",
+      phone: formData.phone.trim(),
+      website: formData.website.trim() || undefined,
+      country: formData.country.trim(),
+      stateCity: formData.stateCity.trim() || undefined,
+      companyAddress: formData.companyAddress.trim() || undefined,
+      linkedin: formData.linkedin.trim() || undefined,
+      description: formData.description.trim() || undefined,
+      location: formData.stateCity.trim() || formData.country.trim() || "India",
+      source: "Manual Entry",
+      notes: formData.description.trim() || undefined,
+    };
+
+    dispatch({
+      type: "submitBatch",
+      batch: {
+        id: batchId,
+        fileName: "Single Lead Manual Entry",
+        category: formData.category.trim(),
+        uploadedOn: TODAY,
+        researcher: currentRa,
+        totalRecords: 1,
+        validRecords: 1,
+        invalidRecords: 0,
+        duplicates: 0,
+      },
+      rows: [leadRecord],
+    });
+
+    api
+      .uploadBatch(
+        {
+          id: batchId,
+          fileName: "Single Lead Manual Entry",
+          category: formData.category.trim(),
+          uploadedBy: currentRa,
+        },
+        [leadRecord],
+      )
+      .catch((err) =>
+        console.warn("[API] single lead upload sync failed:", err.message),
+      );
+
+    setSubmitting(false);
+    setSuccess({ ...leadRecord, batchId });
+    toast.success(
+      `Lead for "${leadRecord.company}" submitted for admin review`,
+    );
+    onSubmitSuccess?.(leadRecord);
+  };
+
+  if (success) {
+    return (
+      <Panel>
+        <div className="flex flex-col items-center px-6 py-12 text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-tint-green text-tint-green-foreground shadow-sm">
+            <CheckCircle2 className="size-7" />
+          </div>
+          <h2 className="mt-4 text-lg font-bold">
+            Lead Successfully Submitted!
+          </h2>
+          <p className="mt-1 max-w-md text-sm text-muted-foreground">
+            Lead for{" "}
+            <strong className="text-foreground">{success.company}</strong> has
+            been added to the Master Admin review queue.
+          </p>
+
+          <div className="mt-4 grid w-full max-w-md grid-cols-2 gap-2 rounded-lg border bg-muted/40 p-3 text-left text-xs">
+            <div>
+              <span className="text-muted-foreground">Batch ID:</span>{" "}
+              <span className="font-semibold">{success.batchId}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Category:</span>{" "}
+              <span className="font-semibold">{success.category}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Contact:</span>{" "}
+              <span className="font-semibold">{success.contact}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Phone:</span>{" "}
+              <span className="font-semibold">{success.phone}</span>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            <Button size="sm" onClick={resetForm}>
+              <PlusCircle className="size-4" /> Add Another Lead
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/ra/uploads">View in My Uploads</Link>
+            </Button>
+            <Button size="sm" variant="ghost" onClick={onSwitchToBulk}>
+              Switch to Bulk Upload
+            </Button>
+          </div>
+        </div>
+      </Panel>
+    );
+  }
+
+  return (
+    <Panel>
+      <PanelHeader
+        title="Single Lead Entry Form"
+        subtitle="Enter lead details based on the Lead Management Plan specifications"
+      />
+      <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
+        {/* Company & Category Section */}
+        <div>
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold border-b pb-1.5 text-foreground">
+            <Building2 className="size-4 text-primary" />
+            Company & Category Information
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="company-name" className="text-xs font-semibold">
+                Company Name <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="company-name"
+                placeholder="e.g. Apollo Hospitals Ltd"
+                value={formData.company}
+                onChange={(e) =>
+                  setFormData({ ...formData, company: e.target.value })
+                }
+                className={cn(errors.company && "border-destructive")}
+              />
+              {errors.company && (
+                <p className="text-[11px] text-destructive font-medium">
+                  {errors.company}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="category" className="text-xs font-semibold">
+                Category (Assigned only){" "}
+                <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={formData.category}
+                onValueChange={(val) =>
+                  setFormData({ ...formData, category: val })
                 }
               >
-                <Copy /> Remove duplicates
-              </Button>
-              <Button
-                size="xs"
-                variant="outline"
-                disabled={summary.invalid === 0}
-                onClick={() =>
-                  removeRows(
-                    validated
-                      .filter((r) => r.status === "invalid")
-                      .map((r) => r.rowNo),
-                    "invalid records",
-                  )
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Select assigned category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {assignedCategories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.category && (
+                <p className="text-[11px] text-destructive font-medium">
+                  {errors.category}
+                </p>
+              )}
+              <p className="text-[10px] text-muted-foreground">
+                Only your assigned categories are selectable.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="country" className="text-xs font-semibold">
+                Country <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="country"
+                placeholder="e.g. India"
+                value={formData.country}
+                onChange={(e) =>
+                  setFormData({ ...formData, country: e.target.value })
                 }
-              >
-                <Trash2 /> Remove invalid
-              </Button>
-              {removed.size > 0 && (
-                <Button
-                  size="xs"
-                  variant="ghost"
-                  onClick={() => setRemoved(new Set())}
-                >
-                  <RotateCcw /> Restore {removed.size} removed
-                </Button>
+                className={cn(errors.country && "border-destructive")}
+              />
+              {errors.country && (
+                <p className="text-[11px] text-destructive font-medium">
+                  {errors.country}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="state-city" className="text-xs font-medium">
+                State / City{" "}
+                <span className="text-muted-foreground">(Optional)</span>
+              </Label>
+              <Input
+                id="state-city"
+                placeholder="e.g. Telangana / Hyderabad"
+                value={formData.stateCity}
+                onChange={(e) =>
+                  setFormData({ ...formData, stateCity: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="company-address" className="text-xs font-medium">
+                Company Address{" "}
+                <span className="text-muted-foreground">(Optional)</span>
+              </Label>
+              <Input
+                id="company-address"
+                placeholder="e.g. Road No 2, Banjara Hills, Hyderabad"
+                value={formData.companyAddress}
+                onChange={(e) =>
+                  setFormData({ ...formData, companyAddress: e.target.value })
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Person Details Section */}
+        <div>
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold border-b pb-1.5 text-foreground">
+            <User className="size-4 text-primary" />
+            Contact Person Information
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="contact-person" className="text-xs font-semibold">
+                Contact Person <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="contact-person"
+                placeholder="e.g. Dr. K. Hari Prasad"
+                value={formData.contact}
+                onChange={(e) =>
+                  setFormData({ ...formData, contact: e.target.value })
+                }
+                className={cn(errors.contact && "border-destructive")}
+              />
+              {errors.contact && (
+                <p className="text-[11px] text-destructive font-medium">
+                  {errors.contact}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="phone-number" className="text-xs font-semibold">
+                Phone Number (Valid number){" "}
+                <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="phone-number"
+                placeholder="e.g. +91 98480 12345"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className={cn(errors.phone && "border-destructive")}
+              />
+              {errors.phone && (
+                <p className="text-[11px] text-destructive font-medium">
+                  {errors.phone}
+                </p>
+              )}
+              {phoneDuplicate && (
+                <div className="flex items-center gap-1 text-[11px] font-medium text-amber-600">
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  Warning: Phone exists in Lead #{phoneDuplicate.id} (
+                  {phoneDuplicate.company})
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="business-email" className="text-xs font-medium">
+                Business Email (Valid format){" "}
+                <span className="text-muted-foreground">(Optional)</span>
+              </Label>
+              <Input
+                id="business-email"
+                type="email"
+                placeholder="e.g. hariprasad@apollohospitals.com"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className={cn(errors.email && "border-destructive")}
+              />
+              {errors.email && (
+                <p className="text-[11px] text-destructive font-medium">
+                  {errors.email}
+                </p>
+              )}
+              {emailDuplicate && (
+                <div className="flex items-center gap-1 text-[11px] font-medium text-amber-600">
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  Warning: Email exists in Lead #{emailDuplicate.id} (
+                  {emailDuplicate.company})
+                </div>
               )}
             </div>
           </div>
-          <RowsTable
-            rows={visible}
-            onRemove={(no) => removeRows([no], "record")}
-          />
-        </Panel>
-      )}
+        </div>
 
-      {step === 3 && (
-        <Panel>
-          <PanelHeader
-            title="Step 4 · Upload Summary"
-            subtitle="Only valid records will be sent for admin review"
-            actions={
-              <>
-                <Button size="sm" variant="outline" onClick={() => setStep(2)}>
-                  Back to validation
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setStep(4)}
-                  disabled={summary.valid === 0}
-                >
-                  Continue
-                </Button>
-              </>
-            }
-          />
-          <div className="grid gap-3 px-4 pb-4 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryTile
-              label="Total Records"
-              value={rows.length}
-              tone="bg-tint-blue text-tint-blue-foreground"
-              icon={FileSpreadsheet}
-            />
-            <SummaryTile
-              label="Valid Records"
-              value={summary.valid}
-              tone="bg-tint-green text-tint-green-foreground"
-              icon={CheckCircle2}
-            />
-            <SummaryTile
-              label="Invalid Records"
-              value={summary.invalid}
-              tone="bg-tint-red text-tint-red-foreground"
-              icon={AlertTriangle}
-            />
-            <SummaryTile
-              label="Duplicate Records"
-              value={summary.duplicate}
-              tone="bg-tint-violet text-tint-violet-foreground"
-              icon={Copy}
-            />
+        {/* Web & Description Section */}
+        <div>
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold border-b pb-1.5 text-foreground">
+            <Globe className="size-4 text-primary" />
+            Online Presence & Description
           </div>
-          {removed.size > 0 && (
-            <p className="px-4 pb-2 text-xs text-muted-foreground">
-              {removed.size} rows removed by you are excluded from this upload.
-            </p>
-          )}
-          <IssueBreakdown rows={validated} />
-          {summary.valid === 0 && (
-            <p className="px-4 pb-4 text-xs font-medium text-destructive">
-              There are no valid records to submit. Go back and fix the file.
-            </p>
-          )}
-        </Panel>
-      )}
-
-      {step === 4 && !doneBatch && (
-        <Panel>
-          <PanelHeader
-            title="Step 5 · Final Submission"
-            subtitle="Send valid records to the Master Admin for review"
-          />
-          <div className="grid gap-4 px-4 pb-4 md:grid-cols-2">
-            <div className="space-y-2 rounded-lg bg-muted/60 p-3 text-[13px]">
-              <Row k="File" v={fileName} />
-              <Row k="Research Analyst" v={CURRENT_RA} />
-              <Row k="Records to submit" v={fmt(summary.valid)} />
-              <Row
-                k="Excluded (invalid / duplicate)"
-                v={`${summary.invalid} / ${summary.duplicate}`}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="batch-note">
-                Note for the reviewer (optional)
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="website" className="text-xs font-medium">
+                Website{" "}
+                <span className="text-muted-foreground">(Optional)</span>
               </Label>
               <Input
-                id="batch-note"
-                placeholder="e.g. Leads from MedExpo Hyderabad"
+                id="website"
+                placeholder="e.g. https://apollohospitals.com"
+                value={formData.website}
+                onChange={(e) =>
+                  setFormData({ ...formData, website: e.target.value })
+                }
               />
-              <p className="text-xs text-muted-foreground">
-                You can't approve your own leads. The Master Admin reviews each
-                record.
-              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="linkedin" className="text-xs font-medium">
+                LinkedIn URL{" "}
+                <span className="text-muted-foreground">(Optional)</span>
+              </Label>
+              <Input
+                id="linkedin"
+                placeholder="e.g. https://linkedin.com/company/apollo-hospitals"
+                value={formData.linkedin}
+                onChange={(e) =>
+                  setFormData({ ...formData, linkedin: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="description" className="text-xs font-medium">
+                Description / Notes{" "}
+                <span className="text-muted-foreground">(Optional)</span>
+              </Label>
+              <Textarea
+                id="description"
+                rows={3}
+                placeholder="Enter background notes, specialty, or lead context..."
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+              />
             </div>
           </div>
-          <div className="flex justify-end gap-2 border-t px-4 py-3">
-            <Button variant="outline" size="sm" onClick={() => setStep(3)}>
-              Back
-            </Button>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={resetForm}
+            disabled={submitting}
+          >
+            Clear Form
+          </Button>
+          <div className="flex gap-2">
             <Button
+              type="button"
+              variant="outline"
               size="sm"
-              onClick={() => setConfirm(true)}
+              onClick={onSwitchToBulk}
               disabled={submitting}
             >
-              {submitting ? <Loader2 className="animate-spin" /> : <Send />}{" "}
-              Submit {fmt(summary.valid)} records for review
+              Cancel & Switch to Bulk
+            </Button>
+            <Button type="submit" size="sm" disabled={submitting}>
+              {submitting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" /> Submitting...
+                </>
+              ) : (
+                <>
+                  <Send className="size-4" /> Submit Lead for Admin Review
+                </>
+              )}
             </Button>
           </div>
-        </Panel>
-      )}
-
-      {doneBatch && (
-        <Panel>
-          <div className="flex flex-col items-center px-6 py-10 text-center">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-tint-green text-tint-green-foreground">
-              <PartyPopper className="size-7" />
-            </div>
-            <h2 className="mt-3 text-base font-semibold">
-              Submitted for review
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {fmt(doneBatch.count)} records were sent to the Master Admin.
-            </p>
-            <div className="mt-3 rounded-md bg-muted px-3 py-1.5 text-sm">
-              Batch ID: <span className="font-bold">{doneBatch.id}</span>
-            </div>
-            <div className="mt-5 flex flex-wrap justify-center gap-2">
-              <Button asChild size="sm" variant="outline">
-                <Link to="/ra/uploads">View in My Uploads</Link>
-              </Button>
-              <Button size="sm" onClick={reset}>
-                <UploadCloud /> Upload another file
-              </Button>
-            </div>
-          </div>
-        </Panel>
-      )}
-
-      <ConfirmDialog
-        open={confirm}
-        onOpenChange={setConfirm}
-        title={`Submit ${summary.valid} records for review?`}
-        description={`${summary.invalid + summary.duplicate} invalid or duplicate records will be left out. Submitted leads can't be edited until the admin reviews them.`}
-        confirmLabel={submitting ? "Submitting…" : "Submit for review"}
-        onConfirm={submit}
-      />
-    </div>
+        </div>
+      </form>
+    </Panel>
   );
 }
 

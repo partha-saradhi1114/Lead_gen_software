@@ -83,6 +83,31 @@ describe("LeadGen admin rules", () => {
     expect(next.bdes.find((b) => b.name === "Ravi Kumar")?.allocated).toBe(600);
     expect(selectKpis(next).creditsAllocated).toBe(2100);
   });
+
+  it("updating workspace settings updates the settings state properly", () => {
+    const s = seed();
+    const next = leadGenReducer(s, {
+      type: "updateSettings",
+      section: "general",
+      values: { workspaceName: "Lead Generation Software" },
+    });
+    expect(next.settings?.general?.workspaceName).toBe(
+      "Lead Generation Software",
+    );
+  });
+
+  it("allocating leads assigns them to a BDE and adds them to BDE assignments", () => {
+    const s = seed();
+    const next = leadGenReducer(s, {
+      type: "allocateLeads",
+      leadIds: [1, 2],
+      bde: "Ravi Kumar",
+    });
+    expect(next.leads.find((l) => l.id === 1)?.assignedName).toBe("Ravi Kumar");
+    expect(
+      next.assignments?.some((a) => a.leadId === 1 && a.bde === "Ravi Kumar"),
+    ).toBe(true);
+  });
 });
 
 describe("Research Analyst rules", () => {

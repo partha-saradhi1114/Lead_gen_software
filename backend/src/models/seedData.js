@@ -1,4 +1,11 @@
 export const LEAD_SOURCES = ["Web", "Event", "Referral", "LinkedIn", "Cold Call"];
+export const LEAD_CATEGORIES = [
+  "Students / Education",
+  "IT & Upskilling",
+  "Corporate Training",
+  "Healthcare & Pharma",
+  "General Enquiries",
+];
 export const RESEARCHERS = ["Priya M", "Arjun K", "Neha R", "Sneha T", "Rahul P"];
 export const REJECTION_REASONS = [
   "Duplicate lead",
@@ -40,13 +47,54 @@ export const SEED_COUNTS = { pending: 620, approved: 3420, rejected: 240 };
 
 const FEATURED = [
   {
+    company: "Osmania University CSE",
+    contact: "Mr. Rahul Sharma",
+    phone: "+91 98480 12345",
+    email: "rahul.sharma@osmania.edu.in",
+    source: "Campus Drive",
+    category: "Students / Education",
+    uploadedBy: "Priya M",
+    uploadedOn: "2026-11-18",
+  },
+  {
+    company: "JNTU Hyderabad BCA",
+    contact: "Ms. Pooja Reddy",
+    phone: "+91 94401 56789",
+    email: "pooja.reddy@jntuh.ac.in",
+    source: "Web",
+    category: "Students / Education",
+    uploadedBy: "Priya M",
+    uploadedOn: "2026-11-18",
+  },
+  {
+    company: "CloudMatrix Technologies",
+    contact: "Mr. Arun Sundar",
+    phone: "+91 98450 67890",
+    email: "arun.sundar@cloudmatrix.io",
+    source: "Event",
+    category: "IT & Upskilling",
+    uploadedBy: "Arjun K",
+    uploadedOn: "2026-11-18",
+  },
+  {
+    company: "TechCorp Global Solutions",
+    contact: "Mr. Vikram Malhotra",
+    phone: "+91 98110 54321",
+    email: "vikram.m@techcorpglobal.com",
+    source: "Referral",
+    category: "Corporate Training",
+    uploadedBy: "Neha R",
+    uploadedOn: "2026-11-17",
+  },
+  {
     company: "ABC Hospitals Pvt Ltd",
     contact: "Mr. Rajesh Kumar",
     phone: "+91 98765 43210",
     email: "rajesh@abchospitals.com",
     source: "Web",
+    category: "Healthcare & Pharma",
     uploadedBy: "Priya M",
-    uploadedOn: "2026-11-18",
+    uploadedOn: "2026-11-17",
   },
   {
     company: "V Care Diagnostics",
@@ -54,26 +102,29 @@ const FEATURED = [
     phone: "+91 91234 56789",
     email: "neha@vcarelabs.in",
     source: "Event",
+    category: "Healthcare & Pharma",
     uploadedBy: "Arjun K",
-    uploadedOn: "2026-11-18",
+    uploadedOn: "2026-11-16",
   },
   {
-    company: "HealthFirst Clinics",
-    contact: "Mr. Vivek Sharma",
-    phone: "+91 99887 66554",
-    email: "vivek@healthfirst.in",
-    source: "Referral",
-    uploadedBy: "Priya M",
-    uploadedOn: "2026-11-17",
-  },
-  {
-    company: "Wellness Plus Pvt Ltd",
-    contact: "Mr. Karthik Rao",
-    phone: "+91 87965 12034",
-    email: "karthik@wellnessplus.in",
-    source: "Web",
+    company: "CareerLaunch Academy",
+    contact: "Mr. Manoj Pillai",
+    phone: "+91 98400 33445",
+    email: "manoj@careerlaunch.org",
+    source: "Cold Call",
+    category: "General Enquiries",
     uploadedBy: "Neha R",
-    uploadedOn: "2026-11-17",
+    uploadedOn: "2026-11-16",
+  },
+  {
+    company: "Andhra University MCA",
+    contact: "Mr. Aditya Varma",
+    phone: "+91 97000 88991",
+    email: "aditya.varma@andhrauniv.edu",
+    source: "Web",
+    category: "Students / Education",
+    uploadedBy: "Priya M",
+    uploadedOn: "2026-11-15",
   },
 ];
 
@@ -181,7 +232,7 @@ export function isoDaysBefore(base, days) {
   return d.toISOString().slice(0, 10);
 }
 
-export function makeLead(r, id, status, uploadedOn, uploadedBy) {
+export function makeLead(r, id, status, uploadedOn, uploadedBy, category) {
   const brand = pick(r, BRANDS);
   const kind = pick(r, KINDS);
   const first = pick(r, FIRST);
@@ -197,6 +248,7 @@ export function makeLead(r, id, status, uploadedOn, uploadedBy) {
     phone,
     email: `${first.toLowerCase()}@${domain}.${r() > 0.5 ? "in" : "com"}`,
     source: pick(r, LEAD_SOURCES),
+    category: category ?? LEAD_CATEGORIES[id % LEAD_CATEGORIES.length],
     uploadedBy: uploadedBy ?? pick(r, RESEARCHERS.slice(0, 3)),
     uploadedOn,
     status,

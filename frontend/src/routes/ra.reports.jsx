@@ -25,6 +25,7 @@ import { Panel, PanelHeader } from "@/components/common/Panel";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ClientOnly } from "@/components/common/ClientOnly";
 import { FilterSelect } from "@/components/common/Toolbar";
 import { useRaData } from "@/components/ra/useRaData";
 import { TODAY, fmt, formatDate, isoDaysBefore, pct } from "@/lib/leadgen/data";
@@ -40,9 +41,11 @@ const tooltipStyle = {
 function ChartBox({ children }) {
   return (
     <div className="h-64 px-2 pb-3">
-      <ResponsiveContainer width="100%" height="100%">
-        {children}
-      </ResponsiveContainer>
+      <ClientOnly>
+        <ResponsiveContainer width="100%" height="100%">
+          {children}
+        </ResponsiveContainer>
+      </ClientOnly>
     </div>
   );
 }
@@ -84,7 +87,7 @@ export default function Reports() {
       .slice(0, 10)
       .reverse()
       .map((b) => ({
-        batch: b.id.replace(/^BT-/, ""),
+        batch: String(b.id || b.batchId || "BT").replace(/^BT-/, ""),
         approved: b.approved,
         rejected: b.rejected,
         pending: b.pending,

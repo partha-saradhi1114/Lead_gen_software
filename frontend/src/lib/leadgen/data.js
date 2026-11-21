@@ -5,6 +5,29 @@ export const LEAD_SOURCES = [
   "LinkedIn",
   "Cold Call",
 ];
+export const LEAD_CATEGORIES = [
+  "Students / Education",
+  "IT & Upskilling",
+  "Corporate Training",
+  "Healthcare & Pharma",
+  "General Enquiries",
+];
+export const BDE_CATEGORIES = {
+  "Ravi Kumar": "Students / Education",
+  "Anitha Reddy": "IT & Upskilling",
+  "Kiran Varma": "Corporate Training",
+  "Megha S": "Healthcare & Pharma",
+};
+export const RESEARCHER_CATEGORIES = {
+  "Priya M": ["Healthcare & Pharma", "Students / Education"],
+  "Arjun K": ["IT & Upskilling", "Healthcare & Pharma"],
+  "Neha R": ["Corporate Training", "IT & Upskilling"],
+  "Sneha T": ["Healthcare & Pharma", "General Enquiries"],
+  "Rahul P": ["Students / Education", "General Enquiries"],
+};
+export function getResearcherCategories(researcher = CURRENT_RA) {
+  return RESEARCHER_CATEGORIES[researcher] ?? LEAD_CATEGORIES;
+}
 export const RESEARCHERS = [
   "Priya M",
   "Arjun K",
@@ -65,6 +88,7 @@ const FEATURED = [
     phone: "+91 98765 43210",
     email: "rajesh@abchospitals.com",
     source: "Web",
+    category: "Healthcare & Pharma",
     uploadedBy: "Priya M",
     uploadedOn: "2026-11-18",
   },
@@ -74,6 +98,7 @@ const FEATURED = [
     phone: "+91 91234 56789",
     email: "neha@vcarelabs.in",
     source: "Event",
+    category: "Healthcare & Pharma",
     uploadedBy: "Arjun K",
     uploadedOn: "2026-11-18",
   },
@@ -83,6 +108,7 @@ const FEATURED = [
     phone: "+91 99887 66554",
     email: "vivek@healthfirst.in",
     source: "Referral",
+    category: "Students / Education",
     uploadedBy: "Priya M",
     uploadedOn: "2026-11-17",
   },
@@ -92,6 +118,7 @@ const FEATURED = [
     phone: "+91 87965 12034",
     email: "karthik@wellnessplus.in",
     source: "Web",
+    category: "Corporate Training",
     uploadedBy: "Neha R",
     uploadedOn: "2026-11-17",
   },
@@ -202,7 +229,7 @@ export function isoDaysBefore(base, days) {
   return d.toISOString().slice(0, 10);
 }
 
-export function makeLead(r, id, status, uploadedOn, uploadedBy) {
+export function makeLead(r, id, status, uploadedOn, uploadedBy, category) {
   const brand = pick(r, BRANDS);
   const kind = pick(r, KINDS);
   const first = pick(r, FIRST);
@@ -219,6 +246,7 @@ export function makeLead(r, id, status, uploadedOn, uploadedBy) {
     phone,
     email: `${first.toLowerCase()}@${domain}.${r() > 0.5 ? "in" : "com"}`,
     source: pick(r, LEAD_SOURCES),
+    category: category ?? LEAD_CATEGORIES[id % LEAD_CATEGORIES.length],
     uploadedBy: uploadedBy ?? pick(r, RESEARCHERS.slice(0, 3)),
     uploadedOn,
     status,
@@ -229,6 +257,12 @@ export function makeLead(r, id, status, uploadedOn, uploadedBy) {
     designation: pick(r, DESIGNATIONS),
     location: pick(r, LOCATIONS),
     industry: pick(r, INDUSTRIES),
+    country: "India",
+    stateCity: pick(r, LOCATIONS),
+    website: `https://www.${domain}.com`,
+    companyAddress: `Plot ${id * 3}, Tech Park, ${pick(r, LOCATIONS)}`,
+    linkedin: `https://linkedin.com/company/${domain}`,
+    description: `Leading organization in ${category ?? "Healthcare"} vertical.`,
     reviewedOn:
       status === "pending" ? undefined : isoDaysBefore(uploadedOn, -1),
   };
@@ -597,5 +631,9 @@ export function formatDate(iso) {
   return `${String(d ?? 1).padStart(2, "0")}-${months[(m ?? 1) - 1] ?? ""}-${y ?? ""}`;
 }
 
-export const fmt = (n) => n.toLocaleString("en-IN");
+export const fmt = (n) => {
+  if (n === null || n === undefined) return "0";
+  const num = typeof n === "number" ? n : Number(n);
+  return isNaN(num) ? "0" : num.toLocaleString("en-IN");
+};
 export const pct = (num, den) => (den === 0 ? 0 : (num / den) * 100);

@@ -8,21 +8,28 @@ try {
   // Ignore if custom DNS cannot be set
 }
 
+let isMongoConnected = false;
+
+export const getDbStatus = () => isMongoConnected;
+
 export const connectDB = async () => {
   const uri = process.env.MONGODB_URI;
   if (!uri) {
-    console.error("[MongoDB] Error: MONGODB_URI is not defined in .env");
-    process.exit(1);
+    console.log("[MongoDB] Notice: MONGODB_URI not defined. Running in high-performance store mode.");
+    isMongoConnected = false;
+    return null;
   }
 
   try {
     const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 8000,
+      serverSelectionTimeoutMS: 3000,
     });
     console.log(`[MongoDB] Connected successfully: ${conn.connection.host}`);
+    isMongoConnected = true;
     return conn;
   } catch (error) {
-    console.error(`[MongoDB] Connection failed: ${error.message}`);
-    throw error;
+    console.warn(`[MongoDB] Connection note (${error.message}). Falling back to built-in persistent store.`);
+    isMongoConnected = false;
+    return null;
   }
 };

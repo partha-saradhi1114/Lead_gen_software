@@ -64,10 +64,10 @@ export function TabPills({ value, onChange, tabs }) {
           }
         >
           {t.label}
-          {t.count !== undefined && (
+          {t.count !== undefined && t.count !== null && (
             <span className="num ml-1 text-muted-foreground">
               {" "}
-              ({t.count.toLocaleString("en-IN")})
+              ({typeof t.count === "number" ? t.count.toLocaleString("en-IN") : t.count})
             </span>
           )}
         </button>

@@ -7,6 +7,7 @@ const TONES = {
   red: "bg-tint-red text-tint-red-foreground",
   violet: "bg-tint-violet text-tint-violet-foreground",
   cyan: "bg-tint-cyan text-tint-cyan-foreground",
+  purple: "bg-tint-violet text-tint-violet-foreground",
 };
 
 export function KpiCard({
@@ -16,27 +17,33 @@ export function KpiCard({
   tone,
   hint,
   hintTone = "muted",
+  delta,
+  subtext,
 }) {
+  const displayHint = hint || delta || subtext;
+
   return (
     <div className="panel min-w-0 px-3.5 py-3">
       <div className="flex items-start justify-between gap-2">
         <div className="num pt-1 text-[22px] font-bold leading-none tracking-tight">
           {value}
         </div>
-        <div
-          className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-lg",
-            TONES[tone],
-          )}
-        >
-          <Icon className="size-4" strokeWidth={2.2} />
-        </div>
+        {Icon ? (
+          <div
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-lg",
+              TONES[tone] || TONES.blue,
+            )}
+          >
+            <Icon className="size-4" strokeWidth={2.2} />
+          </div>
+        ) : null}
       </div>
       <div className="mt-1.5 truncate text-xs font-medium text-muted-foreground">
         {label}
       </div>
       <div>
-        {hint && (
+        {displayHint && (
           <div
             className={cn(
               "mt-1 truncate text-[11px] font-medium",
@@ -45,7 +52,7 @@ export function KpiCard({
               hintTone === "muted" && "text-muted-foreground",
             )}
           >
-            {hint}
+            {displayHint}
           </div>
         )}
       </div>

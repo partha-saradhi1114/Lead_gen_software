@@ -27,7 +27,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { LEAD_SOURCES, RESEARCHERS, fmt, formatDate } from "@/lib/leadgen/data";
+import { api } from "@/lib/api";
+import {
+  LEAD_CATEGORIES,
+  LEAD_SOURCES,
+  RESEARCHERS,
+  fmt,
+  formatDate,
+} from "@/lib/leadgen/data";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "./RaPerformanceCard";
 import { RejectLeadDialog } from "./RejectLeadDialog";
@@ -46,11 +53,21 @@ const SOURCE_TONE = {
   "Cold Call": "bg-tint-amber text-tint-amber-foreground",
 };
 
+export function getResearcherDisplayName(lead) {
+  const raw = lead?.uploaderName || lead?.uploadedBy || lead?.researcher;
+  if (!raw || typeof raw !== "string") return "Priya M";
+  if (/^[0-9a-fA-F]{24}$/.test(raw) || raw.length > 20) {
+    return "Priya M";
+  }
+  return raw;
+}
+
 export function LeadReviewTable({ pageSize = 6, className }) {
   const { state, dispatch, kpis } = useLeadGen();
   const [tab, setTab] = useState("pending");
   const [query, setQuery] = useState("");
   const [source, setSource] = useState("all");
+  const [category, setCategory] = useState("all");
   const [uploader, setUploader] = useState("all");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(new Set());
@@ -70,14 +87,16 @@ export function LeadReviewTable({ pageSize = 6, className }) {
       (l) =>
         l.status === tab &&
         (source === "all" || l.source === source) &&
-        (uploader === "all" || l.uploadedBy === uploader) &&
+        (category === "all" ||
+          (l.category || "Students / Education") === category) &&
+        (uploader === "all" || getResearcherDisplayName(l) === uploader) &&
         (!q ||
           l.company.toLowerCase().includes(q) ||
           l.contact.toLowerCase().includes(q) ||
           l.email.toLowerCase().includes(q) ||
           l.phone.replace(/\s/g, "").includes(q.replace(/\s/g, ""))),
     );
-  }, [state.leads, tab, query, source, uploader]);
+  }, [state.leads, tab, query, source, category, uploader]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(page, pages);
@@ -93,7 +112,9 @@ export function LeadReviewTable({ pageSize = 6, className }) {
     pendingRows.length > 0 && pendingRows.every((r) => selected.has(r.id));
   const someOnPage = pendingRows.some((r) => selected.has(r.id));
   const activeFilters =
-    (source !== "all" ? 1 : 0) + (uploader !== "all" ? 1 : 0);
+    (source !== "all" ? 1 : 0) +
+    (category !== "all" ? 1 : 0) +
+    (uploader !== "all" ? 1 : 0);
 
   const toggle = (id) =>
     setSelected((s) => {
@@ -112,6 +133,11 @@ export function LeadReviewTable({ pageSize = 6, className }) {
 
   const approve = (ids) => {
     dispatch({ type: "approve", ids });
+    api
+      .approveLeads(ids)
+      .catch((err) =>
+        console.warn("[API] approveLeads sync failed:", err.message),
+      );
     setSelected((s) => {
       const n = new Set(s);
       ids.forEach((id) => n.delete(id));
@@ -131,6 +157,11 @@ export function LeadReviewTable({ pageSize = 6, className }) {
   const reject = (leads, reason) => {
     const ids = leads.map((l) => l.id);
     dispatch({ type: "reject", ids, reason });
+    api
+      .rejectLeads(ids, reason)
+      .catch((err) =>
+        console.warn("[API] rejectLeads sync failed:", err.message),
+      );
     setSelected((s) => {
       const n = new Set(s);
       ids.forEach((id) => n.delete(id));
@@ -219,6 +250,22 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                 </Select>
               </div>
               <div className="space-y-1">
+                <div className="text-xs font-medium">Category / Vertical</div>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {LEAD_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
                 <div className="text-xs font-medium">Uploaded by</div>
                 <Select value={uploader} onValueChange={setUploader}>
                   <SelectTrigger className="h-8 text-xs">
@@ -241,6 +288,7 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                 disabled={activeFilters === 0}
                 onClick={() => {
                   setSource("all");
+                  setCategory("all");
                   setUploader("all");
                 }}
               >
@@ -311,6 +359,9 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                 Email
               </th>
               <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
+                Category
+              </th>
+              <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
                 Source
               </th>
               <th className="whitespace-nowrap px-2 py-2 text-left font-semibold">
@@ -360,6 +411,11 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                   {l.email}
                 </td>
                 <td className="px-2 py-2">
+                  <span className="whitespace-nowrap rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground">
+                    {l.category || "Students / Education"}
+                  </span>
+                </td>
+                <td className="px-2 py-2">
                   <span
                     className={cn(
                       "whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold",
@@ -369,7 +425,9 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                     {l.source}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-2 py-2">{l.uploadedBy}</td>
+                <td className="whitespace-nowrap px-2 py-2">
+                  {getResearcherDisplayName(l)}
+                </td>
                 <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">
                   {formatDate(l.uploadedOn)}
                 </td>
@@ -413,7 +471,7 @@ export function LeadReviewTable({ pageSize = 6, className }) {
             {rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={10}
+                  colSpan={11}
                   className="px-4 py-10 text-center text-sm text-muted-foreground"
                 >
                   No leads match your search or filters.
@@ -476,15 +534,22 @@ function LeadDetailDialog({ lead, onClose, onApprove, onReject }) {
                 {lead.company} <StatusBadge status={lead.status} />
               </DialogTitle>
               <DialogDescription>
-                Lead #{lead.id} · uploaded by {lead.uploadedBy}
+                Lead #{lead.id} · uploaded by {getResearcherDisplayName(lead)}
               </DialogDescription>
             </DialogHeader>
-            <dl className="grid grid-cols-[110px_1fr] gap-y-2 text-[13px]">
+            <dl className="grid grid-cols-[120px_1fr] gap-y-2 text-[13px]">
               {[
-                ["Contact", lead.contact],
-                ["Phone", lead.phone],
-                ["Email", lead.email],
-                ["Source", lead.source],
+                ["Category", lead.category],
+                ["Contact Person", lead.contact],
+                ["Phone Number", lead.phone],
+                ["Business Email", lead.email || "—"],
+                ["Country", lead.country || "India"],
+                ["State / City", lead.stateCity || lead.location || "—"],
+                ["Address", lead.companyAddress || "—"],
+                ["Website", lead.website || "—"],
+                ["LinkedIn", lead.linkedin || "—"],
+                ["Description", lead.description || lead.notes || "—"],
+                ["Source", lead.source || "Excel Upload"],
                 ["Uploaded on", formatDate(lead.uploadedOn)],
                 ...(lead.rejectionReason
                   ? [["Reason", lead.rejectionReason]]
@@ -492,7 +557,7 @@ function LeadDetailDialog({ lead, onClose, onApprove, onReject }) {
               ].map(([k, v]) => (
                 <div key={k} className="contents">
                   <dt className="text-muted-foreground">{k}</dt>
-                  <dd className="font-medium">{v}</dd>
+                  <dd className="font-medium break-words">{v}</dd>
                 </div>
               ))}
             </dl>

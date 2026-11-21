@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema(
       },
       default: "bde",
     },
+    // For BDEs: Assigned Lead Category / Vertical specialization
+    category: {
+      type: String,
+      default: "Students / Education",
+    },
     // For BDEs: credit balance allocated by Admin
     credits: {
       type: Number,

@@ -9,12 +9,70 @@ import { api } from "../api";
 import {
   buildSeedBatches,
   buildSeedLeads,
+  LEAD_CATEGORIES,
   SEED_BDES,
   SEED_CREDITS,
   SEED_TEAM,
 } from "./data";
 import { buildSeedAssignments } from "./bde";
 import { leadGenReducer, selectKpis } from "./reducer";
+
+export const DEFAULT_SETTINGS = {
+  general: {
+    workspaceName: "Lead Generation Software",
+    orgDomain: "arahinfotech.com",
+    contactEmail: "sriram@arahinfotech.com",
+    timezone: "Asia/Kolkata",
+    currency: "INR",
+  },
+  credits: {
+    costPerUnlock: 10,
+    defaultMonthlyQuota: 500,
+    lowCreditThreshold: 50,
+    autoDebitOnUnlock: true,
+    requireApprovalForTopup: false,
+  },
+  rules: {
+    strictPhoneValidation: true,
+    requireBusinessEmail: true,
+    autoDeduplicate: true,
+    maxBatchSize: 500,
+    autoArchiveRejectedAfterDays: 30,
+  },
+  notifications: {
+    emailOnUpload: true,
+    emailOnReview: false,
+    lowCreditAlerts: true,
+    dailyDigest: true,
+    inAppPopups: true,
+  },
+};
+
+export function loadStoredSettings() {
+  try {
+    const raw =
+      typeof window !== "undefined"
+        ? localStorage.getItem("leadgen_settings")
+        : null;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        ...DEFAULT_SETTINGS,
+        ...parsed,
+        general: { ...DEFAULT_SETTINGS.general, ...(parsed.general || {}) },
+        credits: { ...DEFAULT_SETTINGS.credits, ...(parsed.credits || {}) },
+        rules: { ...DEFAULT_SETTINGS.rules, ...(parsed.rules || {}) },
+        notifications: {
+          ...DEFAULT_SETTINGS.notifications,
+          ...(parsed.notifications || {}),
+        },
+      };
+    }
+  } catch {
+    // ignore
+  }
+  return DEFAULT_SETTINGS;
+}
 
 function initState() {
   const leads = buildSeedLeads();
@@ -28,10 +86,29 @@ function initState() {
     nextId: leads.length + 1,
     assignments: buildSeedAssignments(leads, SEED_BDES),
     creditLog: [],
+    settings: loadStoredSettings(),
   };
 }
 
-const LeadGenContext = createContext(null);
+let defaultFallback = null;
+export function getFallbackStore() {
+  if (!defaultFallback) {
+    const state = initState();
+    defaultFallback = {
+      state,
+      dispatch: (action) => {
+        if (defaultFallback.state) {
+          defaultFallback.state = leadGenReducer(defaultFallback.state, action);
+          defaultFallback.kpis = selectKpis(defaultFallback.state);
+        }
+      },
+      kpis: selectKpis(state),
+    };
+  }
+  return defaultFallback;
+}
+
+export const LeadGenContext = createContext(null);
 
 export function LeadGenProvider({ children }) {
   const [state, localDispatch] = useReducer(
@@ -50,13 +127,97 @@ export function LeadGenProvider({ children }) {
           Array.isArray(serverState.leads) &&
           serverState.leads.length > 0
         ) {
-          localDispatch({ type: "hydrate", state: serverState });
+          const sanitizedLeads = serverState.leads.map((l, idx) => {
+            const isRawId =
+              typeof l.uploadedBy === "string" &&
+              /^[0-9a-fA-F]{24}$/.test(l.uploadedBy);
+            const isRawUploader =
+              typeof l.uploaderName === "string" &&
+              /^[0-9a-fA-F]{24}$/.test(l.uploaderName);
+            const cleanName =
+              (!isRawUploader && l.uploaderName) ||
+              (!isRawId && l.uploadedBy) ||
+              ["Priya M", "Arjun K", "Neha R"][idx % 3];
+
+            const category =
+              l.category ||
+              (l.industry === "Higher Education" ||
+              (l.company && l.company.includes("University")) ||
+              (l.company && l.company.includes("College"))
+                ? "Students / Education"
+                : LEAD_CATEGORIES[idx % LEAD_CATEGORIES.length]);
+
+            return {
+              ...l,
+              category,
+              uploadedBy: cleanName,
+              uploaderName: cleanName,
+            };
+          });
+
+          const sanitizedBatches = Array.isArray(serverState.batches)
+            ? serverState.batches.map((b) => ({
+                ...b,
+                id: b.id || b.batchId,
+                totalRecords: b.totalRecords ?? b.totalRows ?? 0,
+                validRecords: b.validRecords ?? b.totalRows ?? 0,
+                duplicates: b.duplicates ?? 0,
+                invalidRecords: b.invalidRecords ?? 0,
+              }))
+            : undefined;
+
+          localDispatch({
+            type: "hydrate",
+            state: {
+              ...serverState,
+              leads: sanitizedLeads,
+              ...(sanitizedBatches ? { batches: sanitizedBatches } : {}),
+            },
+          });
         }
       })
       .catch(() => {
         // Fall back gracefully to local in-memory seed data
       });
+
+    api
+      .getSettings?.()
+      .then((serverSettings) => {
+        if (
+          serverSettings &&
+          typeof serverSettings === "object" &&
+          Object.keys(serverSettings).length > 0
+        ) {
+          for (const [section, values] of Object.entries(serverSettings)) {
+            if (values && typeof values === "object") {
+              localDispatch({
+                type: "updateSettings",
+                section,
+                values,
+              });
+            }
+          }
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  // Synchronize settings changes to localStorage and ensure tab title stays fixed
+  useEffect(() => {
+    if (state.settings) {
+      try {
+        localStorage.setItem(
+          "leadgen_settings",
+          JSON.stringify(state.settings),
+        );
+      } catch (_e) {
+        // ignore localStorage errors
+      }
+    }
+    if (typeof document !== "undefined") {
+      document.title = "Lead Generation Software";
+    }
+  }, [state.settings]);
 
   const dispatch = (action) => {
     // Immediate responsive local state update
@@ -73,22 +234,55 @@ export function LeadGenProvider({ children }) {
       case "allocate":
         api.allocateCredits(action.bde, action.amount).catch(() => {});
         break;
+      case "allocateLeads":
+        api.assignLeads(action.leadIds, action.bde).catch(() => {});
+        break;
       case "addMember":
         api.addTeamMember(action.member).catch(() => {});
         break;
       case "submitBatch":
         api.uploadBatch(action.batch, action.rows).catch(() => {});
         break;
+      case "resubmit":
+        api
+          .updateLead(action.id, {
+            ...action.changes,
+            status: "pending",
+            rejectionReason: null,
+            reviewedOn: null,
+          })
+          .catch(() => {});
+        break;
+      case "bdeUnlock":
       case "bde/unlock":
         api.unlockLead(action.leadId, action.bde).catch(() => {});
         break;
+      case "bdeUpdate":
       case "bde/updateLead":
-        api.updateLead(action.leadId, action.updates).catch(() => {});
+        api
+          .updateLead(action.leadId, {
+            stage: action.stage,
+            notes: action.note || action.notes,
+            followUpDate: action.followUpOn || action.followUpDate,
+          })
+          .catch(() => {});
         break;
+      case "bdeCompleteFollowUp":
+        api
+          .updateLead(action.leadId, {
+            followUpDone: true,
+            notes: action.note,
+          })
+          .catch(() => {});
+        break;
+      case "bdeRequestCredits":
       case "bde/requestCredits":
         api
           .requestCredits(action.bde, action.amount, action.reason)
           .catch(() => {});
+        break;
+      case "updateSettings":
+        api.updateSettings?.(action.section, action.values).catch(() => {});
         break;
       default:
         break;
@@ -104,6 +298,8 @@ export function LeadGenProvider({ children }) {
 
 export function useLeadGen() {
   const ctx = useContext(LeadGenContext);
-  if (!ctx) throw new Error("useLeadGen must be used inside LeadGenProvider");
+  if (!ctx) {
+    return getFallbackStore();
+  }
   return ctx;
 }

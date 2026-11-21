@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, PencilLine, Upload } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { DataTable, EmptyState } from "@/components/common/DataTable";
@@ -32,8 +32,8 @@ export default function MyUploads() {
     return batches.filter(
       (b) =>
         (!s ||
-          b.id.toLowerCase().includes(s) ||
-          b.fileName.toLowerCase().includes(s)) &&
+          (b.id || "").toLowerCase().includes(s) ||
+          (b.fileName || "").toLowerCase().includes(s)) &&
         (status === "all" || b.status === status) &&
         (!from || b.uploadedOn >= from) &&
         (!to || b.uploadedOn <= to),
@@ -185,7 +185,7 @@ export default function MyUploads() {
                 <Button
                   size="xs"
                   variant="soft"
-                  onClick={() => navigate({ to: "/ra/upload" })}
+                  onClick={() => navigate("/ra/upload")}
                 >
                   <PencilLine /> Continue
                 </Button>

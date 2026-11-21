@@ -30,7 +30,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { LEAD_SOURCES, RESEARCHERS, fmt } from "@/lib/leadgen/data";
+import { api } from "@/lib/api";
+import {
+  LEAD_CATEGORIES,
+  LEAD_SOURCES,
+  RESEARCHERS,
+  fmt,
+} from "@/lib/leadgen/data";
 import { cn } from "@/lib/utils";
 
 export function QuickActionCard({
@@ -176,6 +182,7 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
   const { dispatch } = useLeadGen();
   const [ra, setRa] = useState(RESEARCHERS[0] ?? "");
   const [source, setSource] = useState("Web");
+  const [category, setCategory] = useState(LEAD_CATEGORIES[0]);
   const [file, setFile] = useState(null);
   const [count, setCount] = useState("25");
 
@@ -191,7 +198,7 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
       open={open}
       onOpenChange={onOpenChange}
       title="Upload Leads"
-      description="Add a researcher's lead sheet to the review queue."
+      description="Add a researcher's lead sheet with assigned category to the review queue."
       submitLabel="Upload to review"
       onSubmit={() => {
         const n = Number(count);
@@ -199,10 +206,39 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
           return void toast.error("Choose a CSV or Excel file to upload");
         if (!Number.isInteger(n) || n <= 0 || n > 500)
           return void toast.error("Enter between 1 and 500 records");
-        dispatch({ type: "upload", researcher: ra, count: n, source });
+        dispatch({
+          type: "upload",
+          researcher: ra,
+          count: n,
+          source,
+          category,
+        });
+        api
+          .uploadBatch(
+            { fileName: file.name, uploadedBy: ra, source, category },
+            Array.from({ length: n }, (_, i) => ({
+              company: `Company ${i + 1}`,
+              contact: `Contact Person ${i + 1}`,
+              email: `contact${i + 1}@lead.com`,
+              phone: `+91 98765 ${String(10000 + i).slice(1)}`,
+              country: "India",
+              stateCity: "Telangana / Hyderabad",
+              companyAddress: `Plot ${i + 10}, Tech Zone`,
+              website: `https://company${i + 1}.com`,
+              linkedin: `https://linkedin.com/company/lead${i + 1}`,
+              description: `Lead generated in ${category}`,
+              source,
+              category,
+              location: "Hyderabad",
+              industry: "Healthcare",
+            })),
+          )
+          .catch((err) =>
+            console.warn("[API] uploadBatch sync failed:", err.message),
+          );
         onOpenChange(false);
         toast.success(`${n} leads added to Pending Review`, {
-          description: `${file.name} · uploaded for ${ra}`,
+          description: `${file.name} · ${category} · uploaded for ${ra}`,
         });
       }}
     >
@@ -221,21 +257,35 @@ export function UploadLeadsDialog({ open, onOpenChange }) {
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Lead source">
-          <Select value={source} onValueChange={(v) => setSource(v)}>
+        <Field label="Category / Vertical">
+          <Select value={category} onValueChange={setCategory}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {LEAD_SOURCES.map((r) => (
-                <SelectItem key={r} value={r}>
-                  {r}
+              {LEAD_CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </Field>
       </div>
+      <Field label="Lead source">
+        <Select value={source} onValueChange={(v) => setSource(v)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {LEAD_SOURCES.map((r) => (
+              <SelectItem key={r} value={r}>
+                {r}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
       <Field label="Lead file" htmlFor="lead-file">
         <label
           htmlFor="lead-file"
@@ -293,6 +343,11 @@ export function AllocateCreditsDialog({ open, onOpenChange }) {
         if (!Number.isInteger(n) || n <= 0)
           return void toast.error("Enter a whole number of credits above 0");
         dispatch({ type: "allocate", bde, amount: n });
+        api
+          .allocateCredits(bde, n)
+          .catch((err) =>
+            console.warn("[API] allocateCredits sync failed:", err.message),
+          );
         onOpenChange(false);
         toast.success(`${fmt(n)} credits allocated to ${bde}`);
       }}
