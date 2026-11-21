@@ -21,7 +21,7 @@ export async function readSheetFile(file, onProgress) {
   return XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", raw: false });
 }
 
-export async function downloadTemplate() {
+export async function downloadTemplate(assignedCategories = null) {
   const XLSX = await loadXlsx();
   const head = TEMPLATE_FIELDS.map((f) =>
     f.required ? `${f.label} *` : `${f.label} (optional)`,
@@ -31,27 +31,46 @@ export async function downloadTemplate() {
     TEMPLATE_FIELDS.map((f) => f.example),
   ]);
   ws["!cols"] = TEMPLATE_FIELDS.map((f) => ({
-    wch: Math.max(16, f.example.length + 2),
+    wch: Math.max(18, (f.example?.length ?? 12) + 2),
   }));
+
+  const catStr =
+    assignedCategories && assignedCategories.length > 0
+      ? assignedCategories.join(", ")
+      : "Healthcare & Pharma, Students / Education, IT & Upskilling, Corporate Training";
+
   const guide = XLSX.utils.aoa_to_sheet([
-    ["LeadGen Pro – Lead Upload Template"],
+    ["LeadGen Pro – Researcher Lead Upload Template"],
+    ["Lead Management Plan Specifications"],
     [""],
-    ["Field", "Required", "Example"],
+    ["Field", "Requirement", "Example", "Notes"],
     ...TEMPLATE_FIELDS.map((f) => [
       f.label,
-      f.required ? "Yes" : "No",
+      f.requirement || (f.required ? "Mandatory" : "Optional"),
       f.example,
+      f.key === "category" ? `Allowed: ${catStr}` : "",
     ]),
     [""],
-    ["Rules"],
-    ["Phone: 10-digit Indian mobile, with or without +91."],
-    ["Lead Source: Web, Event, Referral, LinkedIn or Cold Call."],
-    ["Do not change the header row. Max 5 MB per file."],
+    ["Requirements Summary:"],
+    ["1. Company Name: Mandatory."],
+    [`2. Category: Assigned categories only (${catStr}).`],
+    ["3. Contact Person: Mandatory if available/required."],
+    ["4. Business Email: Valid format (e.g. name@domain.com)."],
+    ["5. Phone Number: Valid number (10-digit mobile or standard phone)."],
+    ["6. Country: Mandatory (e.g. India)."],
+    [
+      "7. State / City, Website, Company Address, LinkedIn URL, Description: Optional.",
+    ],
+    [""],
+    [
+      "Note: Do not alter the header names in the first row. Max file size: 5 MB.",
+    ],
   ]);
-  guide["!cols"] = [{ wch: 22 }, { wch: 10 }, { wch: 34 }];
+  guide["!cols"] = [{ wch: 20 }, { wch: 22 }, { wch: 34 }, { wch: 45 }];
+
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Leads");
-  XLSX.utils.book_append_sheet(wb, guide, "Instructions");
+  XLSX.utils.book_append_sheet(wb, guide, "Requirements");
   XLSX.writeFile(wb, "LeadGenPro_Lead_Upload_Template.xlsx");
 }
 

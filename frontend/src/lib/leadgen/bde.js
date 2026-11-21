@@ -210,8 +210,8 @@ export function followUpBucket(f) {
 }
 
 export function selectBdeKpis(state, bde) {
-  const mine = (state.assignments ?? []).filter((a) => a.bde === bde);
-  const row = state.bdes.find((b) => b.name === bde) ?? {
+  const mine = (state?.assignments ?? []).filter((a) => a.bde === bde);
+  const row = (state?.bdes ?? []).find((b) => b.name === bde) ?? {
     allocated: 0,
     used: 0,
   };

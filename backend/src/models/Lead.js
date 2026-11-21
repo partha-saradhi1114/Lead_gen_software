@@ -38,6 +38,48 @@ const leadSchema = new mongoose.Schema(
       type: String,
       default: "Excel Upload",
     },
+    // Country (Mandatory in Lead Management Plan)
+    country: {
+      type: String,
+      default: "India",
+      trim: true,
+    },
+    // State / City (Optional)
+    stateCity: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    // Company Address (Optional)
+    companyAddress: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    // Website (Optional)
+    website: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    // LinkedIn URL (Optional)
+    linkedin: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    // Description / Notes (Optional)
+    description: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    // Category / Domain vertical (e.g. Students / Education, IT & Upskilling, Corporate Training)
+    category: {
+      type: String,
+      default: "Students / Education",
+      index: true,
+    },
     // Research Analyst who uploaded the lead
     uploadedBy: {
       type: mongoose.Schema.Types.ObjectId,

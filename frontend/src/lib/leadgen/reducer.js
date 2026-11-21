@@ -6,24 +6,32 @@ export function leadGenReducer(state, action) {
   if (action.type.startsWith("bde")) return bdeReducer(state, action);
   switch (action.type) {
     case "approve": {
-      const ids = new Set(action.ids);
+      const ids = new Set(
+        action.ids.map((id) =>
+          typeof id === "string" && !isNaN(Number(id)) ? Number(id) : id,
+        ),
+      );
       return {
         ...state,
         leads: state.leads.map((l) =>
-          ids.has(l.id) && l.status === "pending"
+          (ids.has(l.id) || ids.has(String(l.id))) && l.status === "pending"
             ? { ...l, status: "approved", reviewedOn: TODAY }
             : l,
         ),
       };
     }
     case "reject": {
-      const reason = action.reason.trim();
+      const reason = action.reason?.trim();
       if (!reason) return state; // a rejection always needs a reason
-      const ids = new Set(action.ids);
+      const ids = new Set(
+        action.ids.map((id) =>
+          typeof id === "string" && !isNaN(Number(id)) ? Number(id) : id,
+        ),
+      );
       return {
         ...state,
         leads: state.leads.map((l) =>
-          ids.has(l.id) && l.status === "pending"
+          (ids.has(l.id) || ids.has(String(l.id))) && l.status === "pending"
             ? {
                 ...l,
                 status: "rejected",
@@ -50,7 +58,11 @@ export function leadGenReducer(state, action) {
           TODAY,
           action.researcher,
         );
-        fresh.push({ ...lead, source: action.source });
+        fresh.push({
+          ...lead,
+          source: action.source,
+          category: action.category || lead.category,
+        });
       }
       return {
         ...state,
@@ -72,6 +84,73 @@ export function leadGenReducer(state, action) {
           ...state.credits,
           allocated: state.credits.allocated + action.amount,
         },
+        creditLog: [
+          {
+            on: TODAY,
+            bde: action.bde,
+            kind: "Allocated",
+            amount: action.amount,
+            note: "Credits allocated by Master Admin",
+          },
+          ...(state.creditLog ?? []),
+        ],
+      };
+    }
+    case "allocateLeads": {
+      const ids = new Set(
+        action.leadIds.map((id) =>
+          typeof id === "string" && !isNaN(Number(id)) ? Number(id) : id,
+        ),
+      );
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const existingAssignments = state.assignments || [];
+      const newAssignments = [...existingAssignments];
+
+      for (const rawId of action.leadIds) {
+        const id =
+          typeof rawId === "string" && !isNaN(Number(rawId))
+            ? Number(rawId)
+            : rawId;
+        const existingIdx = newAssignments.findIndex(
+          (a) => a.leadId === id || a.leadId === String(id),
+        );
+        if (existingIdx >= 0) {
+          newAssignments[existingIdx] = {
+            ...newAssignments[existingIdx],
+            bde: action.bde,
+            assignedOn: todayIso,
+          };
+        } else {
+          newAssignments.push({
+            leadId: id,
+            bde: action.bde,
+            assignedOn: todayIso,
+            stage: "New",
+            unlocked: false,
+            followUp: null,
+            activity: [
+              {
+                on: todayIso,
+                text: `Lead assigned by Master Admin to ${action.bde}`,
+              },
+            ],
+          });
+        }
+      }
+
+      return {
+        ...state,
+        leads: (state.leads || []).map((l) =>
+          ids.has(l.id) || ids.has(String(l.id))
+            ? {
+                ...l,
+                assignedName: action.bde,
+                assignedTo: action.bde,
+                assignedOn: todayIso,
+              }
+            : l,
+        ),
+        assignments: newAssignments,
       };
     }
     case "addMember": {
@@ -83,14 +162,22 @@ export function leadGenReducer(state, action) {
               ...state.bdes,
               {
                 name: m.name,
-                allocated: 0,
+                allocated: 500,
                 used: 0,
                 connected: 0,
                 interested: 0,
               },
             ]
           : state.bdes;
-      return { ...state, team: [...state.team, m], bdes };
+      return {
+        ...state,
+        team: [...state.team, m],
+        bdes,
+        credits:
+          m.role === "BDE"
+            ? { ...state.credits, allocated: state.credits.allocated + 500 }
+            : state.credits,
+      };
     }
     case "setDateRange":
       return { ...state, dateRange: action.range };
@@ -140,6 +227,23 @@ export function leadGenReducer(state, action) {
         ),
       };
     }
+    case "updateSettings": {
+      const section = action.section;
+      const currentSettings = state.settings || {};
+      const updatedSettings = {
+        ...currentSettings,
+        [section]: {
+          ...(currentSettings[section] || {}),
+          ...action.values,
+        },
+      };
+      return {
+        ...state,
+        settings: updatedSettings,
+      };
+    }
+    default:
+      return state;
   }
 }
 
@@ -157,15 +261,23 @@ export function selectKpis(state) {
   const allocated =
     typeof credits.allocated === "number" ? credits.allocated : 0;
   const used = typeof credits.used === "number" ? credits.used : 0;
+  const reviewed = approved + rejected;
+  const approvalRate = reviewed === 0 ? 0 : (approved / reviewed) * 100;
+  const duplicates = (state?.batches || []).reduce(
+    (a, b) => a + (b.duplicates || 0),
+    0,
+  );
   return {
     total: leads.length,
     pending,
     approved,
     rejected,
+    duplicates,
     creditsAllocated: allocated,
     creditsUsed: used,
     creditsAvailable: Math.max(0, allocated - used),
     utilization: allocated === 0 ? 0 : Math.round((used / allocated) * 100),
+    approvalRate,
   };
 }
 
@@ -173,7 +285,8 @@ export function batchCounts(leads, batchId) {
   let pending = 0,
     approved = 0,
     rejected = 0;
-  for (const l of leads) {
+  const list = leads || [];
+  for (const l of list) {
     if (l.batchId !== batchId) continue;
     if (l.status === "pending") pending++;
     else if (l.status === "approved") approved++;
@@ -183,12 +296,13 @@ export function batchCounts(leads, batchId) {
 }
 
 export function batchStatus(batch, c) {
-  if (batch.draft) return "Draft";
-  const total = c.pending + c.approved + c.rejected;
-  if (total === 0 || c.pending === total)
-    return batch.uploadedOn === TODAY ? "Uploaded" : "Under Review";
-  if (c.approved === total) return "Approved";
-  if (c.rejected === total) return "Rejected";
+  if (batch?.draft) return "Draft";
+  const countObj = c || { pending: 0, approved: 0, rejected: 0 };
+  const total = countObj.pending + countObj.approved + countObj.rejected;
+  if (total === 0 || countObj.pending === total)
+    return batch?.uploadedOn === TODAY ? "Uploaded" : "Under Review";
+  if (countObj.approved === total) return "Approved";
+  if (countObj.rejected === total) return "Rejected";
   return "Partially Approved";
 }
 
@@ -197,15 +311,20 @@ export function selectRaKpis(state, researcher) {
     pending = 0,
     approved = 0,
     rejected = 0;
-  for (const l of state.leads) {
-    if (l.uploadedBy !== researcher) continue;
+  const leads = state?.leads || [];
+  for (const l of leads) {
+    if (l.uploadedBy !== researcher && l.uploaderName !== researcher) continue;
     total++;
     if (l.status === "pending") pending++;
     else if (l.status === "approved") approved++;
     else rejected++;
   }
-  const duplicates = state.batches
-    .filter((b) => b.researcher === researcher && !b.draft)
-    .reduce((a, b) => a + b.duplicates, 0);
+  const duplicates = (state?.batches || [])
+    .filter(
+      (b) =>
+        (b.researcher === researcher || b.uploaderName === researcher) &&
+        !b.draft,
+    )
+    .reduce((a, b) => a + (b.duplicates || 0), 0);
   return { total, pending, approved, rejected, duplicates };
 }

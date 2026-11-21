@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
   CheckCircle2,
   Clock,
@@ -19,7 +20,7 @@ import { CURRENT_RA, fmt, formatDate, pct } from "@/lib/leadgen/data";
 import { toast } from "sonner";
 
 export default function RaDashboard() {
-  const { kpis, batches, leads } = useRaData();
+  const { kpis, batches, leads, ra } = useRaData();
   const reviewed = kpis.approved + kpis.rejected;
   const recentRejected = leads
     .filter((l) => l.status === "rejected")
@@ -179,7 +180,7 @@ export default function RaDashboard() {
               ))}
               {recentRejected.length === 0 && (
                 <li className="text-xs text-muted-foreground">
-                  No rejected leads. Nice work, {CURRENT_RA}!
+                  No rejected leads. Nice work, {ra || CURRENT_RA}!
                 </li>
               )}
             </ul>

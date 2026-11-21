@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { leadService } from "../services/leadService.js";
-import { User } from "../models/User.js";
 
 export const teamRouter = Router();
 
@@ -15,33 +14,22 @@ teamRouter.get("/", async (_req, res) => {
 
 teamRouter.post("/", async (req, res) => {
   try {
-    const { name, email, role, password } = req.body;
+    const { name, email, role, phone, password } = req.body;
     if (!name || !email || !role) {
       return res.status(400).json({ error: "name, email, and role are required" });
     }
-    const roleSlug = role.toLowerCase().includes("admin")
-      ? "admin"
-      : role.toLowerCase().includes("analyst") || role.toLowerCase().includes("ra")
-        ? "ra"
-        : "bde";
 
-    const user = await User.create({
+    const member = await leadService.addTeamMember({
       name,
-      email: email.toLowerCase(),
-      password: password || "Password@123",
-      role: roleSlug,
-      credits: roleSlug === "bde" ? 500 : 0,
+      email,
+      role,
+      phone,
+      password,
     });
 
     res.status(201).json({
-      message: "Team member added",
-      member: {
-        id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        credits: user.credits,
-      },
+      message: "Team member added successfully",
+      member,
     });
   } catch (err) {
     res.status(500).json({ error: err.message || "Failed to add team member" });

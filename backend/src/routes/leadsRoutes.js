@@ -6,11 +6,13 @@ export const leadsRouter = Router();
 // GET /api/leads - Filtered leads list
 leadsRouter.get("/", async (req, res) => {
   try {
-    const { status, source, researcher, search, limit, offset } = req.query;
+    const { status, source, category, researcher, assignedBde, search, limit, offset } = req.query;
     const data = await leadService.getLeads({
       status: status ? String(status) : undefined,
       source: source ? String(source) : undefined,
+      category: category ? String(category) : undefined,
       researcher: researcher ? String(researcher) : undefined,
+      assignedBde: assignedBde ? String(assignedBde) : undefined,
       search: search ? String(search) : undefined,
       limit: limit ? Number(limit) : undefined,
       offset: offset ? Number(offset) : undefined,
@@ -51,14 +53,16 @@ leadsRouter.get("/credits", async (_req, res) => {
   }
 });
 
-// GET /api/leads/:id - Single lead detail
-leadsRouter.get("/:id", async (req, res) => {
+// POST /api/leads/credits/request - BDE requests credit top-up (MUST BE BEFORE /:id)
+leadsRouter.post("/credits/request", async (req, res) => {
   try {
-    const lead = await leadService.getLeadById(req.params.id);
-    if (!lead) return res.status(404).json({ error: "Lead not found" });
-    res.json(lead);
+    const { bde, amount, reason } = req.body;
+    if (!bde) return res.status(400).json({ error: "bde name is required" });
+    if (!amount || amount <= 0) return res.status(400).json({ error: "positive amount required" });
+    const result = await leadService.requestCredits(bde, amount, reason);
+    res.json({ message: "Credit request submitted successfully", request: result });
   } catch (err) {
-    res.status(500).json({ error: err.message || "Failed to fetch lead" });
+    res.status(500).json({ error: err.message || "Failed to request credits" });
   }
 });
 
@@ -106,6 +110,23 @@ leadsRouter.post("/allocate", async (req, res) => {
   }
 });
 
+// POST /api/leads/assign - Assign approved leads to a BDE
+leadsRouter.post("/assign", async (req, res) => {
+  try {
+    const { leadIds, bde } = req.body;
+    if (!Array.isArray(leadIds) || leadIds.length === 0) {
+      return res.status(400).json({ error: "leadIds array is required" });
+    }
+    if (!bde) {
+      return res.status(400).json({ error: "bde name is required" });
+    }
+    const result = await leadService.assignLeads(leadIds, bde);
+    res.json({ message: "Leads assigned successfully", ...result });
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Failed to assign leads" });
+  }
+});
+
 // POST /api/leads/upload - Save an uploaded Excel batch
 leadsRouter.post("/upload", async (req, res) => {
   try {
@@ -117,6 +138,17 @@ leadsRouter.post("/upload", async (req, res) => {
     res.status(201).json({ message: "Batch uploaded successfully", ...result });
   } catch (err) {
     res.status(500).json({ error: err.message || "Failed to upload batch" });
+  }
+});
+
+// GET /api/leads/:id - Single lead detail
+leadsRouter.get("/:id", async (req, res) => {
+  try {
+    const lead = await leadService.getLeadById(req.params.id);
+    if (!lead) return res.status(404).json({ error: "Lead not found" });
+    res.json(lead);
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Failed to fetch lead" });
   }
 });
 

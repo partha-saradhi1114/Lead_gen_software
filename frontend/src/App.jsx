@@ -1,5 +1,12 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { LeadGenProvider } from "@/lib/leadgen/store";
 import { Toaster } from "@/components/ui/sonner";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -60,9 +67,9 @@ export class ErrorBoundary extends React.Component {
           <button
             onClick={() => {
               this.setState({ hasError: false, error: null });
-              window.location.reload();
+              window.location.href = window.location.pathname + "?t=" + Date.now();
             }}
-            className="mt-4 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+            className="mt-4 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             Reload Page
           </button>
@@ -97,16 +104,52 @@ export function NotFound() {
   );
 }
 
+export function ProtectedRoute({ children }) {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const location = useLocation();
+
+  if (!token) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+}
+
+export function DashboardRoute() {
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+
+  if (user.role === "ra") {
+    return <Navigate to="/ra" replace />;
+  }
+  if (user.role === "bde") {
+    return <Navigate to="/bde" replace />;
+  }
+  return <Dashboard />;
+}
+
 export function AppRoutes() {
   return (
     <Routes>
       {/* Standalone Login Page */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Main Application with Sidebar & Header Shell */}
-      <Route element={<AppLayout />}>
+      {/* Main Application with Sidebar & Header Shell (Protected) */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
         {/* Master Admin */}
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<DashboardRoute />} />
         <Route path="/leads-review" element={<LeadsReviewPage />} />
         <Route path="/lead-allocation" element={<LeadAllocationPage />} />
         <Route path="/credits" element={<CreditsPage />} />
@@ -141,12 +184,12 @@ export function AppRoutes() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <LeadGenProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <LeadGenProvider>
           <AppRoutes />
-        </BrowserRouter>
-        <Toaster position="top-right" richColors closeButton />
-      </LeadGenProvider>
+          <Toaster position="top-right" richColors closeButton />
+        </LeadGenProvider>
+      </BrowserRouter>
     </ErrorBoundary>
   );
 }

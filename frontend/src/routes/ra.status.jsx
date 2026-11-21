@@ -177,12 +177,16 @@ export default function ApprovalStatus() {
               </DialogHeader>
               <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-[13px]">
                 {[
+                  ["Category", open.category],
                   ["Contact Person", open.contact],
-                  ["Designation", open.designation],
                   ["Phone", open.phone],
-                  ["Email", open.email],
-                  ["Industry", open.industry],
-                  ["Location", open.location],
+                  ["Business Email", open.email],
+                  ["Country", open.country || "India"],
+                  ["State / City", open.stateCity || open.location],
+                  ["Company Address", open.companyAddress],
+                  ["Website", open.website],
+                  ["LinkedIn", open.linkedin],
+                  ["Description", open.description || open.notes],
                   ["Source", open.source],
                   [
                     "Reviewed On",

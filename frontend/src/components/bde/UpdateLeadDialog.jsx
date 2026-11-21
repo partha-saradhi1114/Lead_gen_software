@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,15 @@ export function UpdateLeadDialog({ row, onClose, dispatch, bde }) {
       note,
       followUpOn: followUpOn || undefined,
     });
+    api
+      .updateLead(row.leadId, {
+        stage,
+        notes: note,
+        followUpDate: followUpOn || undefined,
+      })
+      .catch((err) =>
+        console.warn("[API] updateLead sync failed:", err.message),
+      );
     toast.success(`${row.lead.company} updated`);
     onClose();
   };

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
+    "test": "node --test test/backend.test.js",
     "seed": "node src/seeds/seed.js"
   },
   "dependencies": {

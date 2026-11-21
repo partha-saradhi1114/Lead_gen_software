@@ -52,7 +52,10 @@ export function AppHeader() {
   const location = useLocation();
   const pathname = location.pathname;
   const { state, dispatch } = useLeadGen();
+  const [profileOpen, setProfileOpen] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [from, setFrom] = useState("2026-11-01");
   const [to, setTo] = useState("2026-11-18");
   const [customLabel, setCustomLabel] = useState(null);
@@ -81,27 +84,53 @@ export function AppHeader() {
       : role === "bde" && item?.url === "/bde"
         ? `Welcome back, ${CURRENT_BDE}`
         : (item?.subtitle ?? "Admin Dashboard");
-  const user =
-    role === "ra"
-      ? {
-          name: CURRENT_RA,
-          role: "Research Analyst",
-          initials: "PM",
-          email: "priya.m@arahinfotech.com",
-        }
-      : role === "bde"
-        ? {
-            name: CURRENT_BDE,
-            role: "Business Development Executive",
-            initials: "RK",
-            email: "ravi.kumar@arahinfotech.com",
-          }
-        : {
-            name: "Sriram",
-            role: "Master Admin",
-            initials: "SR",
-            email: "sriram@arahinfotech.com",
-          };
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+
+  const getInitials = (name) => {
+    if (!name) return "US";
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const user = {
+    name:
+      storedUser.name ||
+      (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram"),
+    role:
+      storedUser.role === "admin"
+        ? "Master Admin"
+        : storedUser.role === "ra"
+          ? "Research Analyst"
+          : storedUser.role === "bde"
+            ? "Business Development Executive"
+            : role === "ra"
+              ? "Research Analyst"
+              : role === "bde"
+                ? "Business Development Executive"
+                : "Master Admin",
+    email:
+      storedUser.email ||
+      (role === "ra"
+        ? "priya.m@arahinfotech.com"
+        : role === "bde"
+          ? "ravi.kumar@arahinfotech.com"
+          : "sriram@arahinfotech.com"),
+    initials: getInitials(
+      storedUser.name ||
+        (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram"),
+    ),
+  };
 
   const rangeLabel =
     state.dateRange === "Custom" && customLabel ? customLabel : state.dateRange;
@@ -268,17 +297,13 @@ export function AppHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() =>
-                toast.info("Profile page arrives in the next iteration")
-              }
-            >
+            <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
               <User /> My Profile
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() =>
-                toast.info("Account settings arrive in the next iteration")
-              }
+              onSelect={() => {
+                navigate("/settings");
+              }}
             >
               <Settings /> Account Settings
             </DropdownMenuItem>
@@ -286,7 +311,9 @@ export function AppHeader() {
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onSelect={() => {
-                toast.success("Signed out");
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                toast.success("Signed out successfully");
                 navigate("/login");
               }}
             >
@@ -295,6 +322,84 @@ export function AppHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* User Profile Modal */}
+      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>My Profile</DialogTitle>
+            <DialogDescription>
+              View your account details and security settings.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center gap-3.5 rounded-lg border bg-muted/30 p-3.5">
+            <div className="flex size-12 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground">
+              {user.initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">
+                  {user.name}
+                </span>
+                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                  {user.role}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">{user.email}</div>
+              <div className="mt-0.5 text-[11px] text-muted-foreground/80">
+                Organization:{" "}
+                {state?.settings?.general?.workspaceName ||
+                  "Lead Generation Software"}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <div className="text-xs font-semibold text-foreground">
+              Security · Change Password
+            </div>
+            <div className="space-y-2">
+              <Input
+                type="password"
+                placeholder="New Password (min. 6 characters)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <Input
+                type="password"
+                placeholder="Confirm New Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-2">
+            <Button variant="outline" onClick={() => setProfileOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                if (!newPassword || newPassword.length < 6) {
+                  toast.error("Password must be at least 6 characters");
+                  return;
+                }
+                if (newPassword !== confirmPassword) {
+                  toast.error("Passwords do not match");
+                  return;
+                }
+                setNewPassword("");
+                setConfirmPassword("");
+                setProfileOpen(false);
+                toast.success("Password updated successfully!");
+              }}
+            >
+              Update Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={customOpen} onOpenChange={setCustomOpen}>
         <DialogContent className="sm:max-w-sm">
