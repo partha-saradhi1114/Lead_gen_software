@@ -1,6 +1,102 @@
 {
   "leads": [
     {
+      "company": "sathava",
+      "category": "Students / Education",
+      "contact": "shekar",
+      "email": "shekar@gmail.com",
+      "phone": "9897973828",
+      "country": "India",
+      "stateCity": "ongole",
+      "companyAddress": "karnool road,ongole",
+      "description": "testing",
+      "location": "ongole",
+      "source": "Manual Entry",
+      "notes": "Client requested quotation",
+      "id": 4284,
+      "status": "approved",
+      "uploadedBy": "Priya M",
+      "uploaderName": "Priya M",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-PM-2",
+      "reviewedOn": "2026-11-18",
+      "assignedTo": "Ravi Kumar",
+      "assignedName": "Ravi Kumar",
+      "assignedOn": "2026-11-22",
+      "unlockedBy": [
+        "Ravi Kumar"
+      ],
+      "stage": "interested",
+      "followUpDate": "2026-11-25"
+    },
+    {
+      "company": "sathava",
+      "category": "Students / Education",
+      "contact": "shekar",
+      "email": "shekar@gmail.com",
+      "phone": "9897973828",
+      "country": "India",
+      "stateCity": "ongole",
+      "companyAddress": "karnool road,ongole",
+      "description": "testing",
+      "location": "ongole",
+      "source": "Manual Entry",
+      "notes": "testing",
+      "id": 4283,
+      "status": "approved",
+      "uploadedBy": "Priya M",
+      "uploaderName": "Priya M",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-PM-2",
+      "reviewedOn": "2026-11-18",
+      "assignedTo": "Ravi Kumar",
+      "assignedName": "Ravi Kumar",
+      "assignedOn": "2026-11-22"
+    },
+    {
+      "company": "sathava",
+      "category": "Healthcare & Pharma",
+      "contact": "shekar",
+      "email": "shekar@gmail.com",
+      "phone": "9897973828",
+      "country": "India",
+      "stateCity": "ongole",
+      "companyAddress": "karnool road,ongole",
+      "description": "testing",
+      "location": "ongole",
+      "source": "Manual Entry",
+      "notes": "testing",
+      "id": 4282,
+      "status": "rejected",
+      "uploadedBy": "Priya M",
+      "uploaderName": "Priya M",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-PM",
+      "rejectionReason": "Invalid phone number format",
+      "reviewedOn": "2026-11-18"
+    },
+    {
+      "company": "sathava",
+      "category": "Healthcare & Pharma",
+      "contact": "shekar",
+      "email": "shekar@gmail.com",
+      "phone": "9897973828",
+      "country": "India",
+      "stateCity": "ongole",
+      "companyAddress": "karnool road,ongole",
+      "description": "testing",
+      "location": "ongole",
+      "source": "Manual Entry",
+      "notes": "testing",
+      "id": 4281,
+      "status": "approved",
+      "uploadedBy": "Priya M",
+      "uploaderName": "Priya M",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-PM",
+      "reviewedOn": "2026-11-18"
+    },
+    {
       "company": "Osmania University CSE",
       "contact": "Mr. Rahul Sharma",
       "phone": "+91 98480 12345",
@@ -126,11 +222,12 @@
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-16",
       "id": 7,
-      "status": "pending",
+      "status": "approved",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261116-NR"
+      "batchId": "BT-261116-NR",
+      "reviewedOn": "2026-11-18"
     },
     {
       "company": "Andhra University MCA",
@@ -142,11 +239,13 @@
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-15",
       "id": 8,
-      "status": "pending",
+      "status": "rejected",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261115-PM"
+      "batchId": "BT-261115-PM",
+      "rejectionReason": "Invalid phone number format",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 9,
@@ -72404,8 +72503,8 @@
   "bdes": [
     {
       "name": "Ravi Kumar",
-      "allocated": 700,
-      "used": 422,
+      "allocated": 800,
+      "used": 423,
       "connected": 152,
       "interested": 98
     },
@@ -72443,11 +72542,18 @@
       "used": 0,
       "connected": 0,
       "interested": 0
+    },
+    {
+      "name": "Suresh Reddy",
+      "allocated": 500,
+      "used": 0,
+      "connected": 0,
+      "interested": 0
     }
   ],
   "credits": {
-    "allocated": 3200,
-    "used": 1322
+    "allocated": 3800,
+    "used": 1323
   },
   "team": [
     {
@@ -72529,9 +72635,51 @@
       "credits": 500,
       "creditsUsed": 0,
       "active": true
+    },
+    {
+      "id": "1795337099514",
+      "name": "Suresh Reddy",
+      "email": "suresh.r@arahinfotech.com",
+      "phone": "+91 99887 76655",
+      "role": "BDE",
+      "credits": 500,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795340634450",
+      "name": "Suresh Reddy",
+      "email": "suresh.r@arahinfotech.com",
+      "phone": "+91 99887 76655",
+      "role": "BDE",
+      "department": "Business Development",
+      "status": "Active",
+      "credits": 500,
+      "creditsUsed": 0,
+      "active": true
     }
   ],
   "batches": [
+    {
+      "id": "BT-261118-PM-2",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Students / Education",
+      "uploadedBy": "Priya M",
+      "draft": false,
+      "validRecords": 1
+    },
+    {
+      "id": "BT-261118-PM-2",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Students / Education",
+      "uploadedOn": "2026-11-18",
+      "researcher": "Priya M",
+      "totalRecords": 1,
+      "validRecords": 1,
+      "invalidRecords": 0,
+      "duplicates": 0,
+      "draft": false
+    },
     {
       "id": "BT-261118-PM",
       "fileName": "healthcare_hyderabad_1811.xlsx",
@@ -77720,11 +77868,95 @@
           "text": "Lead assigned by Master Admin to Ravi Kumar"
         }
       ]
+    },
+    {
+      "leadId": 4284,
+      "bde": "Ravi Kumar",
+      "assignedOn": "2026-11-22",
+      "stage": "interested",
+      "unlocked": true,
+      "followUp": {
+        "on": "2026-11-25",
+        "note": "Client requested quotation",
+        "done": false
+      },
+      "activity": [
+        {
+          "on": "2026-11-22",
+          "text": "Lead assigned by Master Admin to Ravi Kumar"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        }
+      ]
+    },
+    {
+      "leadId": 4283,
+      "bde": "Ravi Kumar",
+      "assignedOn": "2026-11-22",
+      "stage": "New",
+      "unlocked": false,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-22",
+          "text": "Lead assigned by Master Admin to Ravi Kumar"
+        }
+      ]
     }
   ],
   "dateRange": "Last 30 Days",
-  "nextId": 4281,
+  "nextId": 4285,
   "creditLog": [
+    {
+      "on": "2026-11-18",
+      "bde": "Ravi Kumar",
+      "kind": "Requested",
+      "amount": 200,
+      "note": "High-volume hospital campaign"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Ravi Kumar",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": 4284,
+      "note": "Unlocked sathava"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Ravi Kumar",
+      "kind": "Allocation",
+      "amount": 100,
+      "note": "Master Admin allocated 100 credits"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Ravi Kumar",
+      "kind": "Requested",
+      "amount": 200,
+      "note": "High-volume hospital campaign"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Ravi Kumar",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": 4284,
+      "note": "Unlocked sathava"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Ravi Kumar",
+      "kind": "Allocation",
+      "amount": 100,
+      "note": "Master Admin allocated 100 credits"
+    },
     {
       "on": "2026-11-18",
       "bde": "Ravi Kumar",
@@ -77772,7 +78004,7 @@
   ],
   "creditRequests": [
     {
-      "id": 1795340036505,
+      "id": 1795340634436,
       "bde": "Ravi Kumar",
       "amount": 200,
       "reason": "High-volume hospital campaign",
@@ -77780,12 +78012,20 @@
       "requestedOn": "2026-11-22"
     },
     {
-      "id": 1795339960979,
+      "id": 1795337099451,
       "bde": "Ravi Kumar",
       "amount": 200,
       "reason": "High-volume hospital campaign",
       "status": "approved",
       "requestedOn": "2026-11-22"
+    },
+    {
+      "id": 1795257539676,
+      "bde": "Ravi Kumar",
+      "amount": 200,
+      "reason": "High-volume hospital campaign",
+      "status": "approved",
+      "requestedOn": "2026-11-21"
     }
   ],
   "settings": {
