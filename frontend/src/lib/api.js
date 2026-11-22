@@ -1,4 +1,8 @@
 function getBaseUrl() {
+  if (import.meta.env?.VITE_API_URL) {
+    const raw = import.meta.env.VITE_API_URL.replace(/\/+$/, "");
+    return raw.endsWith("/api") ? raw : `${raw}/api`;
+  }
   if (
     typeof window !== "undefined" &&
     window.location &&
