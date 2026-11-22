@@ -4,7 +4,10 @@ import {
   BarChart3,
   ChevronRight,
   Coins,
+  Eye,
+  EyeOff,
   FileSpreadsheet,
+  Sparkles,
   Upload,
   UserPlus,
   Zap,
@@ -37,6 +40,7 @@ import {
   RESEARCHERS,
   fmt,
 } from "@/lib/leadgen/data";
+import { isValidEmail, phoneDigits } from "@/lib/leadgen/validation";
 import { cn } from "@/lib/utils";
 
 export function QuickActionCard({
@@ -409,19 +413,84 @@ export function AllocateCreditsDialog({ open, onOpenChange }) {
 }
 
 export function AddMemberDialog({ open, onOpenChange }) {
-  const { dispatch } = useLeadGen();
+  const { state, dispatch } = useLeadGen();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("BDE");
+  const [status, setStatus] = useState("Active");
+  const [password, setPassword] = useState("Password@123");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (open) {
       setName("");
       setEmail("");
       setPhone("");
+      setRole("BDE");
+      setStatus("Active");
+      setPassword("Password@123");
+      setShowPassword(false);
     }
   }, [open]);
+
+  const handleSubmit = () => {
+    // 1. Full Name: Mandatory
+    if (!name.trim()) {
+      return void toast.error("Full name is mandatory");
+    }
+
+    // 2. Email: Unique, valid email
+    const trimmedEmail = email.trim();
+    if (!isValidEmail(trimmedEmail)) {
+      return void toast.error("Enter a valid email address");
+    }
+    const emailExists = state.team.some(
+      (m) => m.email.toLowerCase() === trimmedEmail.toLowerCase(),
+    );
+    if (emailExists) {
+      return void toast.error("A team member with this email already exists");
+    }
+
+    // 3. Phone: Valid Indian mobile number
+    const trimmedPhone = phone.trim();
+    if (!trimmedPhone) {
+      return void toast.error("Phone number is mandatory");
+    }
+    const digits = phoneDigits(trimmedPhone);
+    if (!/^[6-9]\d{9}$/.test(digits)) {
+      return void toast.error(
+        "Enter a valid 10-digit Indian mobile number (+91...)",
+      );
+    }
+
+    // 4. Login Password: Secure initial password
+    if (!password.trim()) {
+      return void toast.error("Login password is mandatory");
+    }
+    if (password.trim().length < 6) {
+      return void toast.error("Password must be at least 6 characters");
+    }
+
+    dispatch({
+      type: "addMember",
+      member: {
+        name: name.trim(),
+        email: trimmedEmail,
+        phone: trimmedPhone.startsWith("+91")
+          ? trimmedPhone
+          : `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`,
+        role,
+        status,
+        password: password.trim(),
+      },
+    });
+
+    onOpenChange(false);
+    toast.success(`${name.trim()} added as ${role}`, {
+      description: `Status: ${status} · Invite sent to ${trimmedEmail}`,
+    });
+  };
 
   return (
     <FormDialog
@@ -430,24 +499,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
       title="Add Team Member"
       description="Invite a Research Analyst or BDE to LeadGen Pro."
       submitLabel="Add member"
-      onSubmit={() => {
-        if (!name.trim()) return void toast.error("Enter the member's name");
-        if (!/^\S+@\S+\.\S+$/.test(email))
-          return void toast.error("Enter a valid email address");
-        dispatch({
-          type: "addMember",
-          member: {
-            name: name.trim(),
-            email: email.trim(),
-            phone: phone.trim(),
-            role,
-          },
-        });
-        onOpenChange(false);
-        toast.success(`${name.trim()} added as ${role}`, {
-          description: `Invite sent to ${email.trim()}`,
-        });
-      }}
+      onSubmit={handleSubmit}
     >
       <Field label="Role">
         <div className="grid grid-cols-2 gap-2">
@@ -460,7 +512,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
                 "rounded-md border px-3 py-2 text-xs font-semibold transition-colors",
                 role === r
                   ? "border-primary bg-primary-soft text-primary"
-                  : "hover:bg-muted",
+                  : "hover:bg-muted text-muted-foreground",
               )}
             >
               {r}
@@ -468,6 +520,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
           ))}
         </div>
       </Field>
+
       <Field label="Full name" htmlFor="m-name">
         <Input
           id="m-name"
@@ -476,6 +529,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
           placeholder="e.g. Sandeep Rao"
         />
       </Field>
+
       <div className="grid grid-cols-2 gap-3">
         <Field label="Email" htmlFor="m-email">
           <Input
@@ -495,6 +549,67 @@ export function AddMemberDialog({ open, onOpenChange }) {
           />
         </Field>
       </div>
+
+      <Field label="Status" htmlFor="m-status">
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger id="m-status">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Active">Active</SelectItem>
+            <SelectItem value="Inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
+
+      <Field label="Login Password" htmlFor="m-password">
+        <div className="relative">
+          <Input
+            id="m-password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Secure initial password"
+            className="pr-24"
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-1.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground hover:text-foreground"
+              onClick={() => setShowPassword(!showPassword)}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="size-3.5" />
+              ) : (
+                <Eye className="size-3.5" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-[11px] font-medium text-muted-foreground hover:text-primary"
+              onClick={() => {
+                const randomPwd =
+                  "Pass@" + Math.random().toString(36).slice(-6) + "!";
+                setPassword(randomPwd);
+                setShowPassword(true);
+                toast.info("Generated initial secure password");
+              }}
+              title="Generate secure password"
+            >
+              <Sparkles className="mr-1 size-3" />
+              Gen
+            </Button>
+          </div>
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          Secure initial password for employee's first sign in.
+        </p>
+      </Field>
     </FormDialog>
   );
 }

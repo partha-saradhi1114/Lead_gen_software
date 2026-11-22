@@ -341,9 +341,15 @@ class LeadGenStore {
       email: member.email.trim().toLowerCase(),
       phone: member.phone || "+91 90000 00000",
       role: member.role || "BDE",
+      department:
+        member.department ||
+        (member.role === "BDE"
+          ? "Business Development"
+          : "Market Research"),
+      status: member.status || "Active",
       credits: member.role === "BDE" ? 500 : 0,
       creditsUsed: 0,
-      active: true,
+      active: (member.status || "Active").toLowerCase() === "active",
     };
     this.state.team.push(cleanMember);
     if (cleanMember.role === "BDE") {

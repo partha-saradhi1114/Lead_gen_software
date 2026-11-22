@@ -356,6 +356,12 @@ export const leadService = {
           email: member.email.toLowerCase(),
           password: member.password || "Password@123",
           role: roleSlug,
+          department:
+            member.department ||
+            (roleSlug === "bde"
+              ? "Business Development"
+              : "Market Research"),
+          active: (member.status || "Active").toLowerCase() === "active",
           credits: roleSlug === "bde" ? 500 : 0,
         });
       } catch (err) {

@@ -8,6 +8,7 @@ import {
   PersonCell,
 } from "@/components/dashboard/PerformanceTable";
 import { useLeadGen } from "@/lib/leadgen/store";
+import { cn } from "@/lib/utils";
 
 export default function TeamPage() {
   const { state } = useLeadGen();
@@ -61,6 +62,31 @@ export default function TeamPage() {
             render: (m) => (
               <span className="text-muted-foreground">{m.phone || "—"}</span>
             ),
+          },
+          {
+            key: "s",
+            header: "Status",
+            render: (m) => {
+              const isActive = (m.status || "Active").toLowerCase() === "active";
+              return (
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium",
+                    isActive
+                      ? "bg-tint-green text-tint-green-foreground"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full",
+                      isActive ? "bg-emerald-500" : "bg-zinc-400",
+                    )}
+                  />
+                  {m.status || "Active"}
+                </span>
+              );
+            },
           },
         ]}
       />
