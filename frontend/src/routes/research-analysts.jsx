@@ -44,7 +44,7 @@ import { RA_EXTENDED, RESEARCHERS, fmt, pct } from "@/lib/leadgen/data";
 const RA_METRICS = [
   {
     name: "Priya M",
-    email: "priya.m@arahinfotech.com",
+    email: "priya.m@leadgen.pro",
     uploaded: 1250,
     approved: 1020,
     rejected: 60,
@@ -56,7 +56,7 @@ const RA_METRICS = [
   },
   {
     name: "Arjun K",
-    email: "arjun.k@arahinfotech.com",
+    email: "arjun.k@leadgen.pro",
     uploaded: 980,
     approved: 760,
     rejected: 45,
@@ -68,7 +68,7 @@ const RA_METRICS = [
   },
   {
     name: "Neha R",
-    email: "neha.r@arahinfotech.com",
+    email: "neha.r@leadgen.pro",
     uploaded: 860,
     approved: 690,
     rejected: 40,
@@ -80,7 +80,7 @@ const RA_METRICS = [
   },
   {
     name: "Sneha T",
-    email: "sneha.t@arahinfotech.com",
+    email: "sneha.t@leadgen.pro",
     uploaded: 720,
     approved: 560,
     rejected: 52,
@@ -92,7 +92,7 @@ const RA_METRICS = [
   },
   {
     name: "Rahul P",
-    email: "rahul.p@arahinfotech.com",
+    email: "rahul.p@leadgen.pro",
     uploaded: 470,
     approved: 390,
     rejected: 38,

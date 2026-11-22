@@ -52,9 +52,9 @@ export default function SettingsPage() {
   // General settings state initialized from global state / localStorage
   const [general, setGeneral] = useState({
     workspaceName: s.general?.workspaceName || "Lead Generation Software",
-    orgDomain: s.general?.orgDomain || "arahinfotech.com",
+    orgDomain: s.general?.orgDomain || "leadgen.pro",
     contactEmail:
-      s.general?.contactEmail || storedUser.email || "sriram@arahinfotech.com",
+      s.general?.contactEmail || storedUser.email || "sriram@leadgen.pro",
     timezone: s.general?.timezone || "Asia/Kolkata",
     currency: s.general?.currency || "INR",
   });
@@ -863,7 +863,7 @@ export default function SettingsPage() {
                     Current User:{" "}
                     <span className="font-mono text-foreground">
                       {storedUser.name || "Administrator"} (
-                      {storedUser.email || "sriram@arahinfotech.com"})
+                      {storedUser.email || "sriram@leadgen.pro"})
                     </span>
                   </p>
                   <p>

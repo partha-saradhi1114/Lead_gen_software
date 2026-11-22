@@ -65,7 +65,7 @@ describe("LeadGen admin rules", () => {
       type: "addMember",
       member: {
         name: "Sandeep Rao",
-        email: "sandeep@arahinfotech.com",
+        email: "sandeep@leadgen.pro",
         phone: "",
         role: "BDE",
       },

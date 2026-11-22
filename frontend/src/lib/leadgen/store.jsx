@@ -20,8 +20,8 @@ import { leadGenReducer, selectKpis } from "./reducer";
 export const DEFAULT_SETTINGS = {
   general: {
     workspaceName: "Lead Generation Software",
-    orgDomain: "arahinfotech.com",
-    contactEmail: "sriram@arahinfotech.com",
+    orgDomain: "leadgen.pro",
+    contactEmail: "admin@leadgen.pro",
     timezone: "Asia/Kolkata",
     currency: "INR",
   },
@@ -74,13 +74,37 @@ export function loadStoredSettings() {
   return DEFAULT_SETTINGS;
 }
 
+export function loadStoredTeam() {
+  try {
+    const raw =
+      typeof window !== "undefined"
+        ? localStorage.getItem("leadgen_team")
+        : null;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const existingEmails = new Set(
+          SEED_TEAM.map((m) => m.email?.toLowerCase()),
+        );
+        const custom = parsed.filter(
+          (m) => m && m.email && !existingEmails.has(m.email.toLowerCase()),
+        );
+        return [...SEED_TEAM, ...custom];
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return SEED_TEAM;
+}
+
 function initState() {
   const leads = buildSeedLeads();
   return {
     leads,
     bdes: SEED_BDES,
     credits: SEED_CREDITS,
-    team: SEED_TEAM,
+    team: loadStoredTeam(),
     batches: buildSeedBatches(leads),
     dateRange: "Last 30 Days",
     nextId: leads.length + 1,
@@ -166,12 +190,32 @@ export function LeadGenProvider({ children }) {
               }))
             : undefined;
 
+          const sanitizedTeam = Array.isArray(serverState.team)
+            ? serverState.team.map((m) => {
+                const localMember = state.team.find(
+                  (tm) =>
+                    tm.email?.toLowerCase() === m.email?.toLowerCase() ||
+                    tm.name?.toLowerCase() === m.name?.toLowerCase(),
+                );
+                return {
+                  ...m,
+                  phone:
+                    (m.phone && m.phone !== "+91 90000 00000"
+                      ? m.phone
+                      : localMember?.phone) ||
+                    m.phone ||
+                    "+91 90000 00000",
+                };
+              })
+            : undefined;
+
           localDispatch({
             type: "hydrate",
             state: {
               ...serverState,
               leads: sanitizedLeads,
               ...(sanitizedBatches ? { batches: sanitizedBatches } : {}),
+              ...(sanitizedTeam ? { team: sanitizedTeam } : {}),
             },
           });
         }
@@ -218,6 +262,17 @@ export function LeadGenProvider({ children }) {
       document.title = "Lead Generation Software";
     }
   }, [state.settings]);
+
+  // Synchronize team changes to localStorage
+  useEffect(() => {
+    if (state.team && Array.isArray(state.team)) {
+      try {
+        localStorage.setItem("leadgen_team", JSON.stringify(state.team));
+      } catch (_e) {
+        // ignore
+      }
+    }
+  }, [state.team]);
 
   const dispatch = (action) => {
     // Immediate responsive local state update

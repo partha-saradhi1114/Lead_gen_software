@@ -78,12 +78,6 @@ export function AppHeader() {
         : !item || item.url === "/"
           ? "Master Operations"
           : item.title;
-  const subtitle =
-    role === "ra" && item?.url === "/ra"
-      ? `Welcome back, ${CURRENT_RA}`
-      : role === "bde" && item?.url === "/bde"
-        ? `Welcome back, ${CURRENT_BDE}`
-        : (item?.subtitle ?? "Admin Dashboard");
   const storedUser = (() => {
     try {
       return JSON.parse(localStorage.getItem("user") || "{}");
@@ -91,6 +85,30 @@ export function AppHeader() {
       return {};
     }
   })();
+
+  const displayName =
+    storedUser.name ||
+    (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram");
+
+  const displayRole =
+    storedUser.role === "admin" || storedUser.role === "Master Admin"
+      ? "Master Admin"
+      : storedUser.role === "ra" || storedUser.role === "Research Analyst"
+        ? "Research Analyst"
+        : storedUser.role === "bde" || storedUser.role === "BDE"
+          ? "Business Development Executive"
+          : role === "ra"
+            ? "Research Analyst"
+            : role === "bde"
+              ? "Business Development Executive"
+              : "Master Admin";
+
+  const subtitle =
+    role === "ra" && item?.url === "/ra"
+      ? `Welcome back, ${displayName}`
+      : role === "bde" && item?.url === "/bde"
+        ? `Welcome back, ${displayName}`
+        : (item?.subtitle ?? "Admin Dashboard");
 
   const getInitials = (name) => {
     if (!name) return "US";
@@ -104,32 +122,16 @@ export function AppHeader() {
   };
 
   const user = {
-    name:
-      storedUser.name ||
-      (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram"),
-    role:
-      storedUser.role === "admin"
-        ? "Master Admin"
-        : storedUser.role === "ra"
-          ? "Research Analyst"
-          : storedUser.role === "bde"
-            ? "Business Development Executive"
-            : role === "ra"
-              ? "Research Analyst"
-              : role === "bde"
-                ? "Business Development Executive"
-                : "Master Admin",
+    name: displayName,
+    role: displayRole,
     email:
       storedUser.email ||
       (role === "ra"
-        ? "priya.m@arahinfotech.com"
+        ? "priya.m@leadgen.pro"
         : role === "bde"
-          ? "ravi.kumar@arahinfotech.com"
-          : "sriram@arahinfotech.com"),
-    initials: getInitials(
-      storedUser.name ||
-        (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram"),
-    ),
+          ? "ravi.kumar@leadgen.pro"
+          : "sriram@leadgen.pro"),
+    initials: getInitials(displayName),
   };
 
   const rangeLabel =

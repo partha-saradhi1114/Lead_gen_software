@@ -15,7 +15,10 @@ export function useBdeData() {
       }
     })();
     const bde =
-      storedUser.role === "bde" && storedUser.name
+      (storedUser.role === "bde" ||
+        storedUser.role === "BDE" ||
+        storedUser.role === "Business Development Executive") &&
+      storedUser.name
         ? storedUser.name
         : CURRENT_BDE;
     const category =

@@ -105,8 +105,8 @@ class LeadGenStore {
       settings: {
         general: {
           workspaceName: "Lead Generation Software",
-          orgDomain: "arahinfotech.com",
-          contactEmail: "sriram@arahinfotech.com",
+          orgDomain: "leadgen.pro",
+          contactEmail: "admin@leadgen.pro",
           timezone: "Asia/Kolkata",
           currency: "INR",
         },

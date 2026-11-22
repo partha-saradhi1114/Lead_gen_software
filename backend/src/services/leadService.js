@@ -331,6 +331,7 @@ export const leadService = {
         id: u._id.toString(),
         name: u.name,
         email: u.email,
+        phone: u.phone || "+91 90000 00000",
         role: u.role === "admin" ? "Master Admin" : u.role === "ra" ? "Research Analyst" : "BDE",
         credits: u.credits,
         creditsUsed: u.creditsUsed,
@@ -354,6 +355,7 @@ export const leadService = {
         await User.create({
           name: member.name,
           email: member.email.toLowerCase(),
+          phone: member.phone || "",
           password: member.password || "Password@123",
           role: roleSlug,
           credits: roleSlug === "bde" ? 500 : 0,
@@ -446,10 +448,21 @@ export const leadService = {
             };
           });
 
+          const seedPhones = {
+            Sriram: "+91 98450 12345",
+            "Priya M": "+91 90000 11111",
+            "Arjun K": "+91 90000 22222",
+            "Neha R": "+91 90000 33333",
+            "Ravi Kumar": "+91 90000 44444",
+            "Anitha Reddy": "+91 90000 55555",
+            "Kiran Varma": "+91 90000 66666",
+            "Megha S": "+91 90000 77777",
+          };
           const team = allUsers.map((u) => ({
+            id: u._id.toString(),
             name: u.name,
             email: u.email,
-            phone: "+91 90000 00000",
+            phone: u.phone || seedPhones[u.name] || "+91 90000 00000",
             role: u.role === "admin" ? "Master Admin" : u.role === "ra" ? "Research Analyst" : "BDE",
           }));
 

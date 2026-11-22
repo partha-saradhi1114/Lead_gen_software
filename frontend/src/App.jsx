@@ -67,7 +67,8 @@ export class ErrorBoundary extends React.Component {
           <button
             onClick={() => {
               this.setState({ hasError: false, error: null });
-              window.location.href = window.location.pathname + "?t=" + Date.now();
+              window.location.href =
+                window.location.pathname + "?t=" + Date.now();
             }}
             className="mt-4 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >

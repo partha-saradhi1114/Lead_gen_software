@@ -483,7 +483,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@arahinfotech.com"
+            placeholder="name@leadgen.pro"
           />
         </Field>
         <Field label="Phone" htmlFor="m-phone">
