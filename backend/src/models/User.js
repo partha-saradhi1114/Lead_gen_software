@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "Students / Education",
     },
+    department: {
+      type: String,
+      default: "Lead Generation",
+    },
     // For BDEs: credit balance allocated by Admin
     credits: {
       type: Number,

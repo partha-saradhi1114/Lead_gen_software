@@ -14,7 +14,7 @@ teamRouter.get("/", async (_req, res) => {
 
 teamRouter.post("/", async (req, res) => {
   try {
-    const { name, email, role, phone, password } = req.body;
+    const { name, email, role, phone, password, department, status } = req.body;
     if (!name || !email || !role) {
       return res.status(400).json({ error: "name, email, and role are required" });
     }
@@ -25,6 +25,8 @@ teamRouter.post("/", async (req, res) => {
       role,
       phone,
       password,
+      department,
+      status,
     });
 
     res.status(201).json({

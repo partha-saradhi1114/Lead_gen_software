@@ -166,11 +166,12 @@
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-16",
       "id": 7,
-      "status": "pending",
+      "status": "approved",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261116-NR"
+      "batchId": "BT-261116-NR",
+      "reviewedOn": "2026-11-18"
     },
     {
       "company": "Andhra University MCA",
@@ -182,11 +183,12 @@
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-15",
       "id": 8,
-      "status": "pending",
+      "status": "approved",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261115-PM"
+      "batchId": "BT-261115-PM",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 9,
@@ -198,11 +200,13 @@
       "category": "General Enquiries",
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-17",
-      "status": "pending",
+      "status": "rejected",
       "designation": "CEO",
       "location": "Chennai",
       "industry": "Diagnostics",
-      "batchId": "BT-261117-PM"
+      "batchId": "BT-261117-PM",
+      "rejectionReason": "Invalid phone number format",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 10,
@@ -72444,8 +72448,13 @@
   "bdes": [
     {
       "name": "Ravi Kumar",
+<<<<<<< HEAD
       "allocated": 700,
       "used": 422,
+=======
+      "allocated": 800,
+      "used": 423,
+>>>>>>> 58fbd3d (commit)
       "connected": 152,
       "interested": 98
     },
@@ -72483,11 +72492,33 @@
       "used": 0,
       "connected": 0,
       "interested": 0
+<<<<<<< HEAD
     }
   ],
   "credits": {
     "allocated": 3200,
     "used": 1322
+=======
+    },
+    {
+      "name": "Sidhu",
+      "allocated": 500,
+      "used": 0,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "Suresh Reddy",
+      "allocated": 500,
+      "used": 0,
+      "connected": 0,
+      "interested": 0
+    }
+  ],
+  "credits": {
+    "allocated": 4300,
+    "used": 1323
+>>>>>>> 58fbd3d (commit)
   },
   "team": [
     {
@@ -72543,11 +72574,56 @@
       "active": true
     },
     {
+<<<<<<< HEAD
       "id": "1795330023612",
+=======
+      "id": "1795261923822",
+>>>>>>> 58fbd3d (commit)
       "name": "Suresh Reddy",
       "email": "suresh.r@arahinfotech.com",
       "phone": "+91 99887 76655",
       "role": "BDE",
+<<<<<<< HEAD
+=======
+      "department": "Business Development",
+      "status": "Active",
+      "credits": 500,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795324701159",
+      "name": "Sidhu",
+      "email": "sidhu@gmail.com",
+      "phone": "+91 98798 79879",
+      "role": "BDE",
+      "department": "Business Development",
+      "status": "Active",
+      "credits": 500,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795325852163",
+      "name": "sai",
+      "email": "sai@gmail.com",
+      "phone": "+91 98989 89898",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795329505908",
+      "name": "Suresh Reddy",
+      "email": "suresh.r@arahinfotech.com",
+      "phone": "+91 99887 76655",
+      "role": "BDE",
+      "department": "Business Development",
+      "status": "Active",
+>>>>>>> 58fbd3d (commit)
       "credits": 500,
       "creditsUsed": 0,
       "active": true
@@ -77746,6 +77822,10 @@
         {
           "on": "2026-11-18",
           "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
         }
       ]
     },
@@ -77753,20 +77833,6 @@
       "leadId": 2,
       "bde": "Ravi Kumar",
       "assignedOn": "2026-11-22",
-      "stage": "New",
-      "unlocked": false,
-      "followUp": null,
-      "activity": [
-        {
-          "on": "2026-11-21",
-          "text": "Lead assigned by Master Admin to Ravi Kumar"
-        }
-      ]
-    },
-    {
-      "leadId": "6b01425e2be164050dccccd0",
-      "bde": "Ravi Kumar",
-      "assignedOn": "2026-11-21",
       "stage": "New",
       "unlocked": false,
       "followUp": null,
@@ -77866,16 +77932,46 @@
       "kind": "Allocation",
       "amount": 100,
       "note": "Master Admin allocated 100 credits"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Ravi Kumar",
+      "kind": "Requested",
+      "amount": 200,
+      "note": "High-volume hospital campaign"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Ravi Kumar",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": 1,
+      "note": "Unlocked Osmania University CSE"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Ravi Kumar",
+      "kind": "Allocation",
+      "amount": 100,
+      "note": "Master Admin allocated 100 credits"
     }
   ],
   "creditRequests": [
     {
-      "id": 1795330023600,
+      "id": 1795329505887,
       "bde": "Ravi Kumar",
       "amount": 200,
       "reason": "High-volume hospital campaign",
       "status": "pending",
       "requestedOn": "2026-11-22"
+    },
+    {
+      "id": 1795261923806,
+      "bde": "Ravi Kumar",
+      "amount": 200,
+      "reason": "High-volume hospital campaign",
+      "status": "approved",
+      "requestedOn": "2026-11-21"
     },
     {
       "id": 1795257539676,
