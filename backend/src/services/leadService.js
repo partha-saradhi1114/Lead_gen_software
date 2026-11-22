@@ -305,18 +305,56 @@ export const leadService = {
 
   async getCredits() {
     if (!getDbStatus()) {
+      const credits = leadStore.getCredits();
+      const bdes = leadStore.getBdes();
+      return {
+        allocated: credits.allocated,
+        used: credits.used,
+        bdes,
+      };
+    }
+    try {
+      const bdes = await User.find({ role: "bde" }).select("-password");
+      let totalAllocated = 0;
+      let totalUsed = 0;
+      const bdeList = bdes.map((u) => {
+        const allocated = (u.credits || 0) + (u.creditsUsed || 0);
+        const used = u.creditsUsed || 0;
+        totalAllocated += allocated;
+        totalUsed += used;
+        return {
+          bde: u.name,
+          name: u.name,
+          allocated,
+          used,
+          available: u.credits,
+        };
+      });
+      return {
+        allocated: totalAllocated,
+        used: totalUsed,
+        bdes: bdeList,
+      };
+    } catch {
       return leadStore.getCredits();
+    }
+  },
+
+  async getBdes() {
+    if (!getDbStatus()) {
+      return leadStore.getBdes();
     }
     try {
       const bdes = await User.find({ role: "bde" }).select("-password");
       return bdes.map((u) => ({
         bde: u.name,
-        allocated: u.credits + u.creditsUsed,
-        used: u.creditsUsed,
-        available: u.credits,
+        name: u.name,
+        allocated: (u.credits || 0) + (u.creditsUsed || 0),
+        used: u.creditsUsed || 0,
+        available: u.credits || 0,
       }));
     } catch {
-      return leadStore.getCredits();
+      return leadStore.getBdes();
     }
   },
 

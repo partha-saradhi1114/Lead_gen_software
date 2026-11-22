@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Share2,
   Users,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Panel, PanelHeader } from "@/components/common/Panel";
+import { Pager } from "@/components/common/Pager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,12 @@ export default function LeadAllocationPage() {
   const [industryFilter, setIndustryFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [allocating, setAllocating] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, industryFilter, categoryFilter]);
 
   // Filter approved leads available for allocation
   const approvedLeads = useMemo(() => {
@@ -64,6 +71,12 @@ export default function LeadAllocationPage() {
     const set = new Set(approvedLeads.map((l) => l.industry).filter(Boolean));
     return Array.from(set);
   }, [approvedLeads]);
+
+  const pages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
+  const current = Math.min(page, pages);
+  const paginatedLeads = useMemo(() => {
+    return filteredLeads.slice((current - 1) * pageSize, current * pageSize);
+  }, [filteredLeads, current, pageSize]);
 
   const handleSelectAll = (checked) => {
     if (checked) {
@@ -293,7 +306,7 @@ export default function LeadAllocationPage() {
                   </td>
                 </tr>
               ) : (
-                filteredLeads.map((lead) => {
+                paginatedLeads.map((lead) => {
                   const isSelected = selectedIds.includes(lead.id);
                   return (
                     <tr
@@ -356,6 +369,14 @@ export default function LeadAllocationPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-xs text-muted-foreground">
+          <span>
+            Showing {filteredLeads.length === 0 ? 0 : (current - 1) * pageSize + 1}–
+            {Math.min(current * pageSize, filteredLeads.length)} of {filteredLeads.length} leads
+          </span>
+          <Pager current={current} pages={pages} onChange={setPage} />
         </div>
       </Panel>
     </div>

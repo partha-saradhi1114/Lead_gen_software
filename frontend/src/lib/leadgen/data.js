@@ -600,31 +600,220 @@ export const SEED_TEAM = [
 ];
 
 export const NOTIFICATIONS = [
+  // 1. MASTER ADMIN NOTIFICATIONS (High-level supervisory oversight across all RAs and BDEs)
   {
     id: 1,
-    title: "48 leads uploaded by Priya M",
+    role: "admin",
+    title: "48 leads uploaded by Priya M awaiting review",
     time: "10 min ago",
     tone: "blue",
   },
   {
     id: 2,
+    role: "admin",
     title: "Ravi Kumar used 84% of allocated credits",
     time: "1 hr ago",
     tone: "amber",
   },
   {
     id: 3,
-    title: "12 follow-ups became overdue",
+    role: "admin",
+    title: "12 follow-ups became overdue across BDE team",
     time: "3 hrs ago",
     tone: "red",
   },
   {
     id: 4,
+    role: "admin",
     title: "Anitha Reddy marked 6 leads Interested",
     time: "Yesterday",
     tone: "green",
   },
+  {
+    id: 5,
+    role: "admin",
+    title: "Kiran Varma submitted a credit top-up request (200 credits)",
+    time: "Yesterday",
+    tone: "blue",
+  },
+
+  // 2. RESEARCH ANALYST (RA) NOTIFICATIONS (Personal batch approvals, rejections, QA feedback, sector quotas)
+  {
+    id: 101,
+    role: "ra",
+    targetUser: "Priya M",
+    title: "Batch Reviewed: 42 leads approved from your latest upload",
+    time: "15 min ago",
+    tone: "green",
+  },
+  {
+    id: 102,
+    role: "ra",
+    targetUser: "Priya M",
+    title: "6 leads rejected from Batch #202611-09 (Invalid contact phone)",
+    time: "45 min ago",
+    tone: "red",
+  },
+  {
+    id: 103,
+    role: "ra",
+    targetUser: "Priya M",
+    title: "Priority assignment: Source Healthcare & Clinic leads for Telangana",
+    time: "2 hrs ago",
+    tone: "blue",
+  },
+  {
+    id: 104,
+    role: "ra",
+    targetUser: "Priya M",
+    title: "Quality milestone: Your lead approval rate reached 81.6%",
+    time: "Yesterday",
+    tone: "blue",
+  },
+  {
+    id: 105,
+    role: "ra",
+    targetUser: "Arjun K",
+    title: "Batch Reviewed: 38 leads approved by Admin",
+    time: "30 min ago",
+    tone: "green",
+  },
+  {
+    id: 106,
+    role: "ra",
+    targetUser: "Arjun K",
+    title: "5 leads flagged for duplicate verification in Diagnostics",
+    time: "2 hrs ago",
+    tone: "amber",
+  },
+  {
+    id: 107,
+    role: "ra",
+    targetUser: "Arjun K",
+    title: "Upload confirmed: 50 leads received for verification",
+    time: "Yesterday",
+    tone: "blue",
+  },
+
+  // 3. BUSINESS DEVELOPMENT EXECUTIVE (BDE) NOTIFICATIONS (Personal allocated leads, follow-ups, personal credit quota)
+  {
+    id: 201,
+    role: "bde",
+    targetUser: "Ravi Kumar",
+    title: "25 freshly approved leads allocated to your active pipeline",
+    time: "20 min ago",
+    tone: "blue",
+  },
+  {
+    id: 202,
+    role: "bde",
+    targetUser: "Ravi Kumar",
+    title: "3 follow-up calls are overdue today (Carewell, Lotus Clinics)",
+    time: "1 hr ago",
+    tone: "red",
+  },
+  {
+    id: 203,
+    role: "bde",
+    targetUser: "Ravi Kumar",
+    title: "Credit Alert: 84% credits used (80 credits remaining)",
+    time: "2 hrs ago",
+    tone: "amber",
+  },
+  {
+    id: 204,
+    role: "bde",
+    targetUser: "Ravi Kumar",
+    title: "Prospect converted: Vasavi Multi-Speciality Hospital",
+    time: "Yesterday",
+    tone: "green",
+  },
+  {
+    id: 205,
+    role: "bde",
+    targetUser: "Anitha Reddy",
+    title: "20 verified leads allocated to your pipeline",
+    time: "25 min ago",
+    tone: "blue",
+  },
+  {
+    id: 206,
+    role: "bde",
+    targetUser: "Anitha Reddy",
+    title: "Credit Top-Up: Admin approved 100 bonus credits for your account",
+    time: "1 hr ago",
+    tone: "green",
+  },
+  {
+    id: 207,
+    role: "bde",
+    targetUser: "Anitha Reddy",
+    title: "2 client follow-ups due in the next 30 minutes",
+    time: "3 hrs ago",
+    tone: "amber",
+  },
+  {
+    id: 208,
+    role: "bde",
+    targetUser: "Anitha Reddy",
+    title: "Monthly milestone: 66 leads converted (On track)",
+    time: "Yesterday",
+    tone: "blue",
+  },
 ];
+
+/**
+ * Returns notifications scoped to the logged-in role and individual persona.
+ * - Master Admin sees all macro / supervisory team notifications across all users.
+ * - Research Analysts see only their own batch reviews, approvals, rejections, and assignments.
+ * - BDEs see only their assigned leads, upcoming/overdue follow-ups, and personal credit balance.
+ */
+export function getNotificationsForUser(role, userName) {
+  const normalizedRole = (role || "").toLowerCase();
+
+  if (normalizedRole === "admin" || normalizedRole.includes("admin")) {
+    return NOTIFICATIONS.filter((n) => n.role === "admin");
+  }
+
+  if (
+    normalizedRole === "ra" ||
+    normalizedRole.includes("research") ||
+    normalizedRole.includes("analyst")
+  ) {
+    const userMatches = NOTIFICATIONS.filter(
+      (n) =>
+        n.role === "ra" &&
+        n.targetUser &&
+        n.targetUser.toLowerCase() === (userName || "").toLowerCase(),
+    );
+    if (userMatches.length > 0) return userMatches;
+    // Default fallback to Priya M's RA notifications or role-wide ra notifications
+    return NOTIFICATIONS.filter(
+      (n) => n.role === "ra" && (!n.targetUser || n.targetUser === CURRENT_RA),
+    );
+  }
+
+  if (
+    normalizedRole === "bde" ||
+    normalizedRole.includes("business") ||
+    normalizedRole.includes("executive")
+  ) {
+    const userMatches = NOTIFICATIONS.filter(
+      (n) =>
+        n.role === "bde" &&
+        n.targetUser &&
+        n.targetUser.toLowerCase() === (userName || "").toLowerCase(),
+    );
+    if (userMatches.length > 0) return userMatches;
+    // Default fallback to Ravi Kumar's BDE notifications or role-wide bde notifications
+    return NOTIFICATIONS.filter(
+      (n) =>
+        n.role === "bde" && (!n.targetUser || n.targetUser === "Ravi Kumar"),
+    );
+  }
+
+  return NOTIFICATIONS.filter((n) => n.role === "admin");
+}
 
 export function formatDate(iso) {
   const [y, m, d] = iso.split("-").map(Number);
@@ -650,4 +839,8 @@ export const fmt = (n) => {
   const num = typeof n === "number" ? n : Number(n);
   return isNaN(num) ? "0" : num.toLocaleString("en-IN");
 };
-export const pct = (num, den) => (den === 0 ? 0 : (num / den) * 100);
+export const pct = (num, den) => {
+  const n = Number(num) || 0;
+  const d = Number(den) || 0;
+  return d === 0 ? 0 : (n / d) * 100;
+};

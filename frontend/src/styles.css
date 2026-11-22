@@ -177,3 +177,72 @@
 @utility num {
   font-variant-numeric: tabular-nums;
 }
+
+/* Animated Login Hero Keyframes */
+@keyframes flow-line {
+  0% {
+    stroke-dashoffset: 40;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+.animate-flow-line {
+  stroke-dasharray: 6 6;
+  animation: flow-line 2s linear infinite;
+}
+
+.animate-float-gentle {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes audio-wave {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 16px;
+  }
+}
+
+.animate-audio-1 {
+  animation: audio-wave 0.7s ease-in-out infinite 0.1s;
+}
+.animate-audio-2 {
+  animation: audio-wave 0.7s ease-in-out infinite 0.35s;
+}
+.animate-audio-3 {
+  animation: audio-wave 0.7s ease-in-out infinite 0.2s;
+}
+.animate-audio-4 {
+  animation: audio-wave 0.7s ease-in-out infinite 0.45s;
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Check,
   ChevronDown,
@@ -441,7 +441,7 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                 !isRowChecked && l.allLeadIds.some((id) => selected.has(id));
 
               return (
-                <tr key={l.id} className="contents">
+                <Fragment key={l.id}>
                   <tr
                     className={cn(
                       "border-b border-border/70 transition-colors hover:bg-muted/40",
@@ -693,7 +693,7 @@ export function LeadReviewTable({ pageSize = 6, className }) {
                       </td>
                     </tr>
                   )}
-                </tr>
+                </Fragment>
               );
             })}
             {rows.length === 0 && (

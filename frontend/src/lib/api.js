@@ -7,7 +7,7 @@ function getBaseUrl() {
   ) {
     return "/api";
   }
-  return "http://localhost:5000/api";
+  return "http://localhost:5005/api";
 }
 
 async function request(path, options = {}) {
@@ -57,6 +57,7 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
   getMe: () => request("/auth/me"),
+  getUsers: () => request("/auth/users"),
 
   // System
   checkHealth: () => request("/health"),
@@ -76,6 +77,8 @@ export const api = {
     return request(`/leads?${params.toString()}`);
   },
   getLeadById: (id) => request(`/leads/${id}`),
+  getBatches: () => request("/leads/batches"),
+  getCredits: () => request("/leads/credits"),
   approveLeads: (ids) =>
     request("/leads/approve", {
       method: "POST",
