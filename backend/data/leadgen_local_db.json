@@ -1,6 +1,46 @@
 {
   "leads": [
     {
+      "company": "sathava",
+      "category": "Healthcare & Pharma",
+      "contact": "shekar",
+      "email": "shekar@gmail.com",
+      "phone": "9897973828",
+      "country": "India",
+      "stateCity": "ongole",
+      "companyAddress": "karnool road,ongole",
+      "description": "testing",
+      "location": "ongole",
+      "source": "Manual Entry",
+      "notes": "testing",
+      "id": 4282,
+      "status": "pending",
+      "uploadedBy": "Priya M",
+      "uploaderName": "Priya M",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-PM"
+    },
+    {
+      "company": "sathava",
+      "category": "Healthcare & Pharma",
+      "contact": "shekar",
+      "email": "shekar@gmail.com",
+      "phone": "9897973828",
+      "country": "India",
+      "stateCity": "ongole",
+      "companyAddress": "karnool road,ongole",
+      "description": "testing",
+      "location": "ongole",
+      "source": "Manual Entry",
+      "notes": "testing",
+      "id": 4281,
+      "status": "pending",
+      "uploadedBy": "Priya M",
+      "uploaderName": "Priya M",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-PM"
+    },
+    {
       "company": "Osmania University CSE",
       "contact": "Mr. Rahul Sharma",
       "phone": "+91 98480 12345",
@@ -72495,6 +72535,26 @@
   "batches": [
     {
       "id": "BT-261118-PM",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Healthcare & Pharma",
+      "uploadedBy": "Priya M",
+      "draft": false,
+      "validRecords": 1
+    },
+    {
+      "id": "BT-261118-PM",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Healthcare & Pharma",
+      "uploadedOn": "2026-11-18",
+      "researcher": "Priya M",
+      "totalRecords": 1,
+      "validRecords": 1,
+      "invalidRecords": 0,
+      "duplicates": 0,
+      "draft": false
+    },
+    {
+      "id": "BT-261118-PM",
       "fileName": "healthcare_hyderabad_1811.xlsx",
       "uploadedOn": "2026-11-18",
       "researcher": "Priya M",
@@ -77680,7 +77740,7 @@
     }
   ],
   "dateRange": "Last 30 Days",
-  "nextId": 4281,
+  "nextId": 4283,
   "creditLog": [
     {
       "on": "2026-11-18",
