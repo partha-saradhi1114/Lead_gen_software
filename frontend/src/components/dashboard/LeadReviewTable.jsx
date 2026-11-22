@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ClipboardList, Filter, Search, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
+  Filter,
+  Search,
+  Users,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
@@ -51,6 +60,7 @@ const SOURCE_TONE = {
   Referral: "bg-tint-green text-tint-green-foreground",
   LinkedIn: "bg-tint-cyan text-tint-cyan-foreground",
   "Cold Call": "bg-tint-amber text-tint-amber-foreground",
+  "Manual Entry": "bg-tint-cyan text-tint-cyan-foreground",
 };
 
 export function getResearcherDisplayName(lead) {
@@ -71,6 +81,7 @@ export function LeadReviewTable({ pageSize = 6, className }) {
   const [uploader, setUploader] = useState("all");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(new Set());
+  const [expanded, setExpanded] = useState(new Set());
   const [rejectTarget, setRejectTarget] = useState(null);
   const [bulkApprove, setBulkApprove] = useState(false);
   const [detail, setDetail] = useState(null);
@@ -98,25 +109,61 @@ export function LeadReviewTable({ pageSize = 6, className }) {
     );
   }, [state.leads, tab, query, source, category, uploader]);
 
-  const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  // Group multiple leads belonging to the same company
+  const groupedLeads = useMemo(() => {
+    const map = new Map();
+    for (const lead of filtered) {
+      const compKey = (lead.company || "").trim().toLowerCase();
+      if (!map.has(compKey)) {
+        map.set(compKey, {
+          ...lead,
+          additionalLeads: [],
+          allLeadIds: [lead.id],
+        });
+      } else {
+        const primary = map.get(compKey);
+        primary.additionalLeads.push(lead);
+        primary.allLeadIds.push(lead.id);
+      }
+    }
+    return Array.from(map.values());
+  }, [filtered]);
+
+  const pages = Math.max(1, Math.ceil(groupedLeads.length / pageSize));
   const current = Math.min(page, pages);
-  const rows = filtered.slice((current - 1) * pageSize, current * pageSize);
+  const rows = groupedLeads.slice((current - 1) * pageSize, current * pageSize);
 
   useEffect(() => {
     setPage(1);
     setSelected(new Set());
-  }, [tab, query, source, uploader]);
+    setExpanded(new Set());
+  }, [tab, query, source, uploader, category]);
 
   const pendingRows = rows.filter((r) => r.status === "pending");
+  const allPendingIdsOnPage = pendingRows.flatMap((r) => r.allLeadIds);
   const allOnPage =
-    pendingRows.length > 0 && pendingRows.every((r) => selected.has(r.id));
-  const someOnPage = pendingRows.some((r) => selected.has(r.id));
+    allPendingIdsOnPage.length > 0 &&
+    allPendingIdsOnPage.every((id) => selected.has(id));
+  const someOnPage = allPendingIdsOnPage.some((id) => selected.has(id));
+
   const activeFilters =
     (source !== "all" ? 1 : 0) +
     (category !== "all" ? 1 : 0) +
     (uploader !== "all" ? 1 : 0);
 
-  const toggle = (id) =>
+  const toggleGroup = (row) =>
+    setSelected((s) => {
+      const n = new Set(s);
+      const isAllSelected = row.allLeadIds.every((id) => n.has(id));
+      if (isAllSelected) {
+        row.allLeadIds.forEach((id) => n.delete(id));
+      } else {
+        row.allLeadIds.forEach((id) => n.add(id));
+      }
+      return n;
+    });
+
+  const toggleSingle = (id) =>
     setSelected((s) => {
       const n = new Set(s);
       n.has(id) ? n.delete(id) : n.add(id);
@@ -126,8 +173,18 @@ export function LeadReviewTable({ pageSize = 6, className }) {
   const toggleAll = () =>
     setSelected((s) => {
       const n = new Set(s);
-      if (allOnPage) pendingRows.forEach((r) => n.delete(r.id));
-      else pendingRows.forEach((r) => n.add(r.id));
+      if (allOnPage) {
+        allPendingIdsOnPage.forEach((id) => n.delete(id));
+      } else {
+        allPendingIdsOnPage.forEach((id) => n.add(id));
+      }
+      return n;
+    });
+
+  const toggleExpand = (id) =>
+    setExpanded((s) => {
+      const n = new Set(s);
+      n.has(id) ? n.delete(id) : n.add(id);
       return n;
     });
 
@@ -376,98 +433,269 @@ export function LeadReviewTable({ pageSize = 6, className }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((l, i) => (
-              <tr
-                key={l.id}
-                className={cn(
-                  "border-b border-border/70 transition-colors hover:bg-muted/40",
-                  selected.has(l.id) && "bg-primary-soft/60",
-                )}
-              >
-                <td className="py-2 pl-4 pr-1">
-                  <Checkbox
-                    aria-label={`Select ${l.company}`}
-                    disabled={l.status !== "pending"}
-                    checked={selected.has(l.id)}
-                    onCheckedChange={() => toggle(l.id)}
-                  />
-                </td>
-                <td className="num px-2 py-2 text-muted-foreground">
-                  {(current - 1) * pageSize + i + 1}
-                </td>
-                <td className="max-w-44 px-2 py-2">
-                  <button
-                    className="block max-w-full truncate text-left font-semibold hover:text-primary hover:underline"
-                    onClick={() => setDetail(l)}
-                  >
-                    {l.company}
-                  </button>
-                </td>
-                <td className="whitespace-nowrap px-2 py-2">{l.contact}</td>
-                <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">
-                  {l.phone}
-                </td>
-                <td className="max-w-40 truncate px-2 py-2 text-muted-foreground">
-                  {l.email}
-                </td>
-                <td className="px-2 py-2">
-                  <span className="whitespace-nowrap rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground">
-                    {l.category || "Students / Education"}
-                  </span>
-                </td>
-                <td className="px-2 py-2">
-                  <span
+            {rows.map((l, i) => {
+              const hasAdditional = l.additionalLeads?.length > 0;
+              const isExpanded = expanded.has(l.id);
+              const isRowChecked = l.allLeadIds.every((id) => selected.has(id));
+              const isRowIndeterminate =
+                !isRowChecked && l.allLeadIds.some((id) => selected.has(id));
+
+              return (
+                <tr key={l.id} className="contents">
+                  <tr
                     className={cn(
-                      "whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold",
-                      SOURCE_TONE[l.source],
+                      "border-b border-border/70 transition-colors hover:bg-muted/40",
+                      (isRowChecked || isRowIndeterminate) && "bg-primary-soft/60",
                     )}
                   >
-                    {l.source}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap px-2 py-2">
-                  {getResearcherDisplayName(l)}
-                </td>
-                <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">
-                  {formatDate(l.uploadedOn)}
-                </td>
-                <td className="sticky right-0 bg-card py-2 pl-3 pr-4 text-right shadow-[-8px_0_12px_-10px_var(--color-foreground)]">
-                  {l.status === "pending" ? (
-                    <div className="flex justify-end gap-1.5">
-                      <Button
-                        size="xs"
-                        variant="success-soft"
-                        aria-label="Approve"
-                        onClick={() => approve([l.id])}
-                      >
-                        <Check />{" "}
-                        <span className="hidden md:inline">Approve</span>
-                      </Button>
-                      <Button
-                        size="xs"
-                        variant="danger-soft"
-                        aria-label="Reject"
-                        onClick={() => setRejectTarget([l])}
-                      >
-                        <X /> <span className="hidden md:inline">Reject</span>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-end gap-0.5">
-                      <StatusBadge status={l.status} />
-                      {l.rejectionReason && (
-                        <span
-                          className="max-w-40 truncate text-[11px] text-muted-foreground"
-                          title={l.rejectionReason}
+                    <td className="py-2 pl-4 pr-1">
+                      <Checkbox
+                        aria-label={`Select ${l.company}`}
+                        disabled={l.status !== "pending"}
+                        checked={
+                          isRowChecked
+                            ? true
+                            : isRowIndeterminate
+                              ? "indeterminate"
+                              : false
+                        }
+                        onCheckedChange={() => toggleGroup(l)}
+                      />
+                    </td>
+                    <td className="num px-2 py-2 text-muted-foreground">
+                      {(current - 1) * pageSize + i + 1}
+                    </td>
+                    <td className="max-w-48 px-2 py-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {hasAdditional && (
+                          <button
+                            type="button"
+                            onClick={() => toggleExpand(l.id)}
+                            className="size-5 inline-flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            title={isExpanded ? "Collapse additional leads" : "Expand additional leads"}
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="size-3.5 text-primary" />
+                            ) : (
+                              <ChevronRight className="size-3.5" />
+                            )}
+                          </button>
+                        )}
+                        <button
+                          className="font-semibold text-left truncate hover:text-primary hover:underline cursor-pointer"
+                          onClick={() => setDetail(l)}
                         >
-                          {l.rejectionReason}
-                        </span>
+                          {l.company}
+                        </button>
+                        {hasAdditional && (
+                          <button
+                            type="button"
+                            onClick={() => toggleExpand(l.id)}
+                            className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400 border border-amber-500/30 transition-colors cursor-pointer"
+                            title="Click to view additional leads for this company"
+                          >
+                            +{l.additionalLeads.length} Additional Lead{l.additionalLeads.length > 1 ? "s" : ""}
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2">{l.contact}</td>
+                    <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">
+                      {l.phone}
+                    </td>
+                    <td className="max-w-40 truncate px-2 py-2 text-muted-foreground">
+                      {l.email}
+                    </td>
+                    <td className="px-2 py-2">
+                      <span className="whitespace-nowrap rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground">
+                        {l.category || "Students / Education"}
+                      </span>
+                    </td>
+                    <td className="px-2 py-2">
+                      <span
+                        className={cn(
+                          "whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                          SOURCE_TONE[l.source],
+                        )}
+                      >
+                        {l.source}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2">
+                      {getResearcherDisplayName(l)}
+                    </td>
+                    <td className="num whitespace-nowrap px-2 py-2 text-muted-foreground">
+                      {formatDate(l.uploadedOn)}
+                    </td>
+                    <td className="sticky right-0 bg-card py-2 pl-3 pr-4 text-right shadow-[-8px_0_12px_-10px_var(--color-foreground)]">
+                      {l.status === "pending" ? (
+                        <div className="flex justify-end gap-1.5">
+                          <Button
+                            size="xs"
+                            variant="success-soft"
+                            aria-label="Approve"
+                            onClick={() => approve(l.allLeadIds)}
+                            title={hasAdditional ? `Approve all ${l.allLeadIds.length} leads for ${l.company}` : "Approve lead"}
+                          >
+                            <Check />{" "}
+                            <span className="hidden md:inline">
+                              {hasAdditional ? `Approve (${l.allLeadIds.length})` : "Approve"}
+                            </span>
+                          </Button>
+                          <Button
+                            size="xs"
+                            variant="danger-soft"
+                            aria-label="Reject"
+                            onClick={() =>
+                              setRejectTarget([l, ...(l.additionalLeads || [])])
+                            }
+                            title={hasAdditional ? `Reject all ${l.allLeadIds.length} leads for ${l.company}` : "Reject lead"}
+                          >
+                            <X /> <span className="hidden md:inline">Reject</span>
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-end gap-0.5">
+                          <StatusBadge status={l.status} />
+                          {l.rejectionReason && (
+                            <span
+                              className="max-w-40 truncate text-[11px] text-muted-foreground"
+                              title={l.rejectionReason}
+                            >
+                              {l.rejectionReason}
+                            </span>
+                          )}
+                        </div>
                       )}
-                    </div>
+                    </td>
+                  </tr>
+
+                  {/* Expandable sub-table for additional leads under this company */}
+                  {hasAdditional && isExpanded && (
+                    <tr className="border-b border-border/80 bg-muted/20">
+                      <td colSpan={11} className="py-2.5 px-3 pl-8 sm:pl-12">
+                        <div className="rounded-lg border border-amber-500/20 bg-card/90 p-3 shadow-xs">
+                          <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/50">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-foreground">
+                                Additional Leads for <span className="text-primary">{l.company}</span>
+                              </span>
+                              <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400">
+                                {l.additionalLeads.length} additional contact{l.additionalLeads.length > 1 ? "s" : ""}
+                              </span>
+                            </div>
+                            {tab === "pending" && (
+                              <div className="flex items-center gap-1.5">
+                                <Button
+                                  size="xs"
+                                  variant="success-soft"
+                                  className="h-6 text-[11px] px-2"
+                                  onClick={() => approve(l.additionalLeads.map((a) => a.id))}
+                                >
+                                  <Check className="size-3 mr-1" /> Approve All Additional
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="text-[10px] uppercase text-muted-foreground bg-muted/40">
+                                  <th className="py-1 px-2 text-left w-6">#</th>
+                                  <th className="py-1 px-2 text-left">Contact Person</th>
+                                  <th className="py-1 px-2 text-left">Phone</th>
+                                  <th className="py-1 px-2 text-left">Email</th>
+                                  <th className="py-1 px-2 text-left">Category</th>
+                                  <th className="py-1 px-2 text-left">Source</th>
+                                  <th className="py-1 px-2 text-left">Uploaded By</th>
+                                  <th className="py-1 px-2 text-left">Uploaded On</th>
+                                  <th className="py-1 px-2 text-right">Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {l.additionalLeads.map((extra, idx) => (
+                                  <tr
+                                    key={extra.id}
+                                    className={cn(
+                                      "border-t border-border/40 hover:bg-muted/40 transition-colors",
+                                      selected.has(extra.id) && "bg-primary-soft/50",
+                                    )}
+                                  >
+                                    <td className="py-1.5 px-2 text-muted-foreground font-mono">
+                                      {idx + 1}
+                                    </td>
+                                    <td className="py-1.5 px-2 font-medium">
+                                      <button
+                                        type="button"
+                                        onClick={() => setDetail(extra)}
+                                        className="hover:text-primary hover:underline cursor-pointer"
+                                      >
+                                        {extra.contact}
+                                      </button>
+                                    </td>
+                                    <td className="py-1.5 px-2 font-mono text-muted-foreground">
+                                      {extra.phone}
+                                    </td>
+                                    <td className="py-1.5 px-2 text-muted-foreground">
+                                      {extra.email}
+                                    </td>
+                                    <td className="py-1.5 px-2">
+                                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px]">
+                                        {extra.category || "Students / Education"}
+                                      </span>
+                                    </td>
+                                    <td className="py-1.5 px-2">
+                                      <span
+                                        className={cn(
+                                          "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                                          SOURCE_TONE[extra.source],
+                                        )}
+                                      >
+                                        {extra.source}
+                                      </span>
+                                    </td>
+                                    <td className="py-1.5 px-2">
+                                      {getResearcherDisplayName(extra)}
+                                    </td>
+                                    <td className="py-1.5 px-2 text-muted-foreground">
+                                      {formatDate(extra.uploadedOn)}
+                                    </td>
+                                    <td className="py-1.5 px-2 text-right">
+                                      {extra.status === "pending" ? (
+                                        <div className="flex justify-end gap-1">
+                                          <Button
+                                            size="xs"
+                                            variant="success-soft"
+                                            className="h-6 text-[10px] px-2"
+                                            onClick={() => approve([extra.id])}
+                                          >
+                                            <Check className="size-3" /> Approve
+                                          </Button>
+                                          <Button
+                                            size="xs"
+                                            variant="danger-soft"
+                                            className="h-6 text-[10px] px-2"
+                                            onClick={() => setRejectTarget([extra])}
+                                          >
+                                            <X className="size-3" /> Reject
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <StatusBadge status={extra.status} />
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
                   )}
-                </td>
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
             {rows.length === 0 && (
               <tr>
                 <td
@@ -484,9 +712,14 @@ export function LeadReviewTable({ pageSize = 6, className }) {
 
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-xs text-muted-foreground">
         <span className="num">
-          Showing {filtered.length === 0 ? 0 : (current - 1) * pageSize + 1}–
-          {Math.min(current * pageSize, filtered.length)} of{" "}
-          {fmt(filtered.length)}
+          Showing {groupedLeads.length === 0 ? 0 : (current - 1) * pageSize + 1}–
+          {Math.min(current * pageSize, groupedLeads.length)} of{" "}
+          {fmt(groupedLeads.length)} companies
+          {filtered.length > groupedLeads.length && (
+            <span className="ml-1 text-muted-foreground/80">
+              ({fmt(filtered.length)} total leads)
+            </span>
+          )}
         </span>
         <Pager current={current} pages={pages} onChange={setPage} />
       </div>
@@ -515,6 +748,17 @@ export function LeadReviewTable({ pageSize = 6, className }) {
             ? (state.leads.find((l) => l.id === detail.id) ?? detail)
             : null
         }
+        additionalLeads={
+          detail
+            ? (groupedLeads.find((g) => g.id === detail.id)?.additionalLeads ||
+               state.leads.filter(
+                 (l) =>
+                   (l.company || "").trim().toLowerCase() ===
+                     (detail.company || "").trim().toLowerCase() &&
+                   l.id !== detail.id,
+               ))
+            : []
+        }
         onClose={() => setDetail(null)}
         onApprove={(l) => approve([l.id])}
         onReject={(l) => setRejectTarget([l])}
@@ -523,10 +767,10 @@ export function LeadReviewTable({ pageSize = 6, className }) {
   );
 }
 
-function LeadDetailDialog({ lead, onClose, onApprove, onReject }) {
+function LeadDetailDialog({ lead, additionalLeads = [], onClose, onApprove, onReject }) {
   return (
     <Dialog open={!!lead} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         {lead && (
           <>
             <DialogHeader>
@@ -561,6 +805,31 @@ function LeadDetailDialog({ lead, onClose, onApprove, onReject }) {
                 </div>
               ))}
             </dl>
+
+            {additionalLeads.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-border/70 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Users className="size-3.5 text-primary" />
+                    Additional Leads for {lead.company} ({additionalLeads.length})
+                  </h4>
+                </div>
+                <div className="rounded-md border border-border/60 divide-y divide-border/40 text-xs">
+                  {additionalLeads.map((extra) => (
+                    <div key={extra.id} className="p-2 flex items-center justify-between gap-2 hover:bg-muted/30">
+                      <div>
+                        <div className="font-medium text-foreground">{extra.contact}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {extra.phone} · {extra.email || "No email"} · {extra.category}
+                        </div>
+                      </div>
+                      <StatusBadge status={extra.status} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {lead.status === "pending" && (
               <div className="flex justify-end gap-2 pt-2">
                 <Button
