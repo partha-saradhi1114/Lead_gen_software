@@ -294,8 +294,7 @@ export function LeadGenProvider({ children }) {
         // ignore localStorage errors
       }
       if (typeof document !== "undefined") {
-        document.title =
-          state.settings?.general?.workspaceName || "Lead Generation Software";
+        document.title = "Lead Generation Software";
       }
     }
   }, [state.settings]);

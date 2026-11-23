@@ -148,12 +148,9 @@ export default function SettingsPage() {
       values: valuesToSave,
     });
 
-    // 3. Update dynamic document tab title
+    // 3. Keep document tab title permanently fixed to Lead Generation Software
     if (typeof document !== "undefined") {
-      document.title =
-        valuesToSave.workspaceName ||
-        state?.settings?.general?.workspaceName ||
-        "Lead Generation Software";
+      document.title = "Lead Generation Software";
     }
 
     // 4. Persist to backend server API if available
