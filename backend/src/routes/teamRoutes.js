@@ -14,7 +14,7 @@ teamRouter.get("/", async (_req, res) => {
 
 teamRouter.post("/", async (req, res) => {
   try {
-    const { name, email, role, phone, password, department, status } = req.body;
+    const { name, email, role, phone, password, department, category, status } = req.body;
     if (!name || !email || !role) {
       return res.status(400).json({ error: "name, email, and role are required" });
     }
@@ -44,13 +44,16 @@ teamRouter.post("/", async (req, res) => {
       formattedPhone = `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
     }
 
+    const finalCategory = category || department || "Student/Corporate training";
+
     const member = await leadService.addTeamMember({
       name,
       email,
       role,
       phone: formattedPhone,
       password,
-      department,
+      category: finalCategory,
+      department: finalCategory,
       status,
     });
 

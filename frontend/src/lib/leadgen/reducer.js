@@ -197,11 +197,16 @@ export function leadGenReducer(state, action) {
     case "addMember": {
       const m = action.member;
       if (!m.name.trim() || !m.email.trim()) return state;
+      const finalCat =
+        m.category?.trim() || m.department?.trim() || "Student/Corporate training";
       const cleanMember = {
         name: m.name.trim(),
         email: m.email.trim(),
         phone: m.phone?.trim() || "",
         role: m.role || "BDE",
+        category: finalCat,
+        department: finalCat,
+        status: m.status || "Active",
       };
       const existingIdx = state.team.findIndex(
         (tm) => tm.email?.toLowerCase() === cleanMember.email.toLowerCase(),

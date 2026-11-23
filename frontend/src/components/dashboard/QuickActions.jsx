@@ -417,12 +417,19 @@ export function AllocateCreditsDialog({ open, onOpenChange }) {
   );
 }
 
-export function AddMemberDialog({ open, onOpenChange }) {
+export function AddMemberDialog({
+  open,
+  onOpenChange,
+  defaultRole = "BDE",
+  onMemberAdded,
+}) {
   const { state, dispatch } = useLeadGen();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState("BDE");
+  const [role, setRole] = useState(defaultRole);
+  const [category, setCategory] = useState("Student/Corporate training");
+  const [customCategory, setCustomCategory] = useState("");
   const [status, setStatus] = useState("Active");
   const [password, setPassword] = useState("Password@123");
   const [showPassword, setShowPassword] = useState(false);
@@ -432,12 +439,14 @@ export function AddMemberDialog({ open, onOpenChange }) {
       setName("");
       setEmail("");
       setPhone("");
-      setRole("BDE");
+      setRole(defaultRole);
+      setCategory("Student/Corporate training");
+      setCustomCategory("");
       setStatus("Active");
       setPassword("Password@123");
       setShowPassword(false);
     }
-  }, [open]);
+  }, [open, defaultRole]);
 
   const handleSubmit = () => {
     // 1. Full Name: Mandatory
@@ -457,7 +466,16 @@ export function AddMemberDialog({ open, onOpenChange }) {
       return void toast.error(phoneResult.error);
     }
 
-    // 4. Login Password: Secure initial password
+    // 4. Category Validation (only for BDE role)
+    let resolvedCategory = "";
+    if (role === "BDE") {
+      if (category === "Others" && !customCategory.trim()) {
+        return void toast.error("Please enter a custom category name");
+      }
+      resolvedCategory = category === "Others" ? customCategory.trim() : category;
+    }
+
+    // 5. Login Password: Secure initial password
     if (!password.trim()) {
       return void toast.error("Login password is mandatory");
     }
@@ -472,14 +490,18 @@ export function AddMemberDialog({ open, onOpenChange }) {
         email: emailResult.email,
         phone: phoneResult.formatted,
         role,
+        ...(role === "BDE" && { category: resolvedCategory, department: resolvedCategory }),
         status,
         password: password.trim(),
       },
     });
 
     onOpenChange(false);
+    onMemberAdded?.(role);
     toast.success(`${name.trim()} added as ${role}`, {
-      description: `Mobile: ${phoneResult.formatted} · Invite sent to ${emailResult.email}`,
+      description: role === "BDE"
+        ? `Category: ${resolvedCategory} · Mobile: ${phoneResult.formatted}`
+        : `Mobile: ${phoneResult.formatted}`,
     });
   };
 
@@ -553,17 +575,76 @@ export function AddMemberDialog({ open, onOpenChange }) {
         </Field>
       </div>
 
-      <Field label="Status" htmlFor="m-status">
-        <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger id="m-status">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Active">Active</SelectItem>
-            <SelectItem value="Inactive">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
-      </Field>
+      {role === "BDE" ? (
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Category" htmlFor="m-category">
+            <Select
+              value={category}
+              onValueChange={(val) => {
+                setCategory(val);
+                if (val !== "Others") setCustomCategory("");
+              }}
+            >
+              <SelectTrigger id="m-category">
+                <SelectValue placeholder="Select Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Student/Corporate training">
+                  Student/Corporate training
+                </SelectItem>
+                <SelectItem value="Health/Insurance">
+                  Health/Insurance
+                </SelectItem>
+                <SelectItem value="Corporate firm">
+                  Corporate firm
+                </SelectItem>
+                <SelectItem value="Others">
+                  Others
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field label="Status" htmlFor="m-status">
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger id="m-status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
+      ) : (
+        <Field label="Status" htmlFor="m-status">
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger id="m-status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Active">Active</SelectItem>
+              <SelectItem value="Inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+      )}
+
+      {role === "BDE" && category === "Others" && (
+        <Field label="Custom Category" htmlFor="m-custom-category">
+          <Input
+            id="m-custom-category"
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            placeholder="Type custom category (e.g. Fintech, Real Estate, Retail)"
+            autoFocus
+          />
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            Enter the custom domain or vertical category for this team member.
+          </p>
+        </Field>
+      )}
 
       <Field label="Login Password" htmlFor="m-password">
         <div className="relative">
