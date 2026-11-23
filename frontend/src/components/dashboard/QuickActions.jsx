@@ -40,16 +40,12 @@ import {
   RESEARCHERS,
   fmt,
 } from "@/lib/leadgen/data";
-<<<<<<< HEAD
-import { isValidEmail, phoneDigits } from "@/lib/leadgen/validation";
-=======
 import {
   isValidEmail,
   phoneDigits,
   validateMemberPhone,
   validateMemberEmail,
 } from "@/lib/leadgen/validation";
->>>>>>> 3d8e57619193033ee706d2e1d1f5429169ec720d
 import { cn } from "@/lib/utils";
 
 export function QuickActionCard({
@@ -449,30 +445,6 @@ export function AddMemberDialog({ open, onOpenChange }) {
       return void toast.error("Full name is mandatory");
     }
 
-<<<<<<< HEAD
-    // 2. Email: Unique, valid email
-    const trimmedEmail = email.trim();
-    if (!isValidEmail(trimmedEmail)) {
-      return void toast.error("Enter a valid email address");
-    }
-    const emailExists = state.team.some(
-      (m) => m.email.toLowerCase() === trimmedEmail.toLowerCase(),
-    );
-    if (emailExists) {
-      return void toast.error("A team member with this email already exists");
-    }
-
-    // 3. Phone: Valid Indian mobile number
-    const trimmedPhone = phone.trim();
-    if (!trimmedPhone) {
-      return void toast.error("Phone number is mandatory");
-    }
-    const digits = phoneDigits(trimmedPhone);
-    if (!/^[6-9]\d{9}$/.test(digits)) {
-      return void toast.error(
-        "Enter a valid 10-digit Indian mobile number (+91...)",
-      );
-=======
     // 2. Email / Gmail: Must be in proper format & unique
     const emailResult = validateMemberEmail(email, state.team);
     if (!emailResult.valid) {
@@ -483,7 +455,6 @@ export function AddMemberDialog({ open, onOpenChange }) {
     const phoneResult = validateMemberPhone(phone);
     if (!phoneResult.valid) {
       return void toast.error(phoneResult.error);
->>>>>>> 3d8e57619193033ee706d2e1d1f5429169ec720d
     }
 
     // 4. Login Password: Secure initial password
@@ -498,15 +469,8 @@ export function AddMemberDialog({ open, onOpenChange }) {
       type: "addMember",
       member: {
         name: name.trim(),
-<<<<<<< HEAD
-        email: trimmedEmail,
-        phone: trimmedPhone.startsWith("+91")
-          ? trimmedPhone
-          : `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`,
-=======
         email: emailResult.email,
         phone: phoneResult.formatted,
->>>>>>> 3d8e57619193033ee706d2e1d1f5429169ec720d
         role,
         status,
         password: password.trim(),
@@ -515,11 +479,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
 
     onOpenChange(false);
     toast.success(`${name.trim()} added as ${role}`, {
-<<<<<<< HEAD
-      description: `Status: ${status} · Invite sent to ${trimmedEmail}`,
-=======
       description: `Mobile: ${phoneResult.formatted} · Invite sent to ${emailResult.email}`,
->>>>>>> 3d8e57619193033ee706d2e1d1f5429169ec720d
     });
   };
 
