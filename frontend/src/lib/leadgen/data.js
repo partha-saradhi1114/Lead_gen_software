@@ -546,7 +546,8 @@ export const SEED_TEAM = [
     email: "priya.m@leadgen.pro",
     phone: "+91 90000 11111",
     role: "Research Analyst",
-    department: "Market Research",
+    category: "Health/Insurance",
+    department: "Health/Insurance",
     status: "Active",
   },
   {
@@ -554,7 +555,8 @@ export const SEED_TEAM = [
     email: "arjun.k@leadgen.pro",
     phone: "+91 90000 22222",
     role: "Research Analyst",
-    department: "Lead Generation",
+    category: "Corporate firm",
+    department: "Corporate firm",
     status: "Active",
   },
   {
@@ -562,7 +564,8 @@ export const SEED_TEAM = [
     email: "neha.r@leadgen.pro",
     phone: "+91 90000 33333",
     role: "Research Analyst",
-    department: "Market Research",
+    category: "Student/Corporate training",
+    department: "Student/Corporate training",
     status: "Active",
   },
   {
@@ -570,7 +573,8 @@ export const SEED_TEAM = [
     email: "ravi.kumar@leadgen.pro",
     phone: "+91 90000 44444",
     role: "BDE",
-    department: "Business Development",
+    category: "Student/Corporate training",
+    department: "Student/Corporate training",
     status: "Active",
   },
   {
@@ -578,7 +582,8 @@ export const SEED_TEAM = [
     email: "anitha.reddy@leadgen.pro",
     phone: "+91 90000 55555",
     role: "BDE",
-    department: "Sales & Outreach",
+    category: "Health/Insurance",
+    department: "Health/Insurance",
     status: "Active",
   },
   {
@@ -586,7 +591,8 @@ export const SEED_TEAM = [
     email: "kiran.varma@leadgen.pro",
     phone: "+91 90000 66666",
     role: "BDE",
-    department: "Business Development",
+    category: "Corporate firm",
+    department: "Corporate firm",
     status: "Active",
   },
   {
@@ -594,7 +600,8 @@ export const SEED_TEAM = [
     email: "megha.s@leadgen.pro",
     phone: "+91 90000 77777",
     role: "BDE",
-    department: "Client Acquisition",
+    category: "Student/Corporate training",
+    department: "Student/Corporate training",
     status: "Active",
   },
 ];

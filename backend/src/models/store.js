@@ -350,8 +350,13 @@ class LeadGenStore {
       email: member.email.trim().toLowerCase(),
       phone: cleanPhone,
       role: member.role || "BDE",
+      category:
+        member.category ||
+        member.department ||
+        "Student/Corporate training",
       department:
         member.department ||
+        member.category ||
         (member.role === "BDE"
           ? "Business Development"
           : "Market Research"),
