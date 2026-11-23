@@ -4,7 +4,10 @@ import {
   BarChart3,
   ChevronRight,
   Coins,
+  Eye,
+  EyeOff,
   FileSpreadsheet,
+  Sparkles,
   Upload,
   UserPlus,
   Zap,
@@ -37,6 +40,12 @@ import {
   RESEARCHERS,
   fmt,
 } from "@/lib/leadgen/data";
+import {
+  isValidEmail,
+  phoneDigits,
+  validateMemberPhone,
+  validateMemberEmail,
+} from "@/lib/leadgen/validation";
 import { cn } from "@/lib/utils";
 
 export function QuickActionCard({
@@ -409,19 +418,70 @@ export function AllocateCreditsDialog({ open, onOpenChange }) {
 }
 
 export function AddMemberDialog({ open, onOpenChange }) {
-  const { dispatch } = useLeadGen();
+  const { state, dispatch } = useLeadGen();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("BDE");
+  const [status, setStatus] = useState("Active");
+  const [password, setPassword] = useState("Password@123");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (open) {
       setName("");
       setEmail("");
       setPhone("");
+      setRole("BDE");
+      setStatus("Active");
+      setPassword("Password@123");
+      setShowPassword(false);
     }
   }, [open]);
+
+  const handleSubmit = () => {
+    // 1. Full Name: Mandatory
+    if (!name.trim()) {
+      return void toast.error("Full name is mandatory");
+    }
+
+    // 2. Email / Gmail: Must be in proper format & unique
+    const emailResult = validateMemberEmail(email, state.team);
+    if (!emailResult.valid) {
+      return void toast.error(emailResult.error);
+    }
+
+    // 3. Mobile Number: Must consist of 10 digits, start with 6, 7, 8, or 9, and contain no alphabets
+    const phoneResult = validateMemberPhone(phone);
+    if (!phoneResult.valid) {
+      return void toast.error(phoneResult.error);
+    }
+
+    // 4. Login Password: Secure initial password
+    if (!password.trim()) {
+      return void toast.error("Login password is mandatory");
+    }
+    if (password.trim().length < 6) {
+      return void toast.error("Password must be at least 6 characters");
+    }
+
+    dispatch({
+      type: "addMember",
+      member: {
+        name: name.trim(),
+        email: emailResult.email,
+        phone: phoneResult.formatted,
+        role,
+        status,
+        password: password.trim(),
+      },
+    });
+
+    onOpenChange(false);
+    toast.success(`${name.trim()} added as ${role}`, {
+      description: `Mobile: ${phoneResult.formatted} · Invite sent to ${emailResult.email}`,
+    });
+  };
 
   return (
     <FormDialog
@@ -430,24 +490,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
       title="Add Team Member"
       description="Invite a Research Analyst or BDE to LeadGen Pro."
       submitLabel="Add member"
-      onSubmit={() => {
-        if (!name.trim()) return void toast.error("Enter the member's name");
-        if (!/^\S+@\S+\.\S+$/.test(email))
-          return void toast.error("Enter a valid email address");
-        dispatch({
-          type: "addMember",
-          member: {
-            name: name.trim(),
-            email: email.trim(),
-            phone: phone.trim(),
-            role,
-          },
-        });
-        onOpenChange(false);
-        toast.success(`${name.trim()} added as ${role}`, {
-          description: `Invite sent to ${email.trim()}`,
-        });
-      }}
+      onSubmit={handleSubmit}
     >
       <Field label="Role">
         <div className="grid grid-cols-2 gap-2">
@@ -457,10 +500,10 @@ export function AddMemberDialog({ open, onOpenChange }) {
               type="button"
               onClick={() => setRole(r)}
               className={cn(
-                "rounded-md border px-3 py-2 text-xs font-semibold transition-colors",
+                "rounded-md border px-3 py-2 text-xs font-semibold transition-colors cursor-pointer",
                 role === r
                   ? "border-primary bg-primary-soft text-primary"
-                  : "hover:bg-muted",
+                  : "hover:bg-muted text-muted-foreground",
               )}
             >
               {r}
@@ -468,6 +511,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
           ))}
         </div>
       </Field>
+
       <Field label="Full name" htmlFor="m-name">
         <Input
           id="m-name"
@@ -476,25 +520,99 @@ export function AddMemberDialog({ open, onOpenChange }) {
           placeholder="e.g. Sandeep Rao"
         />
       </Field>
+
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Email" htmlFor="m-email">
+        <Field label="Email / Gmail" htmlFor="m-email">
           <Input
             id="m-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@arahinfotech.com"
+            placeholder="name@gmail.com"
           />
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            Valid format (e.g. user@gmail.com)
+          </p>
         </Field>
-        <Field label="Phone" htmlFor="m-phone">
+        <Field label="Mobile Number" htmlFor="m-phone">
           <Input
             id="m-phone"
+            type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+91 90000 00000"
+            onChange={(e) => {
+              // Strip any alphabetic characters immediately
+              const cleaned = e.target.value.replace(/[a-zA-Z]/g, "");
+              setPhone(cleaned);
+            }}
+            placeholder="10 digits (e.g. 9876543210)"
+            maxLength={14}
           />
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            10 digits starting with 6, 7, 8, or 9
+          </p>
         </Field>
       </div>
+
+      <Field label="Status" htmlFor="m-status">
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger id="m-status">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Active">Active</SelectItem>
+            <SelectItem value="Inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
+
+      <Field label="Login Password" htmlFor="m-password">
+        <div className="relative">
+          <Input
+            id="m-password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Secure initial password"
+            className="pr-24"
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-1.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground hover:text-foreground"
+              onClick={() => setShowPassword(!showPassword)}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="size-3.5" />
+              ) : (
+                <Eye className="size-3.5" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-[11px] font-medium text-muted-foreground hover:text-primary"
+              onClick={() => {
+                const randomPwd =
+                  "Pass@" + Math.random().toString(36).slice(-6) + "!";
+                setPassword(randomPwd);
+                setShowPassword(true);
+                toast.info("Generated initial secure password");
+              }}
+              title="Generate secure password"
+            >
+              <Sparkles className="mr-1 size-3" />
+              Gen
+            </Button>
+          </div>
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          Secure initial password for employee's first sign in.
+        </p>
+      </Field>
     </FormDialog>
   );
 }

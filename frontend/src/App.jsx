@@ -67,7 +67,8 @@ export class ErrorBoundary extends React.Component {
           <button
             onClick={() => {
               this.setState({ hasError: false, error: null });
-              window.location.href = window.location.pathname + "?t=" + Date.now();
+              window.location.href =
+                window.location.pathname + "?t=" + Date.now();
             }}
             className="mt-4 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
@@ -116,6 +117,39 @@ export function ProtectedRoute({ children }) {
   return children;
 }
 
+export function RoleRoute({ allowedRoles, children }) {
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+
+  const rawRole = (user.role || "").toLowerCase();
+  const normalizedRole =
+    rawRole.includes("admin") || user.name?.toLowerCase() === "sriram"
+      ? "admin"
+      : rawRole.includes("ra") || rawRole.includes("analyst")
+      ? "ra"
+      : rawRole.includes("bde")
+      ? "bde"
+      : null;
+
+  if (!normalizedRole) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const isAllowed = allowedRoles.some((r) => r.toLowerCase() === normalizedRole);
+  if (!isAllowed) {
+    if (normalizedRole === "ra") return <Navigate to="/ra" replace />;
+    if (normalizedRole === "bde") return <Navigate to="/bde" replace />;
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
 export function DashboardRoute() {
   const user = (() => {
     try {
@@ -125,13 +159,17 @@ export function DashboardRoute() {
     }
   })();
 
-  if (user.role === "ra") {
+  const rawRole = (user.role || "").toLowerCase();
+  if (rawRole.includes("admin") || user.name?.toLowerCase() === "sriram") {
+    return <Dashboard />;
+  }
+  if (rawRole.includes("ra") || rawRole.includes("analyst")) {
     return <Navigate to="/ra" replace />;
   }
-  if (user.role === "bde") {
+  if (rawRole.includes("bde")) {
     return <Navigate to="/bde" replace />;
   }
-  return <Dashboard />;
+  return <Navigate to="/login" replace />;
 }
 
 export function AppRoutes() {
@@ -148,31 +186,31 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        {/* Master Admin */}
+        {/* Master Admin (Strictly Admin only) */}
         <Route path="/" element={<DashboardRoute />} />
-        <Route path="/leads-review" element={<LeadsReviewPage />} />
-        <Route path="/lead-allocation" element={<LeadAllocationPage />} />
-        <Route path="/credits" element={<CreditsPage />} />
-        <Route path="/research-analysts" element={<ResearchAnalystsPage />} />
-        <Route path="/team" element={<TeamPage />} />
-        <Route path="/operations" element={<OperationsPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/leads-review" element={<RoleRoute allowedRoles={["admin"]}><LeadsReviewPage /></RoleRoute>} />
+        <Route path="/lead-allocation" element={<RoleRoute allowedRoles={["admin"]}><LeadAllocationPage /></RoleRoute>} />
+        <Route path="/credits" element={<RoleRoute allowedRoles={["admin"]}><CreditsPage /></RoleRoute>} />
+        <Route path="/research-analysts" element={<RoleRoute allowedRoles={["admin"]}><ResearchAnalystsPage /></RoleRoute>} />
+        <Route path="/team" element={<RoleRoute allowedRoles={["admin"]}><TeamPage /></RoleRoute>} />
+        <Route path="/operations" element={<RoleRoute allowedRoles={["admin"]}><OperationsPage /></RoleRoute>} />
+        <Route path="/reports" element={<RoleRoute allowedRoles={["admin"]}><ReportsPage /></RoleRoute>} />
+        <Route path="/settings" element={<RoleRoute allowedRoles={["admin"]}><SettingsPage /></RoleRoute>} />
 
         {/* Research Analyst (RA) */}
-        <Route path="/ra" element={<RaDashboard />} />
-        <Route path="/ra/upload" element={<RaUploadPage />} />
-        <Route path="/ra/uploads" element={<MyUploads />} />
-        <Route path="/ra/status" element={<ApprovalStatus />} />
-        <Route path="/ra/approved" element={<ApprovedLeads />} />
-        <Route path="/ra/rejected" element={<RejectedLeads />} />
-        <Route path="/ra/reports" element={<RaReportsPage />} />
+        <Route path="/ra" element={<RoleRoute allowedRoles={["ra", "admin"]}><RaDashboard /></RoleRoute>} />
+        <Route path="/ra/upload" element={<RoleRoute allowedRoles={["ra", "admin"]}><RaUploadPage /></RoleRoute>} />
+        <Route path="/ra/uploads" element={<RoleRoute allowedRoles={["ra", "admin"]}><MyUploads /></RoleRoute>} />
+        <Route path="/ra/status" element={<RoleRoute allowedRoles={["ra", "admin"]}><ApprovalStatus /></RoleRoute>} />
+        <Route path="/ra/approved" element={<RoleRoute allowedRoles={["ra", "admin"]}><ApprovedLeads /></RoleRoute>} />
+        <Route path="/ra/rejected" element={<RoleRoute allowedRoles={["ra", "admin"]}><RejectedLeads /></RoleRoute>} />
+        <Route path="/ra/reports" element={<RoleRoute allowedRoles={["ra", "admin"]}><RaReportsPage /></RoleRoute>} />
 
         {/* Business Development Executive (BDE) */}
-        <Route path="/bde" element={<BdeDashboard />} />
-        <Route path="/bde/leads" element={<BdeLeads />} />
-        <Route path="/bde/credits" element={<BdeCredits />} />
-        <Route path="/bde/follow-ups" element={<BdeFollowUps />} />
+        <Route path="/bde" element={<RoleRoute allowedRoles={["bde", "admin"]}><BdeDashboard /></RoleRoute>} />
+        <Route path="/bde/leads" element={<RoleRoute allowedRoles={["bde", "admin"]}><BdeLeads /></RoleRoute>} />
+        <Route path="/bde/credits" element={<RoleRoute allowedRoles={["bde", "admin"]}><BdeCredits /></RoleRoute>} />
+        <Route path="/bde/follow-ups" element={<RoleRoute allowedRoles={["bde", "admin"]}><BdeFollowUps /></RoleRoute>} />
       </Route>
 
       {/* 404 Catch-All */}

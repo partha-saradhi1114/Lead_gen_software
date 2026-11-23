@@ -14,17 +14,44 @@ teamRouter.get("/", async (_req, res) => {
 
 teamRouter.post("/", async (req, res) => {
   try {
-    const { name, email, role, phone, password } = req.body;
+    const { name, email, role, phone, password, department, status } = req.body;
     if (!name || !email || !role) {
       return res.status(400).json({ error: "name, email, and role are required" });
+    }
+
+    // Validate email format
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email.trim()) || email.includes("..") || email.includes(" ")) {
+      return res.status(400).json({ error: "Please enter a valid email address in proper format" });
+    }
+
+    // Validate mobile number if provided
+    let formattedPhone = phone;
+    if (phone && phone.trim()) {
+      const cleanPhone = phone.trim();
+      if (/[a-zA-Z]/.test(cleanPhone)) {
+        return res.status(400).json({ error: "Mobile number cannot contain alphabets" });
+      }
+      let digits = cleanPhone.replace(/\D/g, "");
+      if (digits.startsWith("91") && digits.length === 12) digits = digits.slice(2);
+      else if (digits.startsWith("0") && digits.length === 11) digits = digits.slice(1);
+      if (digits.length !== 10) {
+        return res.status(400).json({ error: `Mobile number must consist of exactly 10 digits (currently ${digits.length})` });
+      }
+      if (!/^[6-9]/.test(digits)) {
+        return res.status(400).json({ error: "Mobile number must start with 6, 7, 8, or 9" });
+      }
+      formattedPhone = `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
     }
 
     const member = await leadService.addTeamMember({
       name,
       email,
       role,
-      phone,
+      phone: formattedPhone,
       password,
+      department,
+      status,
     });
 
     res.status(201).json({
@@ -38,7 +65,7 @@ teamRouter.post("/", async (req, res) => {
 
 teamRouter.get("/bdes", async (_req, res) => {
   try {
-    const bdes = await leadService.getCredits();
+    const bdes = await leadService.getBdes();
     res.json(bdes);
   } catch (err) {
     res.status(500).json({ error: err.message || "Failed to fetch BDEs" });

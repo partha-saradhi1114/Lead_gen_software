@@ -34,8 +34,8 @@ export function DonutChart({ data, centerLabel }) {
             stroke="none"
             isAnimationActive={false}
           >
-            {data.map((d) => (
-              <Cell key={d.key} fill={d.color} />
+            {data.map((d, index) => (
+              <Cell key={d.key || d.name || `cell-${index}`} fill={d.color} />
             ))}
           </Pie>
           <Tooltip content={<DonutTooltip />} wrapperStyle={{ zIndex: 10 }} />
@@ -50,8 +50,11 @@ export function DonutChart({ data, centerLabel }) {
         </div>
       </div>
       <ul className="w-full min-w-0 flex-1 space-y-1.5">
-        {data.map((d) => (
-          <li key={d.key} className="flex items-center gap-2 text-xs">
+        {data.map((d, index) => (
+          <li
+            key={d.key || d.name || `item-${index}`}
+            className="flex items-center gap-2 text-xs"
+          >
             <span
               className="size-2.5 shrink-0 rounded-sm"
               style={{ background: d.color }}

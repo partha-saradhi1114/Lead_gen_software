@@ -97,7 +97,12 @@ export function UploadWizard() {
     }
   }, []);
   const currentRa =
-    storedUser.role === "ra" && storedUser.name ? storedUser.name : CURRENT_RA;
+    (storedUser.role === "ra" ||
+      storedUser.role === "Research Analyst" ||
+      storedUser.role === "researcher") &&
+    storedUser.name
+      ? storedUser.name
+      : CURRENT_RA;
 
   const assignedCategories = useMemo(
     () => getResearcherCategories(currentRa),

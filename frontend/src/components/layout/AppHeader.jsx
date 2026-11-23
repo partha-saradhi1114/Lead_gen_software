@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Bell,
@@ -35,7 +35,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { CURRENT_RA, NOTIFICATIONS, formatDate } from "@/lib/leadgen/data";
+import {
+  CURRENT_RA,
+  NOTIFICATIONS,
+  getNotificationsForUser,
+  formatDate,
+} from "@/lib/leadgen/data";
 import { cn } from "@/lib/utils";
 import { findNavItem, roleForPath } from "./nav";
 import { CURRENT_BDE } from "@/lib/leadgen/bde";
@@ -59,7 +64,7 @@ export function AppHeader() {
   const [from, setFrom] = useState("2026-11-01");
   const [to, setTo] = useState("2026-11-18");
   const [customLabel, setCustomLabel] = useState(null);
-  const [unread, setUnread] = useState(NOTIFICATIONS.map((n) => n.id));
+  const [readIds, setReadIds] = useState(() => new Set());
 
   const navigate = useNavigate();
   const role = roleForPath(pathname);
@@ -78,12 +83,6 @@ export function AppHeader() {
         : !item || item.url === "/"
           ? "Master Operations"
           : item.title;
-  const subtitle =
-    role === "ra" && item?.url === "/ra"
-      ? `Welcome back, ${CURRENT_RA}`
-      : role === "bde" && item?.url === "/bde"
-        ? `Welcome back, ${CURRENT_BDE}`
-        : (item?.subtitle ?? "Admin Dashboard");
   const storedUser = (() => {
     try {
       return JSON.parse(localStorage.getItem("user") || "{}");
@@ -91,6 +90,36 @@ export function AppHeader() {
       return {};
     }
   })();
+
+  const displayName =
+    storedUser.name ||
+    (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram");
+
+  const activeNotifications = useMemo(() => {
+    return getNotificationsForUser(role, displayName);
+  }, [role, displayName]);
+
+  const unreadCount = activeNotifications.filter((n) => !readIds.has(n.id)).length;
+
+  const displayRole =
+    storedUser.role === "admin" || storedUser.role === "Master Admin"
+      ? "Master Admin"
+      : storedUser.role === "ra" || storedUser.role === "Research Analyst"
+        ? "Research Analyst"
+        : storedUser.role === "bde" || storedUser.role === "BDE"
+          ? "Business Development Executive"
+          : role === "ra"
+            ? "Research Analyst"
+            : role === "bde"
+              ? "Business Development Executive"
+              : "Master Admin";
+
+  const subtitle =
+    role === "ra" && item?.url === "/ra"
+      ? `Welcome back, ${displayName}`
+      : role === "bde" && item?.url === "/bde"
+        ? `Welcome back, ${displayName}`
+        : (item?.subtitle ?? "Admin Dashboard");
 
   const getInitials = (name) => {
     if (!name) return "US";
@@ -104,32 +133,16 @@ export function AppHeader() {
   };
 
   const user = {
-    name:
-      storedUser.name ||
-      (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram"),
-    role:
-      storedUser.role === "admin"
-        ? "Master Admin"
-        : storedUser.role === "ra"
-          ? "Research Analyst"
-          : storedUser.role === "bde"
-            ? "Business Development Executive"
-            : role === "ra"
-              ? "Research Analyst"
-              : role === "bde"
-                ? "Business Development Executive"
-                : "Master Admin",
+    name: displayName,
+    role: displayRole,
     email:
       storedUser.email ||
       (role === "ra"
-        ? "priya.m@arahinfotech.com"
+        ? "priya.m@leadgen.pro"
         : role === "bde"
-          ? "ravi.kumar@arahinfotech.com"
-          : "sriram@arahinfotech.com"),
-    initials: getInitials(
-      storedUser.name ||
-        (role === "ra" ? CURRENT_RA : role === "bde" ? CURRENT_BDE : "Sriram"),
-    ),
+          ? "ravi.kumar@leadgen.pro"
+          : "sriram@leadgen.pro"),
+    initials: getInitials(displayName),
   };
 
   const rangeLabel =
@@ -217,57 +230,81 @@ export function AppHeader() {
               aria-label="Notifications"
             >
               <Bell className="text-muted-foreground" />
-              {unread.length > 0 && (
+              {unreadCount > 0 && (
                 <span className="absolute -right-1 -top-1 flex size-4.5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                  {unread.length}
+                  {unreadCount}
                 </span>
               )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 p-0">
             <div className="flex items-center justify-between border-b px-3 py-2.5">
-              <span className="text-sm font-semibold">Notifications</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-semibold">Notifications</span>
+                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  {role === "ra" ? "Researcher" : role === "bde" ? "BDE" : "Master"}
+                </span>
+              </div>
               <button
                 className="text-xs font-medium text-primary hover:underline disabled:text-muted-foreground disabled:no-underline"
-                disabled={unread.length === 0}
-                onClick={() => setUnread([])}
+                disabled={unreadCount === 0}
+                onClick={() => {
+                  setReadIds((prev) => {
+                    const next = new Set(prev);
+                    activeNotifications.forEach((n) => next.add(n.id));
+                    return next;
+                  });
+                }}
               >
                 Mark all as read
               </button>
             </div>
-            <div className="py-1">
-              {NOTIFICATIONS.map((n) => (
-                <DropdownMenuItem
-                  key={n.id}
-                  className="items-start gap-2.5 px-3 py-2"
-                  onSelect={(e) => {
-                    e.preventDefault();
-                    setUnread((u) => u.filter((id) => id !== n.id));
-                  }}
-                >
-                  <span
-                    className={cn(
-                      "mt-1.5 size-2 shrink-0 rounded-full",
-                      TONE[n.tone],
-                    )}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div
-                      className={cn(
-                        "text-[13px] leading-snug",
-                        unread.includes(n.id)
-                          ? "font-semibold"
-                          : "text-muted-foreground",
-                      )}
+            <div className="py-1 max-h-[320px] overflow-y-auto">
+              {activeNotifications.length === 0 ? (
+                <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+                  No notifications for your queue.
+                </div>
+              ) : (
+                activeNotifications.map((n) => {
+                  const isUnread = !readIds.has(n.id);
+                  return (
+                    <DropdownMenuItem
+                      key={n.id}
+                      className="items-start gap-2.5 px-3 py-2 cursor-pointer"
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setReadIds((prev) => {
+                          const next = new Set(prev);
+                          next.add(n.id);
+                          return next;
+                        });
+                      }}
                     >
-                      {n.title}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {n.time}
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              ))}
+                      <span
+                        className={cn(
+                          "mt-1.5 size-2 shrink-0 rounded-full",
+                          TONE[n.tone] || "bg-primary",
+                        )}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className={cn(
+                            "text-[13px] leading-snug",
+                            isUnread
+                              ? "font-semibold text-foreground"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {n.title}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {n.time}
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  );
+                })
+              )}
             </div>
           </DropdownMenuContent>
         </DropdownMenu>

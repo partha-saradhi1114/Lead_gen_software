@@ -105,8 +105,8 @@ class LeadGenStore {
       settings: {
         general: {
           workspaceName: "Lead Generation Software",
-          orgDomain: "arahinfotech.com",
-          contactEmail: "sriram@arahinfotech.com",
+          orgDomain: "leadgen.pro",
+          contactEmail: "admin@leadgen.pro",
           timezone: "Asia/Kolkata",
           currency: "INR",
         },
@@ -335,15 +335,30 @@ class LeadGenStore {
     if (!member.name?.trim() || !member.email?.trim()) {
       throw new Error("Member name and email are required.");
     }
+    let cleanPhone = member.phone || "+91 90000 00000";
+    if (member.phone && member.phone.trim()) {
+      let digits = member.phone.replace(/\D/g, "");
+      if (digits.startsWith("91") && digits.length === 12) digits = digits.slice(2);
+      else if (digits.startsWith("0") && digits.length === 11) digits = digits.slice(1);
+      if (digits.length === 10 && /^[6-9]/.test(digits)) {
+        cleanPhone = `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+      }
+    }
     const cleanMember = {
       id: Date.now().toString(),
       name: member.name.trim(),
       email: member.email.trim().toLowerCase(),
-      phone: member.phone || "+91 90000 00000",
+      phone: cleanPhone,
       role: member.role || "BDE",
+      department:
+        member.department ||
+        (member.role === "BDE"
+          ? "Business Development"
+          : "Market Research"),
+      status: member.status || "Active",
       credits: member.role === "BDE" ? 500 : 0,
       creditsUsed: 0,
-      active: true,
+      active: (member.status || "Active").toLowerCase() === "active",
     };
     this.state.team.push(cleanMember);
     if (cleanMember.role === "BDE") {

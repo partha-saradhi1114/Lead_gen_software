@@ -1,12 +1,28 @@
 import { cn } from "@/lib/utils";
 
 /** Compact data table used across dashboard performance panels. */
-export function PerformanceTable({ columns, rows, rowKey, showTotal }) {
+export function PerformanceTable({
+  columns,
+  rows,
+  rowKey,
+  showTotal,
+  maxHeight,
+  className,
+}) {
+  const isScrollable = Boolean(maxHeight);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-[13px]">
-        <thead>
-          <tr className="bg-muted/70 text-[11px] uppercase tracking-wide text-muted-foreground">
+    <div
+      className={cn(
+        "overflow-x-auto",
+        isScrollable && "overflow-y-auto scrollbar-thin relative",
+        className,
+      )}
+      style={maxHeight ? { maxHeight } : undefined}
+    >
+      <table className="w-full text-[13px] border-collapse">
+        <thead className={isScrollable ? "sticky top-0 z-10" : undefined}>
+          <tr className="bg-muted/90 backdrop-blur-md text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border/70">
             {columns.map((c) => (
               <th
                 key={c.key}
@@ -41,8 +57,8 @@ export function PerformanceTable({ columns, rows, rowKey, showTotal }) {
           ))}
         </tbody>
         {showTotal && (
-          <tfoot>
-            <tr className="bg-muted/50 font-semibold">
+          <tfoot className={isScrollable ? "sticky bottom-0 z-10" : undefined}>
+            <tr className="bg-muted/95 backdrop-blur-md font-semibold border-t border-border/80 shadow-xs">
               {columns.map((c) => (
                 <td
                   key={c.key}
