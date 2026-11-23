@@ -2,7 +2,48 @@ import { makeLead, TODAY } from "./data";
 import { bdeReducer } from "./bde";
 
 export function leadGenReducer(state, action) {
-  if (action.type === "hydrate") return { ...state, ...action.state };
+  if (action.type === "hydrate") {
+    const existingSettings = state?.settings || {};
+    const incomingSettings = action.state?.settings;
+    let mergedSettings = existingSettings;
+
+    if (incomingSettings && typeof incomingSettings === "object") {
+      mergedSettings = {
+        ...incomingSettings,
+        ...existingSettings,
+        general: {
+          ...(incomingSettings.general || {}),
+          ...(existingSettings.general || {}),
+          workspaceName:
+            existingSettings.general?.workspaceName &&
+            existingSettings.general?.workspaceName !== "Lead Generation Software" &&
+            incomingSettings.general?.workspaceName === "Lead Generation Software"
+              ? existingSettings.general.workspaceName
+              : incomingSettings.general?.workspaceName ||
+                existingSettings.general?.workspaceName ||
+                "Lead Generation Software",
+        },
+        credits: {
+          ...(incomingSettings.credits || {}),
+          ...(existingSettings.credits || {}),
+        },
+        rules: {
+          ...(incomingSettings.rules || {}),
+          ...(existingSettings.rules || {}),
+        },
+        notifications: {
+          ...(incomingSettings.notifications || {}),
+          ...(existingSettings.notifications || {}),
+        },
+      };
+    }
+
+    return {
+      ...state,
+      ...action.state,
+      settings: mergedSettings,
+    };
+  }
   if (action.type.startsWith("bde")) return bdeReducer(state, action);
   switch (action.type) {
     case "approve": {
@@ -156,12 +197,29 @@ export function leadGenReducer(state, action) {
     case "addMember": {
       const m = action.member;
       if (!m.name.trim() || !m.email.trim()) return state;
+      const cleanMember = {
+        name: m.name.trim(),
+        email: m.email.trim(),
+        phone: m.phone?.trim() || "",
+        role: m.role || "BDE",
+      };
+      const existingIdx = state.team.findIndex(
+        (tm) => tm.email?.toLowerCase() === cleanMember.email.toLowerCase(),
+      );
+      const newTeam =
+        existingIdx >= 0
+          ? state.team.map((tm, idx) =>
+              idx === existingIdx ? cleanMember : tm,
+            )
+          : [...state.team, cleanMember];
+
+      const bdeExists = state.bdes.some((b) => b.name === cleanMember.name);
       const bdes =
-        m.role === "BDE"
+        cleanMember.role === "BDE" && !bdeExists
           ? [
               ...state.bdes,
               {
-                name: m.name,
+                name: cleanMember.name,
                 allocated: 500,
                 used: 0,
                 connected: 0,
@@ -171,10 +229,10 @@ export function leadGenReducer(state, action) {
           : state.bdes;
       return {
         ...state,
-        team: [...state.team, m],
+        team: newTeam,
         bdes,
         credits:
-          m.role === "BDE"
+          cleanMember.role === "BDE" && !bdeExists
             ? { ...state.credits, allocated: state.credits.allocated + 500 }
             : state.credits,
       };
@@ -237,6 +295,16 @@ export function leadGenReducer(state, action) {
           ...action.values,
         },
       };
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem(
+            "leadgen_settings",
+            JSON.stringify(updatedSettings),
+          );
+        }
+      } catch (_e) {
+        // ignore localStorage errors in non-browser or quota restricted envs
+      }
       return {
         ...state,
         settings: updatedSettings,

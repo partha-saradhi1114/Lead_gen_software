@@ -1,5 +1,6 @@
-import { describe, it } from "node:test";
+import { describe, it, after } from "node:test";
 import assert from "node:assert/strict";
+import mongoose from "mongoose";
 import { leadService } from "../src/services/leadService.js";
 import { leadStore } from "../src/models/store.js";
 
@@ -103,7 +104,7 @@ describe("Backend Lead Service & Store Integration", () => {
   it("adds a new team member and initializes BDE quota if BDE", async () => {
     const newMember = await leadService.addTeamMember({
       name: "Suresh Reddy",
-      email: "suresh.r@arahinfotech.com",
+      email: "suresh.r@leadgen.pro",
       role: "BDE",
       phone: "+91 99887 76655",
     });
@@ -112,5 +113,11 @@ describe("Backend Lead Service & Store Integration", () => {
     const bde = leadStore.getBdes().find((b) => b.name === "Suresh Reddy");
     assert.ok(bde);
     assert.equal(bde.allocated, 500);
+  });
+
+  after(async () => {
+    if (mongoose.connection && mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
   });
 });

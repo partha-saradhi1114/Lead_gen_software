@@ -5,6 +5,8 @@ import {
   sampleSheet,
   summarize,
   validateRows,
+  validateMemberPhone,
+  validateMemberEmail,
 } from "./validation";
 
 const existing = [
@@ -132,5 +134,104 @@ describe("RA upload validation - Lead Management Plan Requirements", () => {
     expect(s.valid + s.invalid + s.duplicate).toBe(25);
     expect(s.invalid).toBeGreaterThan(0);
     expect(s.duplicate).toBeGreaterThan(0);
+  });
+});
+
+describe("Team Member Creation - Mobile Number and Email Validation Rules", () => {
+  describe("validateMemberPhone", () => {
+    it("fails when mobile number is empty", () => {
+      const res = validateMemberPhone("");
+      expect(res.valid).toBe(false);
+      expect(res.error).toBe("Mobile number is mandatory");
+    });
+
+    it("fails when mobile number contains alphabets", () => {
+      const res = validateMemberPhone("98765abc10");
+      expect(res.valid).toBe(false);
+      expect(res.error).toBe("Mobile number cannot contain alphabets");
+    });
+
+    it("fails when mobile number has fewer than 10 digits", () => {
+      const res = validateMemberPhone("987654321"); // 9 digits
+      expect(res.valid).toBe(false);
+      expect(res.error).toContain("must consist of exactly 10 digits");
+    });
+
+    it("fails when mobile number has more than 10 digits", () => {
+      const res = validateMemberPhone("987654321012"); // 12 digits (not starting with 91)
+      expect(res.valid).toBe(false);
+      expect(res.error).toContain("must consist of exactly 10 digits");
+    });
+
+    it("fails when mobile number does not start with 6, 7, 8, or 9", () => {
+      const invalidStarts = ["1234567890", "2345678901", "3456789012", "4567890123", "5678901234"];
+      invalidStarts.forEach((num) => {
+        const res = validateMemberPhone(num);
+        expect(res.valid).toBe(false);
+        expect(res.error).toBe("Mobile number must start with 6, 7, 8, or 9");
+      });
+    });
+
+    it("accepts valid 10-digit mobile numbers starting with 6, 7, 8, or 9", () => {
+      const validNumbers = [
+        "9876543210",
+        "8765432109",
+        "7654321098",
+        "6543210987",
+        "+91 98765 43210",
+        "09876543210",
+      ];
+      validNumbers.forEach((num) => {
+        const res = validateMemberPhone(num);
+        expect(res.valid).toBe(true);
+        expect(res.formatted).toMatch(/^\+91 \d{5} \d{5}$/);
+      });
+    });
+  });
+
+  describe("validateMemberEmail", () => {
+    it("fails when email is empty", () => {
+      const res = validateMemberEmail("");
+      expect(res.valid).toBe(false);
+      expect(res.error).toBe("Email address is mandatory");
+    });
+
+    it("fails when email is in improper format", () => {
+      const badEmails = [
+        "user@",
+        "user@gmail",
+        "user@.com",
+        "@gmail.com",
+        "user name@gmail.com",
+        "user..test@gmail.com",
+        "plainaddress",
+      ];
+      badEmails.forEach((e) => {
+        const res = validateMemberEmail(e);
+        expect(res.valid).toBe(false);
+        expect(res.error).toContain("proper format");
+      });
+    });
+
+    it("accepts proper valid email / gmail formats", () => {
+      const validEmails = [
+        "sandeep@gmail.com",
+        "priya.m@leadgen.pro",
+        "analyst_team123@arahinfotech.com",
+        "candidate.lead+filter@domain.co.in",
+      ];
+      validEmails.forEach((e) => {
+        const res = validateMemberEmail(e);
+        expect(res.valid).toBe(true);
+        expect(res.email).toBe(e);
+      });
+    });
+
+    it("fails when email already exists in the team", () => {
+      const team = [{ email: "priya.m@leadgen.pro" }];
+      const res = validateMemberEmail("priya.m@leadgen.pro", team);
+      expect(res.valid).toBe(false);
+      expect(res.error).toBe("A team member with this email already exists");
+    });
   });
 });

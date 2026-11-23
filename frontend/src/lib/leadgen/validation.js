@@ -211,7 +211,79 @@ export const isValidPhone = (p) => {
 };
 
 export const isValidEmail = (e) =>
-  /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(String(e ?? "").trim());
+  /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i.test(String(e ?? "").trim()) &&
+  !String(e ?? "").includes("..") &&
+  !String(e ?? "").includes(" ");
+
+/**
+ * Validate team member phone/mobile number:
+ * - Must not contain alphabets
+ * - Must consist of exactly 10 digits
+ * - Must start with 6, 7, 8, or 9
+ */
+export const validateMemberPhone = (phone) => {
+  const clean = String(phone ?? "").trim();
+  if (!clean) {
+    return { valid: false, error: "Mobile number is mandatory" };
+  }
+  if (/[a-zA-Z]/.test(clean)) {
+    return { valid: false, error: "Mobile number cannot contain alphabets" };
+  }
+  let digits = clean.replace(/\D/g, "");
+  if (digits.startsWith("91") && digits.length === 12) {
+    digits = digits.slice(2);
+  } else if (digits.startsWith("0") && digits.length === 11) {
+    digits = digits.slice(1);
+  }
+
+  if (digits.length !== 10) {
+    return {
+      valid: false,
+      error: `Mobile number must consist of exactly 10 digits (currently ${digits.length})`,
+      digits,
+    };
+  }
+  if (!/^[6-9]/.test(digits)) {
+    return {
+      valid: false,
+      error: "Mobile number must start with 6, 7, 8, or 9",
+      digits,
+    };
+  }
+  return {
+    valid: true,
+    digits,
+    formatted: `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`,
+  };
+};
+
+/**
+ * Validate team member email / gmail:
+ * - Must be in proper format (localpart@domain.extension)
+ * - Must not be a duplicate in the team
+ */
+export const validateMemberEmail = (email, existingTeam = []) => {
+  const clean = String(email ?? "").trim();
+  if (!clean) {
+    return { valid: false, error: "Email address is mandatory" };
+  }
+  if (!isValidEmail(clean)) {
+    return {
+      valid: false,
+      error: "Please enter a valid email address in proper format (e.g. name@leadgen.pro or user@gmail.com)",
+    };
+  }
+  if (
+    Array.isArray(existingTeam) &&
+    existingTeam.some((m) => m?.email?.toLowerCase() === clean.toLowerCase())
+  ) {
+    return {
+      valid: false,
+      error: "A team member with this email already exists",
+    };
+  }
+  return { valid: true, email: clean };
+};
 
 const pairKey = (company, contact) =>
   `${norm(company)}|${norm(contact.replace(/^(mr|ms|mrs|dr)\.?\s+/i, ""))}`;

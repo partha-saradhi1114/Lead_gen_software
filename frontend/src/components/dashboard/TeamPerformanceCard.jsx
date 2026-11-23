@@ -7,7 +7,30 @@ import { PerformanceTable, PersonCell, RatePill } from "./PerformanceTable";
 
 export function TeamPerformanceCard() {
   const { state } = useLeadGen();
-  const bdes = state.bdes;
+  const bdes = (state.bdes || []).map((b) => {
+    const assignedLeads = (state.leads || []).filter(
+      (l) => l.assignedName === b.name || l.assignedTo === b.name,
+    );
+    const connected =
+      typeof b.connected === "number"
+        ? b.connected
+        : assignedLeads.filter((l) =>
+            ["connected", "interested", "follow-up"].includes(l.stage),
+          ).length;
+    const interested =
+      typeof b.interested === "number"
+        ? b.interested
+        : assignedLeads.filter((l) => l.stage === "interested").length;
+
+    return {
+      ...b,
+      allocated: Number(b.allocated) || 0,
+      used: Number(b.used) || 0,
+      connected,
+      interested,
+    };
+  });
+
   const t = bdes.reduce(
     (a, b) => ({
       allocated: a.allocated + b.allocated,
@@ -131,20 +154,22 @@ export function TeamPerformanceCard() {
             </TabsList>
           }
         />
-        <TabsContent value="bde" className="mt-1">
+        <TabsContent value="bde" className="mt-1 flex-1">
           <PerformanceTable
             columns={bdeCols}
             rows={bdes}
             rowKey={(r) => r.name}
             showTotal
+            maxHeight="295px"
           />
         </TabsContent>
-        <TabsContent value="ra" className="mt-1">
+        <TabsContent value="ra" className="mt-1 flex-1">
           <PerformanceTable
             columns={raCols}
             rows={ra}
             rowKey={(r) => r.name}
             showTotal
+            maxHeight="295px"
           />
         </TabsContent>
       </Tabs>

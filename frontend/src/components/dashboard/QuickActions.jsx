@@ -40,7 +40,16 @@ import {
   RESEARCHERS,
   fmt,
 } from "@/lib/leadgen/data";
+<<<<<<< HEAD
 import { isValidEmail, phoneDigits } from "@/lib/leadgen/validation";
+=======
+import {
+  isValidEmail,
+  phoneDigits,
+  validateMemberPhone,
+  validateMemberEmail,
+} from "@/lib/leadgen/validation";
+>>>>>>> 3d8e57619193033ee706d2e1d1f5429169ec720d
 import { cn } from "@/lib/utils";
 
 export function QuickActionCard({
@@ -440,6 +449,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
       return void toast.error("Full name is mandatory");
     }
 
+<<<<<<< HEAD
     // 2. Email: Unique, valid email
     const trimmedEmail = email.trim();
     if (!isValidEmail(trimmedEmail)) {
@@ -462,6 +472,18 @@ export function AddMemberDialog({ open, onOpenChange }) {
       return void toast.error(
         "Enter a valid 10-digit Indian mobile number (+91...)",
       );
+=======
+    // 2. Email / Gmail: Must be in proper format & unique
+    const emailResult = validateMemberEmail(email, state.team);
+    if (!emailResult.valid) {
+      return void toast.error(emailResult.error);
+    }
+
+    // 3. Mobile Number: Must consist of 10 digits, start with 6, 7, 8, or 9, and contain no alphabets
+    const phoneResult = validateMemberPhone(phone);
+    if (!phoneResult.valid) {
+      return void toast.error(phoneResult.error);
+>>>>>>> 3d8e57619193033ee706d2e1d1f5429169ec720d
     }
 
     // 4. Login Password: Secure initial password
@@ -476,10 +498,15 @@ export function AddMemberDialog({ open, onOpenChange }) {
       type: "addMember",
       member: {
         name: name.trim(),
+<<<<<<< HEAD
         email: trimmedEmail,
         phone: trimmedPhone.startsWith("+91")
           ? trimmedPhone
           : `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`,
+=======
+        email: emailResult.email,
+        phone: phoneResult.formatted,
+>>>>>>> 3d8e57619193033ee706d2e1d1f5429169ec720d
         role,
         status,
         password: password.trim(),
@@ -488,7 +515,11 @@ export function AddMemberDialog({ open, onOpenChange }) {
 
     onOpenChange(false);
     toast.success(`${name.trim()} added as ${role}`, {
+<<<<<<< HEAD
       description: `Status: ${status} · Invite sent to ${trimmedEmail}`,
+=======
+      description: `Mobile: ${phoneResult.formatted} · Invite sent to ${emailResult.email}`,
+>>>>>>> 3d8e57619193033ee706d2e1d1f5429169ec720d
     });
   };
 
@@ -509,7 +540,7 @@ export function AddMemberDialog({ open, onOpenChange }) {
               type="button"
               onClick={() => setRole(r)}
               className={cn(
-                "rounded-md border px-3 py-2 text-xs font-semibold transition-colors",
+                "rounded-md border px-3 py-2 text-xs font-semibold transition-colors cursor-pointer",
                 role === r
                   ? "border-primary bg-primary-soft text-primary"
                   : "hover:bg-muted text-muted-foreground",
@@ -531,22 +562,34 @@ export function AddMemberDialog({ open, onOpenChange }) {
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Email" htmlFor="m-email">
+        <Field label="Email / Gmail" htmlFor="m-email">
           <Input
             id="m-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@arahinfotech.com"
+            placeholder="name@gmail.com"
           />
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            Valid format (e.g. user@gmail.com)
+          </p>
         </Field>
-        <Field label="Phone" htmlFor="m-phone">
+        <Field label="Mobile Number" htmlFor="m-phone">
           <Input
             id="m-phone"
+            type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+91 90000 00000"
+            onChange={(e) => {
+              // Strip any alphabetic characters immediately
+              const cleaned = e.target.value.replace(/[a-zA-Z]/g, "");
+              setPhone(cleaned);
+            }}
+            placeholder="10 digits (e.g. 9876543210)"
+            maxLength={14}
           />
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            10 digits starting with 6, 7, 8, or 9
+          </p>
         </Field>
       </div>
 

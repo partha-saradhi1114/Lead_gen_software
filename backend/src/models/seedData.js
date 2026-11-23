@@ -353,7 +353,7 @@ export const SEED_CREDITS = { allocated: 2000, used: 1320 };
 export const SEED_TEAM = [
   {
     name: "Priya M",
-    email: "priya.m@arahinfotech.com",
+    email: "priya.m@leadgen.pro",
     phone: "+91 90000 11111",
     role: "Research Analyst",
     department: "Market Research",
@@ -361,7 +361,7 @@ export const SEED_TEAM = [
   },
   {
     name: "Arjun K",
-    email: "arjun.k@arahinfotech.com",
+    email: "arjun.k@leadgen.pro",
     phone: "+91 90000 22222",
     role: "Research Analyst",
     department: "Lead Generation",
@@ -369,7 +369,7 @@ export const SEED_TEAM = [
   },
   {
     name: "Neha R",
-    email: "neha.r@arahinfotech.com",
+    email: "neha.r@leadgen.pro",
     phone: "+91 90000 33333",
     role: "Research Analyst",
     department: "Market Research",
@@ -377,7 +377,7 @@ export const SEED_TEAM = [
   },
   {
     name: "Ravi Kumar",
-    email: "ravi.kumar@arahinfotech.com",
+    email: "ravi.kumar@leadgen.pro",
     phone: "+91 90000 44444",
     role: "BDE",
     department: "Business Development",
@@ -385,7 +385,7 @@ export const SEED_TEAM = [
   },
   {
     name: "Anitha Reddy",
-    email: "anitha.reddy@arahinfotech.com",
+    email: "anitha.reddy@leadgen.pro",
     phone: "+91 90000 55555",
     role: "BDE",
     department: "Sales & Outreach",
@@ -393,7 +393,7 @@ export const SEED_TEAM = [
   },
   {
     name: "Kiran Varma",
-    email: "kiran.varma@arahinfotech.com",
+    email: "kiran.varma@leadgen.pro",
     phone: "+91 90000 66666",
     role: "BDE",
     department: "Business Development",

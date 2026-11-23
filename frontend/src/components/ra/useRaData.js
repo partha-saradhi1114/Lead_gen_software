@@ -15,7 +15,10 @@ export function useRaData() {
       }
     })();
     const ra =
-      storedUser.role === "ra" && storedUser.name
+      (storedUser.role === "ra" ||
+        storedUser.role === "Research Analyst" ||
+        storedUser.role === "researcher") &&
+      storedUser.name
         ? storedUser.name
         : CURRENT_RA;
     const leads = state.leads.filter(

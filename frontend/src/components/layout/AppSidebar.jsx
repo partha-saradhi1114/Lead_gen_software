@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Target } from "lucide-react";
+import { BrandLogo } from "@/components/common/BrandLogo";
 import {
   Sidebar,
   SidebarContent,
@@ -45,11 +45,19 @@ export function AppSidebar() {
     }
   })();
   const currentBdeName =
-    storedUser.role === "bde" && storedUser.name
+    (storedUser.role === "bde" ||
+      storedUser.role === "BDE" ||
+      storedUser.role === "Business Development Executive") &&
+    storedUser.name
       ? storedUser.name
       : CURRENT_BDE;
   const currentRaName =
-    storedUser.role === "ra" && storedUser.name ? storedUser.name : CURRENT_RA;
+    (storedUser.role === "ra" ||
+      storedUser.role === "Research Analyst" ||
+      storedUser.role === "researcher") &&
+    storedUser.name
+      ? storedUser.name
+      : CURRENT_RA;
 
   const bdeDue =
     role === "bde"
@@ -70,19 +78,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r-0">
       <SidebarHeader className="px-3 pb-3 pt-4">
-        <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-pop">
-            <Target className="size-5" strokeWidth={2.4} />
-          </div>
-          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <div className="truncate text-[15px] font-bold leading-tight text-sidebar-accent-foreground">
-              LeadGen Pro
-            </div>
-            <div className="text-[11px] leading-tight text-sidebar-muted">
-              Lead Generation &amp; Team Operations
-            </div>
-          </div>
-        </div>
+        <BrandLogo size="md" light={true} subtitle={true} />
       </SidebarHeader>
 
       <SidebarContent>

@@ -62,8 +62,14 @@ export const protect = async (req, res, next) => {
         _id: decoded.id,
         id: decoded.id,
         role: decoded.role || "admin",
-        name: decoded.role === "admin" ? "Sriram" : decoded.role === "ra" ? "Priya M" : "Ravi Kumar",
-        email: decoded.id?.includes("@") ? decoded.id : "admin@arahinfotech.com",
+        name:
+          decoded.name ||
+          (decoded.role === "admin"
+            ? "Sriram"
+            : decoded.role === "ra"
+            ? "Priya M"
+            : "Ravi Kumar"),
+        email: decoded.id?.includes("@") ? decoded.id : "admin@leadgen.pro",
         active: true,
       };
     }

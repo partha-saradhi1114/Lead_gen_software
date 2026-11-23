@@ -10,21 +10,11 @@
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-18",
       "id": 1,
-      "status": "approved",
+      "status": "pending",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261118-PM",
-      "reviewedOn": "2026-11-18",
-      "assignedTo": "Ravi Kumar",
-      "assignedName": "Ravi Kumar",
-      "assignedOn": "2026-11-22",
-      "unlockedBy": [
-        "Ravi Kumar"
-      ],
-      "stage": "interested",
-      "notes": "Client requested quotation",
-      "followUpDate": "2026-11-25"
+      "batchId": "BT-261118-PM"
     },
     {
       "company": "JNTU Hyderabad BCA",
@@ -36,15 +26,11 @@
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-18",
       "id": 2,
-      "status": "approved",
+      "status": "pending",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261118-PM",
-      "reviewedOn": "2026-11-18",
-      "assignedTo": "Ravi Kumar",
-      "assignedName": "Ravi Kumar",
-      "assignedOn": "2026-11-22"
+      "batchId": "BT-261118-PM"
     },
     {
       "company": "CloudMatrix Technologies",
@@ -56,13 +42,11 @@
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-18",
       "id": 3,
-      "status": "rejected",
+      "status": "pending",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261118-AK",
-      "rejectionReason": "Invalid phone number format",
-      "reviewedOn": "2026-11-18"
+      "batchId": "BT-261118-AK"
     },
     {
       "company": "TechCorp Global Solutions",
@@ -74,12 +58,11 @@
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-17",
       "id": 4,
-      "status": "approved",
+      "status": "pending",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261117-NR",
-      "reviewedOn": "2026-11-18"
+      "batchId": "BT-261117-NR"
     },
     {
       "company": "ABC Hospitals Pvt Ltd",
@@ -91,12 +74,11 @@
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-17",
       "id": 5,
-      "status": "approved",
+      "status": "pending",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261117-PM",
-      "reviewedOn": "2026-11-18"
+      "batchId": "BT-261117-PM"
     },
     {
       "company": "V Care Diagnostics",
@@ -108,13 +90,11 @@
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-16",
       "id": 6,
-      "status": "rejected",
+      "status": "pending",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261116-AK",
-      "rejectionReason": "Invalid phone number format",
-      "reviewedOn": "2026-11-18"
+      "batchId": "BT-261116-AK"
     },
     {
       "company": "CareerLaunch Academy",
@@ -126,12 +106,11 @@
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-16",
       "id": 7,
-      "status": "approved",
+      "status": "pending",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261116-NR",
-      "reviewedOn": "2026-11-18"
+      "batchId": "BT-261116-NR"
     },
     {
       "company": "Andhra University MCA",
@@ -143,12 +122,11 @@
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-15",
       "id": 8,
-      "status": "approved",
+      "status": "pending",
       "designation": "Managing Director",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261115-PM",
-      "reviewedOn": "2026-11-18"
+      "batchId": "BT-261115-PM"
     },
     {
       "id": 9,
@@ -160,13 +138,11 @@
       "category": "General Enquiries",
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-17",
-      "status": "rejected",
+      "status": "pending",
       "designation": "CEO",
       "location": "Chennai",
       "industry": "Diagnostics",
-      "batchId": "BT-261117-PM",
-      "rejectionReason": "Invalid phone number format",
-      "reviewedOn": "2026-11-18"
+      "batchId": "BT-261117-PM"
     },
     {
       "id": 10,
@@ -72408,8 +72384,8 @@
   "bdes": [
     {
       "name": "Ravi Kumar",
-      "allocated": 800,
-      "used": 423,
+      "allocated": 500,
+      "used": 420,
       "connected": 152,
       "interested": 98
     },
@@ -72433,176 +72409,68 @@
       "used": 200,
       "connected": 60,
       "interested": 40
-    },
-    {
-      "name": "Suresh Reddy",
-      "allocated": 500,
-      "used": 0,
-      "connected": 0,
-      "interested": 0
-    },
-    {
-      "name": "Suresh Reddy",
-      "allocated": 500,
-      "used": 0,
-      "connected": 0,
-      "interested": 0
-    },
-    {
-      "name": "Sidhu",
-      "allocated": 500,
-      "used": 0,
-      "connected": 0,
-      "interested": 0
-    },
-    {
-      "name": "Suresh Reddy",
-      "allocated": 500,
-      "used": 0,
-      "connected": 0,
-      "interested": 0
     }
   ],
   "credits": {
-    "allocated": 4300,
-    "used": 1323
+    "allocated": 2000,
+    "used": 1320
   },
   "team": [
     {
       "name": "Priya M",
-      "email": "priya.m@arahinfotech.com",
+      "email": "priya.m@leadgen.pro",
       "phone": "+91 90000 11111",
-      "role": "Research Analyst"
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active"
     },
     {
       "name": "Arjun K",
-      "email": "arjun.k@arahinfotech.com",
+      "email": "arjun.k@leadgen.pro",
       "phone": "+91 90000 22222",
-      "role": "Research Analyst"
+      "role": "Research Analyst",
+      "department": "Lead Generation",
+      "status": "Active"
     },
     {
       "name": "Neha R",
-      "email": "neha.r@arahinfotech.com",
+      "email": "neha.r@leadgen.pro",
       "phone": "+91 90000 33333",
-      "role": "Research Analyst"
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active"
     },
     {
       "name": "Ravi Kumar",
-      "email": "ravi.kumar@arahinfotech.com",
+      "email": "ravi.kumar@leadgen.pro",
       "phone": "+91 90000 44444",
-      "role": "BDE"
+      "role": "BDE",
+      "department": "Business Development",
+      "status": "Active"
     },
     {
       "name": "Anitha Reddy",
-      "email": "anitha.reddy@arahinfotech.com",
+      "email": "anitha.reddy@leadgen.pro",
       "phone": "+91 90000 55555",
-      "role": "BDE"
+      "role": "BDE",
+      "department": "Sales & Outreach",
+      "status": "Active"
     },
     {
       "name": "Kiran Varma",
-      "email": "kiran.varma@arahinfotech.com",
+      "email": "kiran.varma@leadgen.pro",
       "phone": "+91 90000 66666",
-      "role": "BDE"
+      "role": "BDE",
+      "department": "Business Development",
+      "status": "Active"
     },
     {
       "name": "Megha S",
       "email": "megha.s@arahinfotech.com",
       "phone": "+91 90000 77777",
-      "role": "BDE"
-    },
-    {
-      "id": "1795257539691",
-      "name": "Suresh Reddy",
-      "email": "suresh.r@arahinfotech.com",
-      "phone": "+91 99887 76655",
       "role": "BDE",
-      "credits": 500,
-      "creditsUsed": 0,
-      "active": true
-    },
-    {
-      "id": "1795261923822",
-      "name": "Suresh Reddy",
-      "email": "suresh.r@arahinfotech.com",
-      "phone": "+91 99887 76655",
-      "role": "BDE",
-      "department": "Business Development",
-      "status": "Active",
-      "credits": 500,
-      "creditsUsed": 0,
-      "active": true
-    },
-    {
-      "id": "1795324701159",
-      "name": "Sidhu",
-      "email": "sidhu@gmail.com",
-      "phone": "+91 98798 79879",
-      "role": "BDE",
-      "department": "Business Development",
-      "status": "Active",
-      "credits": 500,
-      "creditsUsed": 0,
-      "active": true
-    },
-    {
-      "id": "1795325852163",
-      "name": "sai",
-      "email": "sai@gmail.com",
-      "phone": "+91 98989 89898",
-      "role": "Research Analyst",
-      "department": "Market Research",
-      "status": "Active",
-      "credits": 0,
-      "creditsUsed": 0,
-      "active": true
-    },
-    {
-      "id": "1795329505908",
-      "name": "Suresh Reddy",
-      "email": "suresh.r@arahinfotech.com",
-      "phone": "+91 99887 76655",
-      "role": "BDE",
-      "department": "Business Development",
-      "status": "Active",
-      "credits": 500,
-      "creditsUsed": 0,
-      "active": true
-    },
-    {
-      "id": "1795408712775",
-      "name": "Sanjana",
-      "email": "sanjana@gmail.com",
-      "phone": "+91 98765 43211",
-      "role": "Research Analyst",
-      "department": "Market Research",
-      "status": "Active",
-      "credits": 0,
-      "creditsUsed": 0,
-      "active": true
-    },
-    {
-      "id": "1795408833926",
-      "name": "Sandeep",
-      "email": "sandeep@gmail.com",
-      "phone": "+91 97654 32891",
-      "role": "Research Analyst",
-      "department": "Market Research",
-      "status": "Active",
-      "credits": 0,
-      "creditsUsed": 0,
-      "active": true
-    },
-    {
-      "id": "1795408982698",
-      "name": "Raghu",
-      "email": "raghu@gmail.com",
-      "phone": "+91 91332 22004",
-      "role": "Research Analyst",
-      "department": "Market Research",
-      "status": "Active",
-      "credits": 0,
-      "creditsUsed": 0,
-      "active": true
+      "department": "Client Acquisition",
+      "status": "Active"
     }
   ],
   "batches": [
@@ -77754,153 +77622,17 @@
           "text": "Marked Converted"
         }
       ]
-    },
-    {
-      "leadId": 1,
-      "bde": "Ravi Kumar",
-      "assignedOn": "2026-11-22",
-      "stage": "interested",
-      "unlocked": true,
-      "followUp": {
-        "on": "2026-11-25",
-        "note": "Client requested quotation",
-        "done": false
-      },
-      "activity": [
-        {
-          "on": "2026-11-21",
-          "text": "Lead assigned by Master Admin to Ravi Kumar"
-        },
-        {
-          "on": "2026-11-18",
-          "text": "Contact unlocked (1 credit)"
-        },
-        {
-          "on": "2026-11-18",
-          "text": "Contact unlocked (1 credit)"
-        },
-        {
-          "on": "2026-11-18",
-          "text": "Contact unlocked (1 credit)"
-        }
-      ]
-    },
-    {
-      "leadId": 2,
-      "bde": "Ravi Kumar",
-      "assignedOn": "2026-11-22",
-      "stage": "New",
-      "unlocked": false,
-      "followUp": null,
-      "activity": [
-        {
-          "on": "2026-11-21",
-          "text": "Lead assigned by Master Admin to Ravi Kumar"
-        }
-      ]
     }
   ],
   "dateRange": "Last 30 Days",
   "nextId": 4281,
-  "creditLog": [
-    {
-      "on": "2026-11-18",
-      "bde": "Ravi Kumar",
-      "kind": "Requested",
-      "amount": 200,
-      "note": "High-volume hospital campaign"
-    },
-    {
-      "on": "2026-11-18",
-      "bde": "Ravi Kumar",
-      "kind": "Used",
-      "amount": 1,
-      "leadId": 1,
-      "note": "Unlocked Osmania University CSE"
-    },
-    {
-      "on": "2026-11-18",
-      "bde": "Ravi Kumar",
-      "kind": "Allocation",
-      "amount": 100,
-      "note": "Master Admin allocated 100 credits"
-    },
-    {
-      "on": "2026-11-18",
-      "bde": "Ravi Kumar",
-      "kind": "Requested",
-      "amount": 200,
-      "note": "High-volume hospital campaign"
-    },
-    {
-      "on": "2026-11-18",
-      "bde": "Ravi Kumar",
-      "kind": "Used",
-      "amount": 1,
-      "leadId": 1,
-      "note": "Unlocked Osmania University CSE"
-    },
-    {
-      "on": "2026-11-18",
-      "bde": "Ravi Kumar",
-      "kind": "Allocation",
-      "amount": 100,
-      "note": "Master Admin allocated 100 credits"
-    },
-    {
-      "on": "2026-11-18",
-      "bde": "Ravi Kumar",
-      "kind": "Requested",
-      "amount": 200,
-      "note": "High-volume hospital campaign"
-    },
-    {
-      "on": "2026-11-18",
-      "bde": "Ravi Kumar",
-      "kind": "Used",
-      "amount": 1,
-      "leadId": 1,
-      "note": "Unlocked Osmania University CSE"
-    },
-    {
-      "on": "2026-11-18",
-      "bde": "Ravi Kumar",
-      "kind": "Allocation",
-      "amount": 100,
-      "note": "Master Admin allocated 100 credits"
-    }
-  ],
-  "creditRequests": [
-    {
-      "id": 1795329505887,
-      "bde": "Ravi Kumar",
-      "amount": 200,
-      "reason": "High-volume hospital campaign",
-      "status": "pending",
-      "requestedOn": "2026-11-22"
-    },
-    {
-      "id": 1795261923806,
-      "bde": "Ravi Kumar",
-      "amount": 200,
-      "reason": "High-volume hospital campaign",
-      "status": "approved",
-      "requestedOn": "2026-11-21"
-    },
-    {
-      "id": 1795257539676,
-      "bde": "Ravi Kumar",
-      "amount": 200,
-      "reason": "High-volume hospital campaign",
-      "status": "approved",
-      "requestedOn": "2026-11-21"
-    }
-  ],
+  "creditLog": [],
+  "creditRequests": [],
   "settings": {
     "general": {
       "workspaceName": "Lead Generation Software",
-      "orgDomain": "arahinfotech.com",
-      "contactEmail": "sriram@arahinfotech.com",
+      "orgDomain": "leadgen.pro",
+      "contactEmail": "admin@leadgen.pro",
       "timezone": "Asia/Kolkata",
       "currency": "INR"
     },

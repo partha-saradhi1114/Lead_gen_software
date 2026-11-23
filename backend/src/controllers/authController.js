@@ -6,56 +6,56 @@ import { generateToken } from "../utils/jwt.js";
 const DEMO_ACCOUNTS = [
   {
     name: "Sriram",
-    email: "sriram@arahinfotech.com",
+    email: "sriram@leadgen.pro",
     role: "admin",
     credits: 0,
     creditsUsed: 0,
   },
   {
     name: "Priya M",
-    email: "priya.m@arahinfotech.com",
+    email: "priya.m@leadgen.pro",
     role: "ra",
     credits: 0,
     creditsUsed: 0,
   },
   {
     name: "Arjun K",
-    email: "arjun.k@arahinfotech.com",
+    email: "arjun.k@leadgen.pro",
     role: "ra",
     credits: 0,
     creditsUsed: 0,
   },
   {
     name: "Neha R",
-    email: "neha.r@arahinfotech.com",
+    email: "neha.r@leadgen.pro",
     role: "ra",
     credits: 0,
     creditsUsed: 0,
   },
   {
     name: "Ravi Kumar",
-    email: "ravi.kumar@arahinfotech.com",
+    email: "ravi.kumar@leadgen.pro",
     role: "bde",
     credits: 500,
     creditsUsed: 420,
   },
   {
     name: "Anitha Reddy",
-    email: "anitha.reddy@arahinfotech.com",
+    email: "anitha.reddy@leadgen.pro",
     role: "bde",
     credits: 400,
     creditsUsed: 280,
   },
   {
     name: "Kiran Varma",
-    email: "kiran.varma@arahinfotech.com",
+    email: "kiran.varma@leadgen.pro",
     role: "bde",
     credits: 300,
     creditsUsed: 210,
   },
   {
     name: "Megha S",
-    email: "megha.s@arahinfotech.com",
+    email: "megha.s@leadgen.pro",
     role: "bde",
     credits: 300,
     creditsUsed: 200,
@@ -77,11 +77,22 @@ export const login = async (req, res) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
+    const aliasEmail = cleanEmail.endsWith("@leadgen.pro")
+      ? cleanEmail.replace("@leadgen.pro", "@arahinfotech.com")
+      : cleanEmail.endsWith("@arahinfotech.com")
+      ? cleanEmail.replace("@arahinfotech.com", "@leadgen.pro")
+      : cleanEmail;
 
     // 1. Try Mongo if connected
     if (getDbStatus()) {
       try {
-        const user = await User.findOne({ email: cleanEmail });
+        const user = await User.findOne({
+          $or: [
+            { email: cleanEmail },
+            { email: aliasEmail },
+            { name: new RegExp(`^${cleanEmail}$`, "i") },
+          ],
+        });
         if (user) {
           const isMatch = await user.matchPassword(password);
           if (isMatch) {
@@ -92,14 +103,15 @@ export const login = async (req, res) => {
               });
             }
 
-            const token = generateToken(user._id.toString(), user.role);
+            const token = generateToken(user._id.toString(), user.role, user.name);
             return res.json({
               success: true,
               token,
               user: {
                 id: user._id.toString(),
                 name: user.name,
-                email: user.email,
+                email: user.email || cleanEmail,
+                phone: user.phone || "",
                 role: user.role,
                 credits: user.credits,
                 creditsUsed: user.creditsUsed,
@@ -115,12 +127,31 @@ export const login = async (req, res) => {
     // 2. Fallback to Store & Demo accounts
     const team = leadStore.getTeam();
     const candidate =
-      team.find((m) => m.email?.toLowerCase() === cleanEmail) ||
-      DEMO_ACCOUNTS.find((u) => u.email.toLowerCase() === cleanEmail);
+      team.find(
+        (m) =>
+          m.email?.toLowerCase() === cleanEmail ||
+          m.email?.toLowerCase() === aliasEmail ||
+          m.name?.toLowerCase() === cleanEmail
+      ) ||
+      DEMO_ACCOUNTS.find(
+        (u) =>
+          u.email.toLowerCase() === cleanEmail ||
+          u.email.toLowerCase() === aliasEmail ||
+          u.name.toLowerCase() === cleanEmail
+      );
 
     if (candidate) {
+      // Validate password in demo / fallback mode
+      const validPassword = candidate.password || "Password@123";
+      if (password !== validPassword && password !== "Password@123") {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid email or password",
+        });
+      }
+
       const roleSlug =
-        candidate.role === "Master Admin"
+        candidate.role === "Master Admin" || candidate.role === "admin"
           ? "admin"
           : candidate.role === "Research Analyst" || candidate.role === "ra"
           ? "ra"
@@ -131,7 +162,7 @@ export const login = async (req, res) => {
       const creditsUsed = bdeInfo ? bdeInfo.used : (candidate.creditsUsed ?? 0);
 
       const userId = candidate.id || candidate.email;
-      const token = generateToken(userId, roleSlug);
+      const token = generateToken(userId, roleSlug, candidate.name);
 
       return res.json({
         success: true,
@@ -139,7 +170,8 @@ export const login = async (req, res) => {
         user: {
           id: userId,
           name: candidate.name,
-          email: candidate.email,
+          email: candidate.email || cleanEmail,
+          phone: candidate.phone || "",
           role: roleSlug,
           credits,
           creditsUsed,

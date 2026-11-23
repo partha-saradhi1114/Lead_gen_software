@@ -16,35 +16,35 @@ const DEFAULT_PASSWORD = "Password@123";
 const SEED_USERS = [
   {
     name: "Sriram",
-    email: "sriram@arahinfotech.com",
+    email: "sriram@leadgen.pro",
     role: "admin",
     credits: 0,
     creditsUsed: 0,
   },
   {
     name: "Priya M",
-    email: "priya.m@arahinfotech.com",
+    email: "priya.m@leadgen.pro",
     role: "ra",
     credits: 0,
     creditsUsed: 0,
   },
   {
     name: "Arjun K",
-    email: "arjun.k@arahinfotech.com",
+    email: "arjun.k@leadgen.pro",
     role: "ra",
     credits: 0,
     creditsUsed: 0,
   },
   {
     name: "Neha R",
-    email: "neha.r@arahinfotech.com",
+    email: "neha.r@leadgen.pro",
     role: "ra",
     credits: 0,
     creditsUsed: 0,
   },
   {
     name: "Ravi Kumar",
-    email: "ravi.kumar@arahinfotech.com",
+    email: "ravi.kumar@leadgen.pro",
     role: "bde",
     category: "Students / Education",
     credits: 500,
@@ -52,7 +52,7 @@ const SEED_USERS = [
   },
   {
     name: "Anitha Reddy",
-    email: "anitha.reddy@arahinfotech.com",
+    email: "anitha.reddy@leadgen.pro",
     role: "bde",
     category: "IT & Upskilling",
     credits: 400,
@@ -60,7 +60,7 @@ const SEED_USERS = [
   },
   {
     name: "Kiran Varma",
-    email: "kiran.varma@arahinfotech.com",
+    email: "kiran.varma@leadgen.pro",
     role: "bde",
     category: "Corporate Training",
     credits: 300,
@@ -68,7 +68,7 @@ const SEED_USERS = [
   },
   {
     name: "Megha S",
-    email: "megha.s@arahinfotech.com",
+    email: "megha.s@leadgen.pro",
     role: "bde",
     category: "Healthcare & Pharma",
     credits: 300,
@@ -408,14 +408,14 @@ async function seedDatabase() {
     console.log(`Created ${createdUsers.length} users successfully.`);
 
     const adminUser = createdUsers.find((u) => u.role === "admin");
-    const raPriya = createdUsers.find((u) => u.email === "priya.m@arahinfotech.com");
-    const raArjun = createdUsers.find((u) => u.email === "arjun.k@arahinfotech.com");
-    const raNeha = createdUsers.find((u) => u.email === "neha.r@arahinfotech.com");
+    const raPriya = createdUsers.find((u) => u.email === "priya.m@leadgen.pro");
+    const raArjun = createdUsers.find((u) => u.email === "arjun.k@leadgen.pro");
+    const raNeha = createdUsers.find((u) => u.email === "neha.r@leadgen.pro");
 
-    const bdeRavi = createdUsers.find((u) => u.email === "ravi.kumar@arahinfotech.com");
-    const bdeAnitha = createdUsers.find((u) => u.email === "anitha.reddy@arahinfotech.com");
-    const bdeKiran = createdUsers.find((u) => u.email === "kiran.varma@arahinfotech.com");
-    const bdeMegha = createdUsers.find((u) => u.email === "megha.s@arahinfotech.com");
+    const bdeRavi = createdUsers.find((u) => u.email === "ravi.kumar@leadgen.pro");
+    const bdeAnitha = createdUsers.find((u) => u.email === "anitha.reddy@leadgen.pro");
+    const bdeKiran = createdUsers.find((u) => u.email === "kiran.varma@leadgen.pro");
+    const bdeMegha = createdUsers.find((u) => u.email === "megha.s@leadgen.pro");
 
     console.log("Seeding Batch records across categories...");
     const batch1 = await Batch.create({
