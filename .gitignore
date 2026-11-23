@@ -25,6 +25,10 @@ backend/.env
 .wrangler/
 .dev.vars
 
+# Local runtime database & data files
+backend/data/
+backend/data/*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
