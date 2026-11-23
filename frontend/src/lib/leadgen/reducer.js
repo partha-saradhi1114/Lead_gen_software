@@ -2,7 +2,48 @@ import { makeLead, TODAY } from "./data";
 import { bdeReducer } from "./bde";
 
 export function leadGenReducer(state, action) {
-  if (action.type === "hydrate") return { ...state, ...action.state };
+  if (action.type === "hydrate") {
+    const existingSettings = state?.settings || {};
+    const incomingSettings = action.state?.settings;
+    let mergedSettings = existingSettings;
+
+    if (incomingSettings && typeof incomingSettings === "object") {
+      mergedSettings = {
+        ...incomingSettings,
+        ...existingSettings,
+        general: {
+          ...(incomingSettings.general || {}),
+          ...(existingSettings.general || {}),
+          workspaceName:
+            existingSettings.general?.workspaceName &&
+            existingSettings.general?.workspaceName !== "Lead Generation Software" &&
+            incomingSettings.general?.workspaceName === "Lead Generation Software"
+              ? existingSettings.general.workspaceName
+              : incomingSettings.general?.workspaceName ||
+                existingSettings.general?.workspaceName ||
+                "Lead Generation Software",
+        },
+        credits: {
+          ...(incomingSettings.credits || {}),
+          ...(existingSettings.credits || {}),
+        },
+        rules: {
+          ...(incomingSettings.rules || {}),
+          ...(existingSettings.rules || {}),
+        },
+        notifications: {
+          ...(incomingSettings.notifications || {}),
+          ...(existingSettings.notifications || {}),
+        },
+      };
+    }
+
+    return {
+      ...state,
+      ...action.state,
+      settings: mergedSettings,
+    };
+  }
   if (action.type.startsWith("bde")) return bdeReducer(state, action);
   switch (action.type) {
     case "approve": {
@@ -254,6 +295,16 @@ export function leadGenReducer(state, action) {
           ...action.values,
         },
       };
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem(
+            "leadgen_settings",
+            JSON.stringify(updatedSettings),
+          );
+        }
+      } catch (_e) {
+        // ignore localStorage errors in non-browser or quota restricted envs
+      }
       return {
         ...state,
         settings: updatedSettings,

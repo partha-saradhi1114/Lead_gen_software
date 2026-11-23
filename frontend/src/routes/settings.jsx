@@ -17,7 +17,8 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useLeadGen } from "@/lib/leadgen/store";
+import { useLeadGen, loadStoredSettings } from "@/lib/leadgen/store";
+import { api } from "@/lib/api";
 import { Panel, PanelHeader } from "@/components/common/Panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,11 +48,15 @@ export default function SettingsPage() {
 
   const [activeTab, setActiveTab] = useState("general");
 
-  const s = state?.settings || {};
+  const storedFallback = loadStoredSettings();
+  const s = state?.settings || storedFallback;
 
   // General settings state initialized from global state / localStorage
   const [general, setGeneral] = useState({
-    workspaceName: s.general?.workspaceName || "Lead Generation Software",
+    workspaceName:
+      s.general?.workspaceName ||
+      storedFallback.general?.workspaceName ||
+      "Lead Generation Software",
     orgDomain: s.general?.orgDomain || "leadgen.pro",
     contactEmail:
       s.general?.contactEmail || storedUser.email || "sriram@leadgen.pro",
@@ -113,7 +118,7 @@ export default function SettingsPage() {
   });
   const [saving, setSaving] = useState(false);
 
-  const handleSave = (sectionKey, sectionLabel) => {
+  const handleSave = async (sectionKey, sectionLabel) => {
     setSaving(true);
     let valuesToSave = {};
     if (sectionKey === "general") valuesToSave = general;
@@ -121,23 +126,49 @@ export default function SettingsPage() {
     else if (sectionKey === "rules") valuesToSave = rules;
     else if (sectionKey === "notifications") valuesToSave = notifications;
 
+    // 1. Synchronously persist to localStorage immediately
+    try {
+      const currentStored = loadStoredSettings();
+      const updatedStored = {
+        ...currentStored,
+        [sectionKey]: {
+          ...(currentStored[sectionKey] || {}),
+          ...valuesToSave,
+        },
+      };
+      localStorage.setItem("leadgen_settings", JSON.stringify(updatedStored));
+    } catch (_e) {
+      console.warn("[Settings] localStorage write note:", _e);
+    }
+
+    // 2. Dispatch to local state so all components (sidebar, header, settings) update immediately
     dispatch({
       type: "updateSettings",
       section: sectionKey,
       values: valuesToSave,
     });
 
+    // 3. Update dynamic document tab title
     if (typeof document !== "undefined") {
-      document.title = "Lead Generation Software";
+      document.title =
+        valuesToSave.workspaceName ||
+        state?.settings?.general?.workspaceName ||
+        "Lead Generation Software";
     }
 
-    setTimeout(() => {
-      setSaving(false);
-      toast.success(`${sectionLabel} updated successfully`, {
-        description:
-          "Your workspace configuration has been saved and applied across the platform.",
-      });
-    }, 300);
+    // 4. Persist to backend server API if available
+    try {
+      await api.updateSettings(sectionKey, valuesToSave);
+    } catch (apiErr) {
+      // Backend may be running on Vercel SPA or offline; localStorage is the persistent source of truth
+      console.warn("[Settings] Backend updateSettings note:", apiErr.message);
+    }
+
+    setSaving(false);
+    toast.success(`${sectionLabel} updated successfully`, {
+      description:
+        "Your workspace configuration has been saved and applied across the platform.",
+    });
   };
 
   const handlePasswordUpdate = (e) => {

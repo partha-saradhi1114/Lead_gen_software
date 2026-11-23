@@ -209,6 +209,28 @@ export function LeadGenProvider({ children }) {
               })
             : undefined;
 
+          // Keep existing local customized settings if server has default seed
+          const currentLocalSettings = loadStoredSettings();
+          const serverSettings = serverState.settings;
+          let mergedSettings = currentLocalSettings;
+          if (serverSettings && typeof serverSettings === "object") {
+            mergedSettings = {
+              ...currentLocalSettings,
+              ...serverSettings,
+              general: {
+                ...currentLocalSettings.general,
+                ...(serverSettings.general || {}),
+                workspaceName:
+                  currentLocalSettings.general?.workspaceName &&
+                  currentLocalSettings.general?.workspaceName !== "Lead Generation Software" &&
+                  serverSettings.general?.workspaceName === "Lead Generation Software"
+                    ? currentLocalSettings.general.workspaceName
+                    : serverSettings.general?.workspaceName ||
+                      currentLocalSettings.general?.workspaceName,
+              },
+            };
+          }
+
           localDispatch({
             type: "hydrate",
             state: {
@@ -216,6 +238,7 @@ export function LeadGenProvider({ children }) {
               leads: sanitizedLeads,
               ...(sanitizedBatches ? { batches: sanitizedBatches } : {}),
               ...(sanitizedTeam ? { team: sanitizedTeam } : {}),
+              settings: mergedSettings,
             },
           });
         }
@@ -232,12 +255,25 @@ export function LeadGenProvider({ children }) {
           typeof serverSettings === "object" &&
           Object.keys(serverSettings).length > 0
         ) {
+          const currentStored = loadStoredSettings();
           for (const [section, values] of Object.entries(serverSettings)) {
             if (values && typeof values === "object") {
+              const cleanValues = { ...values };
+              if (
+                section === "general" &&
+                currentStored.general?.workspaceName &&
+                currentStored.general.workspaceName !== "Lead Generation Software" &&
+                cleanValues.workspaceName === "Lead Generation Software"
+              ) {
+                cleanValues.workspaceName = currentStored.general.workspaceName;
+                api.updateSettings?.("general", {
+                  workspaceName: cleanValues.workspaceName,
+                }).catch(() => {});
+              }
               localDispatch({
                 type: "updateSettings",
                 section,
-                values,
+                values: cleanValues,
               });
             }
           }
@@ -246,7 +282,7 @@ export function LeadGenProvider({ children }) {
       .catch(() => {});
   }, []);
 
-  // Synchronize settings changes to localStorage and ensure tab title stays fixed
+  // Synchronize settings changes to localStorage and dynamic document tab title
   useEffect(() => {
     if (state.settings) {
       try {
@@ -257,9 +293,10 @@ export function LeadGenProvider({ children }) {
       } catch (_e) {
         // ignore localStorage errors
       }
-    }
-    if (typeof document !== "undefined") {
-      document.title = "Lead Generation Software";
+      if (typeof document !== "undefined") {
+        document.title =
+          state.settings?.general?.workspaceName || "Lead Generation Software";
+      }
     }
   }, [state.settings]);
 

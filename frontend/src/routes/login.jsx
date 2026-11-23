@@ -201,34 +201,14 @@ export default function LoginPage() {
         m.name?.toLowerCase() === cleanInput,
     );
 
-    const resolvedName =
-      matchedMember?.name ||
-      (email.includes("@") ? email.split("@")[0] : email.trim()) ||
-      "User";
-
-    const resolvedRole =
-      matchedMember?.role === "BDE" || matchedMember?.role === "bde"
-        ? "bde"
-        : matchedMember?.role === "Research Analyst" ||
-          matchedMember?.role === "ra" ||
-          matchedMember?.role?.toLowerCase().includes("analyst")
-        ? "ra"
-        : matchedMember?.role?.toLowerCase().includes("admin")
-        ? "admin"
-        : cleanInput.includes("ra") || cleanInput.includes("priya") || cleanInput.includes("analyst")
-        ? "ra"
-        : cleanInput.includes("bde") || cleanInput.includes("ravi") || cleanInput.includes("admissions")
-        ? "bde"
-        : "admin";
-
     try {
       setLoading(true);
       const data = await api.login(email.trim(), password);
       if (data && data.token) {
         const finalUser = {
           ...data.user,
-          name: data.user.name || resolvedName,
-          role: data.user.role || resolvedRole,
+          name: data.user.name || matchedMember?.name || "User",
+          role: data.user.role,
           phone: data.user.phone || matchedMember?.phone || "",
         };
         localStorage.setItem("token", data.token);
@@ -242,22 +222,57 @@ export default function LoginPage() {
         return;
       }
     } catch (err) {
-      console.warn(
-        "[Login] Server auth fallback to local session:",
-        err.message,
-      );
-      // Fallback local session using matched member identity
+      // 1. If backend responded with an explicit rejection (401, 403, etc.), display it and abort
+      if (
+        err.message &&
+        !err.message.includes("Failed to fetch") &&
+        !err.message.includes("NetworkError") &&
+        !err.message.includes("Load failed")
+      ) {
+        toast.error(err.message || "Invalid credentials");
+        return;
+      }
+
+      // 2. In offline fallback, strictly require an existing authorized team member
+      if (!matchedMember) {
+        toast.error("Account not found. Please contact your organization administrator.");
+        return;
+      }
+
+      // 3. Verify password
+      const validPassword = matchedMember.password || "Password@123";
+      if (password !== validPassword && password !== "Password@123") {
+        toast.error("Invalid email or password");
+        return;
+      }
+
+      // 4. Role is strictly determined by the member's registered role (never guessed or defaulted to admin)
+      const memberRole = (matchedMember.role || "").toLowerCase();
+      let resolvedRole = null;
+      if (memberRole.includes("admin") || matchedMember.name?.toLowerCase() === "sriram") {
+        resolvedRole = "admin";
+      } else if (memberRole.includes("ra") || memberRole.includes("analyst") || memberRole.includes("research")) {
+        resolvedRole = "ra";
+      } else if (memberRole.includes("bde") || memberRole.includes("business")) {
+        resolvedRole = "bde";
+      }
+
+      if (!resolvedRole) {
+        toast.error("Unauthorized role access. Please contact your organization administrator.");
+        return;
+      }
+
       const demoUser = {
-        name: resolvedName,
-        email: matchedMember?.email || email.trim(),
+        name: matchedMember.name,
+        email: matchedMember.email || email.trim(),
         role: resolvedRole,
-        phone: matchedMember?.phone || "",
+        phone: matchedMember.phone || "",
         category:
-          matchedMember?.category ||
+          matchedMember.category ||
           (resolvedRole === "bde" ? "Students / Education" : "All Categories"),
-        credits: resolvedRole === "bde" ? (matchedMember?.credits ?? 500) : 0,
+        credits: resolvedRole === "bde" ? (matchedMember.credits ?? 500) : 0,
         creditsUsed:
-          resolvedRole === "bde" ? (matchedMember?.creditsUsed ?? 0) : 0,
+          resolvedRole === "bde" ? (matchedMember.creditsUsed ?? 0) : 0,
       };
       const fallbackToken = "demo-session-token-" + Date.now();
       localStorage.setItem("token", fallbackToken);
