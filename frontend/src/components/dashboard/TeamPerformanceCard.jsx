@@ -154,20 +154,22 @@ export function TeamPerformanceCard() {
             </TabsList>
           }
         />
-        <TabsContent value="bde" className="mt-1">
+        <TabsContent value="bde" className="mt-1 flex-1">
           <PerformanceTable
             columns={bdeCols}
             rows={bdes}
             rowKey={(r) => r.name}
             showTotal
+            maxHeight="295px"
           />
         </TabsContent>
-        <TabsContent value="ra" className="mt-1">
+        <TabsContent value="ra" className="mt-1 flex-1">
           <PerformanceTable
             columns={raCols}
             rows={ra}
             rowKey={(r) => r.name}
             showTotal
+            maxHeight="295px"
           />
         </TabsContent>
       </Tabs>
