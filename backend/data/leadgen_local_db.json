@@ -72567,6 +72567,42 @@
       "credits": 500,
       "creditsUsed": 0,
       "active": true
+    },
+    {
+      "id": "1795408712775",
+      "name": "Sanjana",
+      "email": "sanjana@gmail.com",
+      "phone": "+91 98765 43211",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795408833926",
+      "name": "Sandeep",
+      "email": "sandeep@gmail.com",
+      "phone": "+91 97654 32891",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795408982698",
+      "name": "Raghu",
+      "email": "raghu@gmail.com",
+      "phone": "+91 91332 22004",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
     }
   ],
   "batches": [
