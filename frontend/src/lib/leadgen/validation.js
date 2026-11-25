@@ -327,7 +327,8 @@ export function validateRows(rows, existing, allowedCategories = null) {
     }
 
     if (v.category && allowedSet) {
-      if (!allowedSet.has(v.category.toLowerCase().trim())) {
+      const catLower = v.category.toLowerCase().trim();
+      if (!allowedSet.has(catLower) && !allowedSet.has("others")) {
         errors.push(
           `Category "${v.category}" is not in assigned categories (${allowedCategories.join(", ")})`,
         );

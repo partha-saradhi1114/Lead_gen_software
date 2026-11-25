@@ -6,24 +6,48 @@ export const LEAD_SOURCES = [
   "Cold Call",
 ];
 export const LEAD_CATEGORIES = [
-  "Students / Education",
-  "IT & Upskilling",
-  "Corporate Training",
-  "Healthcare & Pharma",
-  "General Enquiries",
+  "Student/Corporate training",
+  "Health/Insurance",
+  "Corporate firm",
+  "Others",
 ];
 export const BDE_CATEGORIES = {
-  "Ravi Kumar": "Students / Education",
-  "Anitha Reddy": "IT & Upskilling",
-  "Kiran Varma": "Corporate Training",
-  "Megha S": "Healthcare & Pharma",
+  "Ravi Kumar": "Student/Corporate training",
+  "Anitha Reddy": "Health/Insurance",
+  "Kiran Varma": "Corporate firm",
+  "Megha S": "Health/Insurance",
 };
 export const RESEARCHER_CATEGORIES = {
-  "Priya M": ["Healthcare & Pharma", "Students / Education"],
-  "Arjun K": ["IT & Upskilling", "Healthcare & Pharma"],
-  "Neha R": ["Corporate Training", "IT & Upskilling"],
-  "Sneha T": ["Healthcare & Pharma", "General Enquiries"],
-  "Rahul P": ["Students / Education", "General Enquiries"],
+  "Priya M": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
+  "Arjun K": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
+  "Neha R": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
+  "Sneha T": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
+  "Rahul P": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
 };
 export function getResearcherCategories(researcher = CURRENT_RA) {
   return RESEARCHER_CATEGORIES[researcher] ?? LEAD_CATEGORIES;
