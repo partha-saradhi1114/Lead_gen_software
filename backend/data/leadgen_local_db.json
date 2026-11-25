@@ -1,6 +1,40 @@
 {
   "leads": [
     {
+      "company": "starhealth",
+      "category": "Health/Insurance",
+      "contact": "vijaykumar",
+      "email": "",
+      "phone": "6289132456",
+      "country": "India",
+      "stateCity": "Hyderabad",
+      "location": "Hyderabad",
+      "source": "Manual Entry",
+      "id": 4286,
+      "status": "pending",
+      "uploadedBy": "surya",
+      "uploaderName": "surya",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-S"
+    },
+    {
+      "company": "starhealth",
+      "category": "Health/Insurance",
+      "contact": "vijaykumar",
+      "email": "",
+      "phone": "6289132456",
+      "country": "India",
+      "stateCity": "Hyderabad",
+      "location": "Hyderabad",
+      "source": "Manual Entry",
+      "id": 4285,
+      "status": "pending",
+      "uploadedBy": "surya",
+      "uploaderName": "surya",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-S"
+    },
+    {
       "company": "sathava",
       "category": "Students / Education",
       "contact": "shekar",
@@ -257,11 +291,12 @@
       "category": "General Enquiries",
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-17",
-      "status": "pending",
+      "status": "approved",
       "designation": "CEO",
       "location": "Chennai",
       "industry": "Diagnostics",
-      "batchId": "BT-261117-PM"
+      "batchId": "BT-261117-PM",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 10,
@@ -289,11 +324,12 @@
       "category": "IT & Upskilling",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-17",
-      "status": "pending",
+      "status": "approved",
       "designation": "CEO",
       "location": "Hyderabad",
       "industry": "Dental",
-      "batchId": "BT-261117-AK"
+      "batchId": "BT-261117-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 12,
@@ -305,11 +341,12 @@
       "category": "Corporate Training",
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-17",
-      "status": "pending",
+      "status": "approved",
       "designation": "Managing Director",
       "location": "Mumbai",
       "industry": "Ophthalmology",
-      "batchId": "BT-261117-PM"
+      "batchId": "BT-261117-PM",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 13,
@@ -321,11 +358,12 @@
       "category": "Healthcare & Pharma",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-17",
-      "status": "pending",
+      "status": "approved",
       "designation": "Purchase Manager",
       "location": "Vijayawada",
       "industry": "Pharmaceuticals",
-      "batchId": "BT-261117-AK"
+      "batchId": "BT-261117-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 14,
@@ -337,11 +375,12 @@
       "category": "General Enquiries",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-17",
-      "status": "pending",
+      "status": "approved",
       "designation": "Operations Head",
       "location": "Bengaluru",
       "industry": "Diagnostics",
-      "batchId": "BT-261117-AK"
+      "batchId": "BT-261117-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 15,
@@ -369,11 +408,12 @@
       "category": "IT & Upskilling",
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-17",
-      "status": "pending",
+      "status": "approved",
       "designation": "Administrator",
       "location": "Hyderabad",
       "industry": "Wellness",
-      "batchId": "BT-261117-NR"
+      "batchId": "BT-261117-NR",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 17,
@@ -1265,11 +1305,12 @@
       "category": "Corporate Training",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-16",
-      "status": "pending",
+      "status": "approved",
       "designation": "Operations Head",
       "location": "Bengaluru",
       "industry": "Healthcare",
-      "batchId": "BT-261116-AK"
+      "batchId": "BT-261116-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 73,
@@ -1297,11 +1338,12 @@
       "category": "General Enquiries",
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-16",
-      "status": "pending",
+      "status": "approved",
       "designation": "Administrator",
       "location": "Hyderabad",
       "industry": "Diagnostics",
-      "batchId": "BT-261116-PM"
+      "batchId": "BT-261116-PM",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 75,
@@ -2129,11 +2171,12 @@
       "category": "IT & Upskilling",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-15",
-      "status": "pending",
+      "status": "approved",
       "designation": "CEO",
       "location": "Hyderabad",
       "industry": "Pharmaceuticals",
-      "batchId": "BT-261115-AK"
+      "batchId": "BT-261115-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 127,
@@ -2513,11 +2556,12 @@
       "category": "Students / Education",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-15",
-      "status": "pending",
+      "status": "approved",
       "designation": "Procurement Lead",
       "location": "Hyderabad",
       "industry": "Wellness",
-      "batchId": "BT-261115-AK"
+      "batchId": "BT-261115-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 151,
@@ -2785,11 +2829,12 @@
       "category": "Corporate Training",
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-15",
-      "status": "pending",
+      "status": "approved",
       "designation": "Procurement Lead",
       "location": "Mumbai",
       "industry": "Pharmaceuticals",
-      "batchId": "BT-261115-PM"
+      "batchId": "BT-261115-PM",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 168,
@@ -3345,11 +3390,12 @@
       "category": "Corporate Training",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-14",
-      "status": "pending",
+      "status": "approved",
       "designation": "Managing Director",
       "location": "Pune",
       "industry": "Dental",
-      "batchId": "BT-261114-AK"
+      "batchId": "BT-261114-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 203,
@@ -3393,11 +3439,12 @@
       "category": "Students / Education",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-14",
-      "status": "pending",
+      "status": "approved",
       "designation": "CEO",
       "location": "Hyderabad",
       "industry": "Healthcare",
-      "batchId": "BT-261114-AK"
+      "batchId": "BT-261114-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 206,
@@ -3569,11 +3616,12 @@
       "category": "IT & Upskilling",
       "uploadedBy": "Priya M",
       "uploadedOn": "2026-11-14",
-      "status": "pending",
+      "status": "approved",
       "designation": "Procurement Lead",
       "location": "Visakhapatnam",
       "industry": "Ophthalmology",
-      "batchId": "BT-261114-PM"
+      "batchId": "BT-261114-PM",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 217,
@@ -3969,11 +4017,12 @@
       "category": "IT & Upskilling",
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-13",
-      "status": "pending",
+      "status": "approved",
       "designation": "Procurement Lead",
       "location": "Visakhapatnam",
       "industry": "Ophthalmology",
-      "batchId": "BT-261113-NR"
+      "batchId": "BT-261113-NR",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 242,
@@ -5633,11 +5682,12 @@
       "category": "Students / Education",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-12",
-      "status": "pending",
+      "status": "approved",
       "designation": "Managing Director",
       "location": "Chennai",
       "industry": "Dental",
-      "batchId": "BT-261112-AK"
+      "batchId": "BT-261112-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 346,
@@ -6913,11 +6963,12 @@
       "category": "Students / Education",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-10",
-      "status": "pending",
+      "status": "approved",
       "designation": "CEO",
       "location": "Visakhapatnam",
       "industry": "Ophthalmology",
-      "batchId": "BT-261110-AK"
+      "batchId": "BT-261110-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 426,
@@ -7201,11 +7252,12 @@
       "category": "Healthcare & Pharma",
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-10",
-      "status": "pending",
+      "status": "approved",
       "designation": "Managing Director",
       "location": "Bengaluru",
       "industry": "Ophthalmology",
-      "batchId": "BT-261110-NR"
+      "batchId": "BT-261110-NR",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 444,
@@ -7249,11 +7301,12 @@
       "category": "IT & Upskilling",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-10",
-      "status": "pending",
+      "status": "approved",
       "designation": "Procurement Lead",
       "location": "Chennai",
       "industry": "Healthcare",
-      "batchId": "BT-261110-AK"
+      "batchId": "BT-261110-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 447,
@@ -8449,11 +8502,12 @@
       "category": "IT & Upskilling",
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-09",
-      "status": "pending",
+      "status": "approved",
       "designation": "CEO",
       "location": "Vijayawada",
       "industry": "Pharmaceuticals",
-      "batchId": "BT-261109-NR"
+      "batchId": "BT-261109-NR",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 522,
@@ -8801,11 +8855,12 @@
       "category": "Healthcare & Pharma",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-08",
-      "status": "pending",
+      "status": "approved",
       "designation": "Purchase Manager",
       "location": "Vijayawada",
       "industry": "Diagnostics",
-      "batchId": "BT-261108-AK"
+      "batchId": "BT-261108-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 544,
@@ -9025,11 +9080,12 @@
       "category": "Corporate Training",
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-08",
-      "status": "pending",
+      "status": "approved",
       "designation": "CEO",
       "location": "Chennai",
       "industry": "Dental",
-      "batchId": "BT-261108-NR"
+      "batchId": "BT-261108-NR",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 558,
@@ -9089,11 +9145,12 @@
       "category": "IT & Upskilling",
       "uploadedBy": "Arjun K",
       "uploadedOn": "2026-11-08",
-      "status": "pending",
+      "status": "approved",
       "designation": "Purchase Manager",
       "location": "Visakhapatnam",
       "industry": "Pharmaceuticals",
-      "batchId": "BT-261108-AK"
+      "batchId": "BT-261108-AK",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 562,
@@ -9745,11 +9802,12 @@
       "category": "Corporate Training",
       "uploadedBy": "Neha R",
       "uploadedOn": "2026-11-07",
-      "status": "pending",
+      "status": "approved",
       "designation": "Managing Director",
       "location": "Bengaluru",
       "industry": "Diagnostics",
-      "batchId": "BT-261107-NR"
+      "batchId": "BT-261107-NR",
+      "reviewedOn": "2026-11-18"
     },
     {
       "id": 603,
@@ -72549,10 +72607,17 @@
       "used": 0,
       "connected": 0,
       "interested": 0
+    },
+    {
+      "name": "manasa",
+      "allocated": 500,
+      "used": 0,
+      "connected": 0,
+      "interested": 0
     }
   ],
   "credits": {
-    "allocated": 3800,
+    "allocated": 4300,
     "used": 1323
   },
   "team": [
@@ -72657,9 +72722,55 @@
       "credits": 500,
       "creditsUsed": 0,
       "active": true
+    },
+    {
+      "id": "1795516435863",
+      "name": "manasa",
+      "email": "manasa@gmail.com",
+      "phone": "+91 87654 32906",
+      "role": "BDE",
+      "category": "Student/Corporate training",
+      "department": "Student/Corporate training",
+      "status": "Active",
+      "credits": 500,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795517025329",
+      "name": "surya",
+      "email": "surya@gmail.com",
+      "phone": "+91 76808 49567",
+      "role": "Research Analyst",
+      "category": "Student/Corporate training",
+      "department": "Student/Corporate training",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
     }
   ],
   "batches": [
+    {
+      "id": "BT-261118-S",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Health/Insurance",
+      "uploadedBy": "surya",
+      "draft": false,
+      "validRecords": 1
+    },
+    {
+      "id": "BT-261118-S",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Health/Insurance",
+      "uploadedOn": "2026-11-18",
+      "researcher": "surya",
+      "totalRecords": 1,
+      "validRecords": 1,
+      "invalidRecords": 0,
+      "duplicates": 0,
+      "draft": false
+    },
     {
       "id": "BT-261118-PM-2",
       "fileName": "Single Lead Manual Entry",
@@ -77911,7 +78022,7 @@
     }
   ],
   "dateRange": "Last 30 Days",
-  "nextId": 4285,
+  "nextId": 4287,
   "creditLog": [
     {
       "on": "2026-11-18",

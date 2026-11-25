@@ -185,7 +185,7 @@ describe("Frontend Modules, Components & Actions Audit", () => {
       expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
     });
 
-    it("renders RA Upload (/ra/upload)", () => {
+    it("renders RA Upload (/ra/upload) and supports Manual Single Lead Entry with updated categories", () => {
       render(
         <LeadGenProvider>
           <MemoryRouter initialEntries={["/ra/upload"]}>
@@ -194,6 +194,12 @@ describe("Frontend Modules, Components & Actions Audit", () => {
         </LeadGenProvider>
       );
       expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
+
+      const manualTab = screen.getByRole("button", { name: /Manual Single Lead Entry/i });
+      fireEvent.click(manualTab);
+
+      expect(screen.getByText("Single Lead Entry Form")).toBeInTheDocument();
+      expect(screen.getAllByText("Student/Corporate training").length).toBeGreaterThanOrEqual(1);
     });
 
     it("renders RA Uploads history (/ra/uploads)", () => {
