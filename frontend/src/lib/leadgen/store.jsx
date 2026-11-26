@@ -13,6 +13,7 @@ import {
   SEED_BDES,
   SEED_CREDITS,
   SEED_TEAM,
+  getMemberCategory,
 } from "./data";
 import { buildSeedAssignments } from "./bde";
 import { leadGenReducer, selectKpis } from "./reducer";
@@ -89,13 +90,36 @@ export function loadStoredTeam() {
         const custom = parsed.filter(
           (m) => m && m.email && !existingEmails.has(m.email.toLowerCase()),
         );
-        return [...SEED_TEAM, ...custom];
+        const enrichedCustom = custom.map((m) => {
+          const category = getMemberCategory(m);
+          return {
+            ...m,
+            category,
+            department: category,
+          };
+        });
+        const enrichedSeed = SEED_TEAM.map((m) => {
+          const category = getMemberCategory(m);
+          return {
+            ...m,
+            category,
+            department: category,
+          };
+        });
+        return [...enrichedSeed, ...enrichedCustom];
       }
     }
   } catch {
     // ignore
   }
-  return SEED_TEAM;
+  return SEED_TEAM.map((m) => {
+    const category = getMemberCategory(m);
+    return {
+      ...m,
+      category,
+      department: category,
+    };
+  });
 }
 
 function initState() {
@@ -197,8 +221,14 @@ export function LeadGenProvider({ children }) {
                     tm.email?.toLowerCase() === m.email?.toLowerCase() ||
                     tm.name?.toLowerCase() === m.name?.toLowerCase(),
                 );
+                const category =
+                  (m.category && m.category.trim()) ||
+                  (localMember?.category && localMember.category.trim()) ||
+                  getMemberCategory(m);
                 return {
                   ...m,
+                  category,
+                  department: category,
                   phone:
                     (m.phone && m.phone !== "+91 90000 00000"
                       ? m.phone

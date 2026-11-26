@@ -203,11 +203,10 @@ export const phoneDigits = (p) =>
 
 export const isValidPhone = (p) => {
   const clean = String(p ?? "").trim();
-  const digits = clean.replace(/\D/g, "");
-  return (
-    /^[6-9]\d{9}$/.test(phoneDigits(clean)) ||
-    (digits.length >= 7 && digits.length <= 15)
-  );
+  if (!clean) return false;
+  if (/[a-zA-Z]/.test(clean)) return false;
+  const stripped = phoneDigits(clean);
+  return /^[6-9]\d{9}$/.test(stripped);
 };
 
 export const isValidEmail = (e) =>

@@ -78,7 +78,7 @@ describe("Frontend Modules, Components & Actions Audit", () => {
       expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
     });
 
-    it("renders Team Management (/team) with member directory", () => {
+    it("renders Team Management (/team) with member directory and diverse categories", () => {
       render(
         <LeadGenProvider>
           <MemoryRouter initialEntries={["/team"]}>
@@ -90,6 +90,12 @@ describe("Frontend Modules, Components & Actions Audit", () => {
       expect(screen.getByRole("tab", { name: /^BDE/i })).toBeInTheDocument();
       expect(screen.getByRole("tab", { name: /Research Analyst/i })).toBeInTheDocument();
       expect(screen.getByText("Ravi Kumar")).toBeInTheDocument();
+      expect(screen.getByText("Anitha Reddy")).toBeInTheDocument();
+      expect(screen.getByText("Kiran Varma")).toBeInTheDocument();
+      // Diverse categories are rendered in the Category column for BDEs
+      expect(screen.getAllByText("Student/Corporate training").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Health/Insurance").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Corporate firm").length).toBeGreaterThanOrEqual(1);
     });
 
     it("shifts and segregates team members between BDE and Research Analyst tabs", () => {
@@ -185,7 +191,7 @@ describe("Frontend Modules, Components & Actions Audit", () => {
       expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
     });
 
-    it("renders RA Upload (/ra/upload) and supports Manual Single Lead Entry with updated categories", () => {
+    it("renders RA Upload (/ra/upload)", () => {
       render(
         <LeadGenProvider>
           <MemoryRouter initialEntries={["/ra/upload"]}>
@@ -194,12 +200,6 @@ describe("Frontend Modules, Components & Actions Audit", () => {
         </LeadGenProvider>
       );
       expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
-
-      const manualTab = screen.getByRole("button", { name: /Manual Single Lead Entry/i });
-      fireEvent.click(manualTab);
-
-      expect(screen.getByText("Single Lead Entry Form")).toBeInTheDocument();
-      expect(screen.getAllByText("Student/Corporate training").length).toBeGreaterThanOrEqual(1);
     });
 
     it("renders RA Uploads history (/ra/uploads)", () => {

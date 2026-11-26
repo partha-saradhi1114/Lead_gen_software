@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   checkFile,
+  isValidPhone,
   rowsFromSheet,
   sampleSheet,
   summarize,
@@ -232,6 +233,21 @@ describe("Team Member Creation - Mobile Number and Email Validation Rules", () =
       const res = validateMemberEmail("priya.m@leadgen.pro", team);
       expect(res.valid).toBe(false);
       expect(res.error).toBe("A team member with this email already exists");
+    });
+  });
+
+  describe("Lead phone validation (isValidPhone)", () => {
+    it("accepts valid 10-digit numbers and +91 / 0 prefixed numbers", () => {
+      expect(isValidPhone("9876543210")).toBe(true);
+      expect(isValidPhone("+91 98765 43210")).toBe(true);
+      expect(isValidPhone("09876543210")).toBe(true);
+    });
+
+    it("rejects 11-digit numbers without country code and short/alphabetic numbers", () => {
+      expect(isValidPhone("86667755545")).toBe(false);
+      expect(isValidPhone("98765432101")).toBe(false);
+      expect(isValidPhone("123456789")).toBe(false);
+      expect(isValidPhone("98765abcde")).toBe(false);
     });
   });
 });

@@ -16,7 +16,51 @@ export const BDE_CATEGORIES = {
   "Anitha Reddy": "Health/Insurance",
   "Kiran Varma": "Corporate firm",
   "Megha S": "Health/Insurance",
+  "Sidhu": "Corporate firm",
+  "meghana": "Health/Insurance",
+  "sree": "Student/Corporate training",
+  "anthony": "Corporate firm",
+  "Harry": "Health/Insurance",
+  "srinu": "Corporate firm",
+  "Suresh Reddy": "Corporate firm",
 };
+export function getMemberCategory(member) {
+  if (!member) return "Student/Corporate training";
+  if (
+    member.category &&
+    typeof member.category === "string" &&
+    member.category.trim() &&
+    member.category.trim() !== "Student/Corporate training"
+  ) {
+    return member.category.trim();
+  }
+  if (member.name && BDE_CATEGORIES[member.name]) {
+    return BDE_CATEGORIES[member.name];
+  }
+  if (
+    member.category &&
+    typeof member.category === "string" &&
+    member.category.trim()
+  ) {
+    return member.category.trim();
+  }
+  if (
+    member.department &&
+    typeof member.department === "string" &&
+    ["Student/Corporate training", "Health/Insurance", "Corporate firm", "Others"].includes(member.department.trim())
+  ) {
+    return member.department.trim();
+  }
+  const categories = [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+  ];
+  const hash = (member.name || "")
+    .split("")
+    .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return categories[hash % categories.length];
+}
 export const RESEARCHER_CATEGORIES = {
   "Priya M": [
     "Student/Corporate training",
@@ -293,6 +337,15 @@ export function makeLead(r, id, status, uploadedOn, uploadedBy, category) {
 }
 
 export const TODAY = "2026-11-18";
+
+/** Returns the real current local date as an ISO string (YYYY-MM-DD). Use for runtime actions (submissions, approvals, etc.). */
+export function currentDate() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 export function buildSeedLeads() {
   const r = mulberry32(20261118);
@@ -624,8 +677,8 @@ export const SEED_TEAM = [
     email: "megha.s@leadgen.pro",
     phone: "+91 90000 77777",
     role: "BDE",
-    category: "Student/Corporate training",
-    department: "Student/Corporate training",
+    category: "Health/Insurance",
+    department: "Health/Insurance",
     status: "Active",
   },
 ];
