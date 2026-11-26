@@ -11,7 +11,8 @@ import { Lead } from "../models/Lead.js";
 import { Batch } from "../models/Batch.js";
 import { CreditTransaction } from "../models/CreditTransaction.js";
 
-const DEFAULT_PASSWORD = "Password@123";
+// No default password — each user must have an explicit password set before seeding.
+// Run: node src/seeds/seed.js only after updating SEED_USERS with individual passwords.
 
 const SEED_USERS = [
   {
@@ -401,7 +402,7 @@ async function seedDatabase() {
     for (const u of SEED_USERS) {
       const user = await User.create({
         ...u,
-        password: DEFAULT_PASSWORD, // Will be hashed by pre-save hook
+        password: u.password, // Each user must have a password defined in SEED_USERS
       });
       createdUsers.push(user);
     }

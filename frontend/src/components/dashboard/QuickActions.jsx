@@ -431,7 +431,7 @@ export function AddMemberDialog({
   const [category, setCategory] = useState("Student/Corporate training");
   const [customCategory, setCustomCategory] = useState("");
   const [status, setStatus] = useState("Active");
-  const [password, setPassword] = useState("Password@123");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
@@ -443,7 +443,7 @@ export function AddMemberDialog({
       setCategory("Student/Corporate training");
       setCustomCategory("");
       setStatus("Active");
-      setPassword("Password@123");
+      setPassword("");
       setShowPassword(false);
     }
   }, [open, defaultRole]);
@@ -460,8 +460,8 @@ export function AddMemberDialog({
       return void toast.error(emailResult.error);
     }
 
-    // 3. Mobile Number: Must consist of 10 digits, start with 6, 7, 8, or 9, and contain no alphabets
-    const phoneResult = validateMemberPhone(phone);
+    // 3. Mobile Number: Must consist of 10 digits, start with 6, 7, 8, or 9, no alphabets, and unique
+    const phoneResult = validateMemberPhone(phone, state.team);
     if (!phoneResult.valid) {
       return void toast.error(phoneResult.error);
     }

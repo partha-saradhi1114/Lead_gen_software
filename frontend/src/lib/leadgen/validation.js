@@ -219,8 +219,9 @@ export const isValidEmail = (e) =>
  * - Must not contain alphabets
  * - Must consist of exactly 10 digits
  * - Must start with 6, 7, 8, or 9
+ * - Must not already exist in the team (duplicate check)
  */
-export const validateMemberPhone = (phone) => {
+export const validateMemberPhone = (phone, existingTeam = []) => {
   const clean = String(phone ?? "").trim();
   if (!clean) {
     return { valid: false, error: "Mobile number is mandatory" };
@@ -249,6 +250,28 @@ export const validateMemberPhone = (phone) => {
       digits,
     };
   }
+
+  // Duplicate check: compare normalised digits against every existing member
+  if (Array.isArray(existingTeam) && existingTeam.length > 0) {
+    const isDuplicate = existingTeam.some((m) => {
+      const memberDigits = String(m?.phone ?? "").replace(/\D/g, "");
+      const normalised =
+        memberDigits.startsWith("91") && memberDigits.length === 12
+          ? memberDigits.slice(2)
+          : memberDigits.startsWith("0") && memberDigits.length === 11
+            ? memberDigits.slice(1)
+            : memberDigits;
+      return normalised === digits;
+    });
+    if (isDuplicate) {
+      return {
+        valid: false,
+        error: "A team member with this mobile number already exists",
+        digits,
+      };
+    }
+  }
+
   return {
     valid: true,
     digits,
