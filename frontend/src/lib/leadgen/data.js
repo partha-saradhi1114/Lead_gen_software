@@ -816,22 +816,46 @@ export function getNotificationsForUser(role, userName) {
 }
 
 export function formatDate(iso) {
-  const [y, m, d] = iso.split("-").map(Number);
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return `${String(d ?? 1).padStart(2, "0")}-${months[(m ?? 1) - 1] ?? ""}-${y ?? ""}`;
+  if (!iso) return "—";
+  try {
+    const clean = typeof iso === "string" ? iso.split("T")[0] : "";
+    const [y, m, d] = (
+      clean ||
+      (iso instanceof Date && !isNaN(iso.getTime())
+        ? iso.toISOString().split("T")[0]
+        : String(iso))
+    )
+      .split("-")
+      .map(Number);
+    if (!y || isNaN(d) || isNaN(m)) {
+      const parsed = new Date(iso);
+      if (!isNaN(parsed.getTime())) {
+        const months = [
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+        return `${String(parsed.getDate()).padStart(2, "0")}-${months[parsed.getMonth()]}-${parsed.getFullYear()}`;
+      }
+      return "—";
+    }
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return `${String(d ?? 1).padStart(2, "0")}-${months[(m ?? 1) - 1] ?? ""}-${y ?? ""}`;
+  } catch {
+    return "—";
+  }
 }
 
 export const fmt = (n) => {

@@ -123,7 +123,11 @@ export default function BdeLeads() {
             header: "Next follow-up",
             className: "whitespace-nowrap text-muted-foreground",
             render: (r) =>
-              r.followUp && !r.followUp.done ? formatDate(r.followUp.on) : "—",
+              r.followUp && !r.followUp.done
+                ? formatDate(r.followUp.on)
+                : r.lead?.followUpDate
+                  ? formatDate(r.lead.followUpDate)
+                  : "—",
           },
           {
             key: "x",

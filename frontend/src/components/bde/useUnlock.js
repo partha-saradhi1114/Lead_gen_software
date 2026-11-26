@@ -8,6 +8,21 @@ export function useUnlock({ dispatch, bde, kpis }) {
       return void toast.error(
         "No credits left. Request more from the Credits page.",
       );
+    try {
+      const existing = JSON.parse(
+        localStorage.getItem("leadgen_unlocked_leads") || "[]",
+      );
+      const strId = String(row.leadId);
+      if (!existing.includes(strId)) {
+        existing.push(strId);
+        localStorage.setItem(
+          "leadgen_unlocked_leads",
+          JSON.stringify(existing),
+        );
+      }
+    } catch {
+      // ignore storage quota errors
+    }
     dispatch({ type: "bdeUnlock", bde, leadId: row.leadId });
     api
       .unlockLead(row.leadId, bde)

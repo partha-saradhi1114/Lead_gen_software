@@ -75,23 +75,86 @@ export function buildSeedAssignments(leads, bdes) {
   return out;
 }
 
-const touch = (state, leadId, bde, fn) => ({
-  ...state,
-  assignments: (state.assignments ?? []).map((a) =>
-    a.leadId === leadId && a.bde === bde ? fn(a) : a,
-  ),
-});
+const touch = (state, leadId, bde, fn) => {
+  const list = state.assignments ?? [];
+  const exists = list.some(
+    (a) => String(a.leadId) === String(leadId) && a.bde === bde,
+  );
+  const assignments = exists
+    ? list.map((a) =>
+        String(a.leadId) === String(leadId) && a.bde === bde ? fn(a) : a,
+      )
+    : [
+        ...list,
+        fn({
+          leadId,
+          bde,
+          assignedOn: TODAY,
+          stage: "New",
+          unlocked: true,
+          followUp: null,
+          activity: [],
+        }),
+      ];
+  return {
+    ...state,
+    assignments,
+  };
+};
 
 export function bdeReducer(state, action) {
   const list = state.assignments ?? [];
-  const a = list.find(
-    (x) => x.leadId === action.leadId && x.bde === action.bde,
+  let a = list.find(
+    (x) => String(x.leadId) === String(action.leadId) && x.bde === action.bde,
   );
+
+  if (!a) {
+    const lead = (state.leads || []).find(
+      (l) => String(l.id) === String(action.leadId),
+    );
+    if (lead && (lead.assignedName === action.bde || lead.assignedTo === action.bde)) {
+      const isUnlocked = Array.isArray(lead.unlockedBy)
+        ? lead.unlockedBy.includes(action.bde)
+        : Boolean(lead.unlocked);
+      a = {
+        leadId: lead.id,
+        bde: action.bde,
+        assignedOn: lead.assignedOn || TODAY,
+        stage: lead.stage || "New",
+        unlocked: isUnlocked,
+        followUp: lead.followUpDate
+          ? {
+              on: lead.followUpDate,
+              note: lead.notes || "Follow up",
+              done: false,
+            }
+          : null,
+        activity: [
+          {
+            on: TODAY,
+            text: `Lead assigned by Master Admin to ${action.bde}`,
+          },
+        ],
+      };
+    }
+  }
+
   switch (action.type) {
     case "bdeUnlock": {
       if (!a || a.unlocked) return state;
-      const row = state.bdes.find((b) => b.name === action.bde);
-      if (!row || row.allocated - row.used < UNLOCK_COST) return state;
+      let row = state.bdes.find(
+        (b) => b.name?.toLowerCase() === action.bde?.toLowerCase(),
+      );
+      if (!row) {
+        row = {
+          name: action.bde,
+          allocated: 500,
+          used: 0,
+          connected: 0,
+          interested: 0,
+        };
+      }
+      if (row.allocated - row.used < UNLOCK_COST) return state;
       const s = touch(state, a.leadId, a.bde, (x) => ({
         ...x,
         unlocked: true,
@@ -100,11 +163,31 @@ export function bdeReducer(state, action) {
           { on: TODAY, text: `Contact unlocked (${UNLOCK_COST} credit)` },
         ],
       }));
+      const bdeExists = state.bdes.some(
+        (b) => b.name?.toLowerCase() === action.bde?.toLowerCase(),
+      );
+      const updatedBdes = bdeExists
+        ? state.bdes.map((b) =>
+            b.name?.toLowerCase() === action.bde?.toLowerCase()
+              ? { ...b, used: b.used + UNLOCK_COST }
+              : b,
+          )
+        : [...state.bdes, { ...row, used: row.used + UNLOCK_COST }];
+
       return {
         ...s,
-        bdes: state.bdes.map((b) =>
-          b.name === action.bde ? { ...b, used: b.used + UNLOCK_COST } : b,
+        leads: (state.leads || []).map((l) =>
+          String(l.id) === String(action.leadId)
+            ? {
+                ...l,
+                unlocked: true,
+                unlockedBy: Array.isArray(l.unlockedBy)
+                  ? [...new Set([...l.unlockedBy, action.bde])]
+                  : [action.bde],
+              }
+            : l,
         ),
+        bdes: updatedBdes,
         credits: { ...state.credits, used: state.credits.used + UNLOCK_COST },
         creditLog: [
           {
@@ -150,6 +233,19 @@ export function bdeReducer(state, action) {
       }));
       return {
         ...s,
+        leads: (state.leads || []).map((l) =>
+          String(l.id) === String(action.leadId)
+            ? {
+                ...l,
+                stage: action.stage ?? l.stage,
+                notes: action.note !== undefined ? action.note : l.notes,
+                followUpDate:
+                  action.followUpOn !== undefined
+                    ? action.followUpOn
+                    : l.followUpDate,
+              }
+            : l,
+        ),
         bdes: state.bdes.map((b) =>
           b.name === action.bde
             ? {
@@ -163,7 +259,7 @@ export function bdeReducer(state, action) {
     }
     case "bdeCompleteFollowUp": {
       if (!a?.followUp || a.followUp.done) return state;
-      return touch(state, a.leadId, a.bde, (x) => ({
+      const s = touch(state, a.leadId, a.bde, (x) => ({
         ...x,
         followUp: { ...x.followUp, done: true, doneOn: TODAY },
         activity: [
@@ -174,6 +270,18 @@ export function bdeReducer(state, action) {
           },
         ],
       }));
+      return {
+        ...s,
+        leads: (state.leads || []).map((l) =>
+          String(l.id) === String(action.leadId)
+            ? {
+                ...l,
+                followUpDone: true,
+                followUpDate: undefined,
+              }
+            : l,
+        ),
+      };
     }
     case "bdeRequestCredits": {
       if (
@@ -210,24 +318,43 @@ export function followUpBucket(f) {
 }
 
 export function selectBdeKpis(state, bde) {
-  const mine = (state?.assignments ?? []).filter((a) => a.bde === bde);
-  const row = (state?.bdes ?? []).find((b) => b.name === bde) ?? {
-    allocated: 0,
+  const bdeLower = (bde || "").toLowerCase();
+  const mine = (state?.assignments ?? []).filter(
+    (a) => a.bde?.toLowerCase() === bdeLower,
+  );
+  const row = (state?.bdes ?? []).find(
+    (b) => b.name?.toLowerCase() === bdeLower,
+  ) ?? {
+    allocated: 500,
     used: 0,
   };
+
+  let localUnlockedCount = 0;
+  try {
+    if (typeof window !== "undefined") {
+      const list = JSON.parse(
+        localStorage.getItem("leadgen_unlocked_leads") || "[]",
+      );
+      if (Array.isArray(list)) localUnlockedCount = list.length;
+    }
+  } catch {}
+
+  const usedCredits = Math.max(row.used || 0, localUnlockedCount);
+  const allocatedCredits = row.allocated || 500;
+
   const count = (fn) => mine.filter(fn).length;
   return {
     assigned: mine.length,
     fresh: count((a) => a.stage === "New"),
-    unlocked: count((a) => a.unlocked),
+    unlocked: Math.max(count((a) => a.unlocked), localUnlockedCount),
     connected: count((a) => isConnected(a.stage)),
     interested: count((a) => isInterested(a.stage)),
     converted: count((a) => a.stage === "Converted"),
     overdue: count((a) => followUpBucket(a.followUp) === "overdue"),
     today: count((a) => followUpBucket(a.followUp) === "today"),
     upcoming: count((a) => followUpBucket(a.followUp) === "upcoming"),
-    allocated: row.allocated,
-    used: row.used,
-    available: row.allocated - row.used,
+    allocated: allocatedCredits,
+    used: usedCredits,
+    available: Math.max(0, allocatedCredits - usedCredits),
   };
 }

@@ -433,28 +433,58 @@ class LeadGenStore {
 
   unlockLead(id, bde) {
     const numericId = Number(id);
-    const lead = this.state.leads.find((l) => l.id === id || l.id === numericId);
-    if (!lead) throw new Error("Lead not found");
+    let lead = this.state.leads.find(
+      (l) => l.id === id || l.id === numericId || String(l.id) === String(id)
+    );
 
     const UNLOCK_COST = 1;
-    const bdeEntry = this.state.bdes.find((b) => b.name === bde);
-    if (bdeEntry && (bdeEntry.allocated - bdeEntry.used < UNLOCK_COST)) {
+    let bdeEntry = this.state.bdes.find(
+      (b) => b.name?.toLowerCase() === bde?.toLowerCase()
+    );
+    if (!bdeEntry) {
+      bdeEntry = {
+        name: bde,
+        allocated: 500,
+        used: 0,
+        connected: 0,
+        interested: 0,
+      };
+      this.state.bdes.push(bdeEntry);
+    }
+    if (bdeEntry.allocated - bdeEntry.used < UNLOCK_COST) {
       throw new Error("Insufficient credits to unlock contact.");
     }
 
-    if (bdeEntry) {
-      bdeEntry.used += UNLOCK_COST;
-    }
+    bdeEntry.used += UNLOCK_COST;
     this.state.credits.used += UNLOCK_COST;
 
-    lead.unlockedBy = lead.unlockedBy || [];
-    if (!lead.unlockedBy.includes(bde)) lead.unlockedBy.push(bde);
+    if (lead) {
+      lead.unlocked = true;
+      lead.unlockedBy = lead.unlockedBy || [];
+      if (!lead.unlockedBy.includes(bde)) lead.unlockedBy.push(bde);
+    }
 
-    // Update assignment record if exists
+    // Update assignment record if exists or create it
     this.state.assignments = this.state.assignments || [];
-    const assignment = this.state.assignments.find(
-      (a) => (a.leadId === id || a.leadId === numericId) && a.bde === bde
+    let assignment = this.state.assignments.find(
+      (a) =>
+        (a.leadId === id ||
+          a.leadId === numericId ||
+          String(a.leadId) === String(id)) &&
+        a.bde?.toLowerCase() === bde?.toLowerCase()
     );
+    if (!assignment) {
+      assignment = {
+        leadId: id,
+        bde,
+        assignedOn: lead?.assignedOn || TODAY,
+        stage: lead?.stage || "New",
+        unlocked: true,
+        followUp: null,
+        activity: [],
+      };
+      this.state.assignments.push(assignment);
+    }
     if (assignment) {
       assignment.unlocked = true;
       assignment.activity = assignment.activity || [];
@@ -470,26 +500,40 @@ class LeadGenStore {
       bde,
       kind: "Used",
       amount: UNLOCK_COST,
-      leadId: lead.id,
-      note: `Unlocked ${lead.company}`,
+      leadId: id,
+      note: `Unlocked ${lead?.company || "contact"}`,
     });
 
     this.persistState();
-    return lead;
+    return lead || assignment;
   }
 
   updateLead(id, updates) {
     const numericId = Number(id);
-    const lead = this.state.leads.find((l) => l.id === id || l.id === numericId);
+    const lead = this.state.leads.find(
+      (l) => l.id === id || l.id === numericId || String(l.id) === String(id)
+    );
     if (!lead) throw new Error("Lead not found");
 
     Object.assign(lead, updates);
 
     // Also update assignment if stage or notes are updated
     this.state.assignments = this.state.assignments || [];
-    const assignment = this.state.assignments.find(
-      (a) => a.leadId === id || a.leadId === numericId
+    let assignment = this.state.assignments.find(
+      (a) => a.leadId === id || a.leadId === numericId || String(a.leadId) === String(id)
     );
+    if (!assignment && (lead.assignedName || lead.assignedTo)) {
+      assignment = {
+        leadId: lead.id,
+        bde: lead.assignedName || lead.assignedTo,
+        assignedOn: lead.assignedOn || TODAY,
+        stage: lead.stage || "New",
+        unlocked: true,
+        followUp: null,
+        activity: [],
+      };
+      this.state.assignments.push(assignment);
+    }
     if (assignment) {
       if (updates.stage) assignment.stage = updates.stage;
       if (updates.followUpDone && assignment.followUp) {

@@ -70,4 +70,27 @@ describe("BDE rules", () => {
     expect(row.connected).toBe(153);
     expect(row.interested).toBe(99);
   });
+
+  it("updates followUpDate, stage, and notes in assignments and state.leads", () => {
+    let s = seed();
+    const id = firstNew(s).leadId;
+    s = leadGenReducer(s, { type: "bdeUnlock", bde: CURRENT_BDE, leadId: id });
+    s = leadGenReducer(s, {
+      type: "bdeUpdate",
+      bde: CURRENT_BDE,
+      leadId: id,
+      stage: "Interested",
+      note: "Meeting scheduled",
+      followUpOn: "2026-11-27",
+    });
+
+    const assignment = s.assignments.find((a) => a.leadId === id);
+    expect(assignment.followUp?.on).toBe("2026-11-27");
+    expect(assignment.stage).toBe("Interested");
+
+    const lead = s.leads.find((l) => l.id === id);
+    expect(lead.followUpDate).toBe("2026-11-27");
+    expect(lead.stage).toBe("Interested");
+    expect(lead.notes).toBe("Meeting scheduled");
+  });
 });

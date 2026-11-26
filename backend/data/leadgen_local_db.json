@@ -1,6 +1,134 @@
 {
   "leads": [
     {
+      "company": "Arahinfotech",
+      "category": "Corporate Training",
+      "contact": "hari",
+      "email": "",
+      "phone": "9876123456",
+      "country": "India",
+      "location": "India",
+      "source": "Manual Entry",
+      "id": 4288,
+      "status": "pending",
+      "uploadedBy": "vamshika",
+      "uploaderName": "vamshika",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-V-2"
+    },
+    {
+      "company": "Arahinfotech",
+      "category": "Corporate Training",
+      "contact": "hari",
+      "email": "",
+      "phone": "9876123456",
+      "country": "India",
+      "location": "India",
+      "source": "Manual Entry",
+      "id": 4287,
+      "status": "pending",
+      "uploadedBy": "vamshika",
+      "uploaderName": "vamshika",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-V-2"
+    },
+    {
+      "company": "Arahinfotech",
+      "category": "IT & Upskilling",
+      "contact": "Praveen",
+      "email": "",
+      "phone": "123456789011",
+      "country": "India",
+      "location": "India",
+      "source": "Manual Entry",
+      "id": 4286,
+      "status": "pending",
+      "uploadedBy": "Ramesh",
+      "uploaderName": "Ramesh",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-R-2"
+    },
+    {
+      "company": "Arahinfotech",
+      "category": "IT & Upskilling",
+      "contact": "Praveen",
+      "email": "",
+      "phone": "123456789011",
+      "country": "India",
+      "location": "India",
+      "source": "Manual Entry",
+      "id": 4285,
+      "status": "pending",
+      "uploadedBy": "Ramesh",
+      "uploaderName": "Ramesh",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-R-2"
+    },
+    {
+      "company": "zero7",
+      "category": "Students / Education",
+      "contact": "Prasad",
+      "email": "",
+      "phone": "812345677732",
+      "country": "India",
+      "location": "India",
+      "source": "Manual Entry",
+      "id": 4284,
+      "status": "pending",
+      "uploadedBy": "Hasini",
+      "uploaderName": "Hasini",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-H-2"
+    },
+    {
+      "company": "zero7",
+      "category": "Students / Education",
+      "contact": "Prasad",
+      "email": "",
+      "phone": "812345677732",
+      "country": "India",
+      "location": "India",
+      "source": "Manual Entry",
+      "id": 4283,
+      "status": "pending",
+      "uploadedBy": "Hasini",
+      "uploaderName": "Hasini",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-H-2"
+    },
+    {
+      "company": "Apollo",
+      "category": "Healthcare & Pharma",
+      "contact": "Krishna",
+      "email": "",
+      "phone": "7123456789",
+      "country": "India",
+      "location": "India",
+      "source": "Manual Entry",
+      "id": 4282,
+      "status": "pending",
+      "uploadedBy": "Hanshith",
+      "uploaderName": "Hanshith",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-H"
+    },
+    {
+      "company": "Apollo",
+      "category": "Healthcare & Pharma",
+      "contact": "Krishna",
+      "email": "",
+      "phone": "7123456789",
+      "country": "India",
+      "location": "India",
+      "source": "Manual Entry",
+      "id": 4281,
+      "status": "pending",
+      "uploadedBy": "Hanshith",
+      "uploaderName": "Hanshith",
+      "uploadedOn": "2026-11-18",
+      "batchId": "BT-261118-H"
+    },
+    {
       "company": "Osmania University CSE",
       "contact": "Mr. Rahul Sharma",
       "phone": "+91 98480 12345",
@@ -72409,10 +72537,31 @@
       "used": 200,
       "connected": 60,
       "interested": 40
+    },
+    {
+      "name": "vamshi",
+      "allocated": 500,
+      "used": 0,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "Nitya",
+      "allocated": 500,
+      "used": 0,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "varshini",
+      "allocated": 500,
+      "used": 0,
+      "connected": 0,
+      "interested": 0
     }
   ],
   "credits": {
-    "allocated": 2000,
+    "allocated": 3500,
     "used": 1320
   },
   "team": [
@@ -72471,9 +72620,221 @@
       "role": "BDE",
       "department": "Client Acquisition",
       "status": "Active"
+    },
+    {
+      "id": "1795605942609",
+      "name": "Hanshith",
+      "email": "hanshith@gmail.com",
+      "phone": "+91 98765 43210",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795606051192",
+      "name": "Hasini",
+      "email": "hasini@gmail.com",
+      "phone": "+91 98765 43210",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795606120434",
+      "name": "vamshi",
+      "email": "vamshi@gmail.com",
+      "phone": "+91 71234 56890",
+      "role": "BDE",
+      "department": "Business Development",
+      "status": "Active",
+      "credits": 500,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795606205070",
+      "name": "vamshika",
+      "email": "vamshika@gmail.com",
+      "phone": "+91 86543 21950",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795606262367",
+      "name": "Ramesh",
+      "email": "ramesh@gmail.com",
+      "phone": "+91 71234 56907",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795671532938",
+      "name": "Nitya",
+      "email": "nitya@gmail.com",
+      "phone": "+91 98765 43210",
+      "role": "BDE",
+      "department": "Business Development",
+      "status": "Active",
+      "credits": 500,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795673344363",
+      "name": "srikanth",
+      "email": "srikanth@gmail.com",
+      "phone": "+91 98765 43222",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795673441239",
+      "name": "nandhini",
+      "email": "nandhini@gmail.com",
+      "phone": "+91 91444 22004",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795673506212",
+      "name": "varshini",
+      "email": "varshini@gmail.com",
+      "phone": "+91 98765 43123",
+      "role": "BDE",
+      "department": "Business Development",
+      "status": "Active",
+      "credits": 500,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795686137513",
+      "name": "nikhitha",
+      "email": "nikhitha@gmail.com",
+      "phone": "+91 61234 57890",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
+    },
+    {
+      "id": "1795692407077",
+      "name": "satya",
+      "email": "satya@gmail.com",
+      "phone": "+91 96789 43210",
+      "role": "Research Analyst",
+      "department": "Market Research",
+      "status": "Active",
+      "credits": 0,
+      "creditsUsed": 0,
+      "active": true
     }
   ],
   "batches": [
+    {
+      "id": "BT-261118-V-2",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Corporate Training",
+      "uploadedBy": "vamshika",
+      "draft": false,
+      "validRecords": 1
+    },
+    {
+      "id": "BT-261118-V-2",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Corporate Training",
+      "uploadedOn": "2026-11-18",
+      "researcher": "vamshika",
+      "totalRecords": 1,
+      "validRecords": 1,
+      "invalidRecords": 0,
+      "duplicates": 0,
+      "draft": false
+    },
+    {
+      "id": "BT-261118-R-2",
+      "fileName": "Single Lead Manual Entry",
+      "category": "IT & Upskilling",
+      "uploadedBy": "Ramesh",
+      "draft": false,
+      "validRecords": 1
+    },
+    {
+      "id": "BT-261118-R-2",
+      "fileName": "Single Lead Manual Entry",
+      "category": "IT & Upskilling",
+      "uploadedOn": "2026-11-18",
+      "researcher": "Ramesh",
+      "totalRecords": 1,
+      "validRecords": 1,
+      "invalidRecords": 0,
+      "duplicates": 0,
+      "draft": false
+    },
+    {
+      "id": "BT-261118-H-2",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Students / Education",
+      "uploadedBy": "Hasini",
+      "draft": false,
+      "validRecords": 1
+    },
+    {
+      "id": "BT-261118-H-2",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Students / Education",
+      "uploadedOn": "2026-11-18",
+      "researcher": "Hasini",
+      "totalRecords": 1,
+      "validRecords": 1,
+      "invalidRecords": 0,
+      "duplicates": 0,
+      "draft": false
+    },
+    {
+      "id": "BT-261118-H",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Healthcare & Pharma",
+      "uploadedBy": "Hanshith",
+      "draft": false,
+      "validRecords": 1
+    },
+    {
+      "id": "BT-261118-H",
+      "fileName": "Single Lead Manual Entry",
+      "category": "Healthcare & Pharma",
+      "uploadedOn": "2026-11-18",
+      "researcher": "Hanshith",
+      "totalRecords": 1,
+      "validRecords": 1,
+      "invalidRecords": 0,
+      "duplicates": 0,
+      "draft": false
+    },
     {
       "id": "BT-261118-PM",
       "fileName": "healthcare_hyderabad_1811.xlsx",
@@ -77622,12 +77983,85 @@
           "text": "Marked Converted"
         }
       ]
+    },
+    {
+      "leadId": "6b056e58ed720bd08729d6df",
+      "bde": "srinu",
+      "assignedOn": "2026-11-26",
+      "stage": "New",
+      "unlocked": false,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-26",
+          "text": "Lead assigned by Master Admin to srinu"
+        }
+      ]
+    },
+    {
+      "leadId": "6b07c73fb5bf0886e335e485",
+      "bde": "madhu",
+      "assignedOn": "2026-11-26",
+      "stage": "New",
+      "unlocked": false,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-26",
+          "text": "Lead assigned by Master Admin to madhu"
+        }
+      ]
+    },
+    {
+      "leadId": "6b06c14646754153109e239a",
+      "bde": "sree",
+      "assignedOn": "2026-11-26",
+      "stage": "New",
+      "unlocked": false,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-26",
+          "text": "Lead assigned by Master Admin to sree"
+        }
+      ]
+    },
+    {
+      "leadId": "6b040b0df2dc8c0ef71e1d48",
+      "bde": "Sidhu",
+      "assignedOn": "2026-11-26",
+      "stage": "New",
+      "unlocked": false,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-26",
+          "text": "Lead assigned by Master Admin to Sidhu"
+        }
+      ]
     }
   ],
   "dateRange": "Last 30 Days",
-  "nextId": 4281,
-  "creditLog": [],
-  "creditRequests": [],
+  "nextId": 4289,
+  "creditLog": [
+    {
+      "on": "2026-11-18",
+      "bde": "madhu",
+      "kind": "Requested",
+      "amount": 50,
+      "note": "accepted"
+    }
+  ],
+  "creditRequests": [
+    {
+      "id": 1795690934520,
+      "bde": "madhu",
+      "amount": 50,
+      "reason": "accepted",
+      "status": "pending",
+      "requestedOn": "2026-11-26"
+    }
+  ],
   "settings": {
     "general": {
       "workspaceName": "Lead Generation Software",

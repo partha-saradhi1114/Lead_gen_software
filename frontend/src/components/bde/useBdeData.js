@@ -29,26 +29,63 @@ export function useBdeData() {
       byId.set(l.id, l);
       byId.set(String(l.id), l);
     });
+    const localUnlockedSet = (() => {
+      try {
+        return new Set(
+          JSON.parse(localStorage.getItem("leadgen_unlocked_leads") || "[]"),
+        );
+      } catch {
+        return new Set();
+      }
+    })();
+
+    const isLeadUnlocked = (aRec, leadRec) => {
+      const id1 = aRec?.leadId ? String(aRec.leadId) : "";
+      const id2 = leadRec?.id ? String(leadRec.id) : "";
+      if (
+        (id1 && localUnlockedSet.has(id1)) ||
+        (id2 && localUnlockedSet.has(id2))
+      )
+        return true;
+      if (aRec?.unlocked || leadRec?.unlocked) return true;
+      const bdeName = (bde || "").toLowerCase();
+      const userId = String(
+        storedUser.id || storedUser._id || "",
+      ).toLowerCase();
+      const checkList = (arr) =>
+        Array.isArray(arr) &&
+        arr.some((u) => {
+          if (!u) return false;
+          const str = String(
+            typeof u === "object" ? u.name || u._id || "" : u,
+          ).toLowerCase();
+          return str === bdeName || (userId && str === userId);
+        });
+      return checkList(leadRec?.unlockedBy) || checkList(aRec?.unlockedBy);
+    };
+
     const assignmentsList = state.assignments ?? [];
 
     // Also include any leads that were allocated directly to this BDE in state.leads if not already in assignments
     const assignedLeadIds = new Set(
-      assignmentsList.filter((a) => a.bde === bde).map((a) => a.leadId),
+      assignmentsList
+        .filter((a) => a.bde?.toLowerCase() === bde.toLowerCase())
+        .map((a) => String(a.leadId)),
     );
     const extraAssignments = [];
     for (const lead of state.leads) {
-      if (
-        (lead.assignedName === bde || lead.assignedTo === bde) &&
-        !assignedLeadIds.has(lead.id)
-      ) {
+      const leadAssigned =
+        (lead.assignedName &&
+          lead.assignedName.toLowerCase() === bde.toLowerCase()) ||
+        (lead.assignedTo &&
+          String(lead.assignedTo).toLowerCase() === bde.toLowerCase());
+      if (leadAssigned && !assignedLeadIds.has(String(lead.id))) {
         extraAssignments.push({
           leadId: lead.id,
           bde,
           assignedOn: lead.assignedOn || new Date().toISOString().slice(0, 10),
           stage: lead.stage || "New",
-          unlocked: Array.isArray(lead.unlockedBy)
-            ? lead.unlockedBy.includes(bde)
-            : false,
+          unlocked: isLeadUnlocked(null, lead),
           followUp: lead.followUpDate
             ? {
                 on: lead.followUpDate,
@@ -67,7 +104,9 @@ export function useBdeData() {
     }
 
     const allMyAssignments = [
-      ...assignmentsList.filter((a) => a.bde === bde),
+      ...assignmentsList.filter(
+        (a) => a.bde?.toLowerCase() === bde.toLowerCase(),
+      ),
       ...extraAssignments,
     ];
 
@@ -79,8 +118,10 @@ export function useBdeData() {
           ...rawLead,
           category: rawLead.category || category,
         };
+        const unlocked = isLeadUnlocked(a, rawLead);
         return {
           ...a,
+          unlocked,
           lead,
           bucket: followUpBucket(a.followUp),
         };

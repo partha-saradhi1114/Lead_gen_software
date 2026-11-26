@@ -178,7 +178,7 @@ export default function LoginPage() {
 
   const handleFillDemo = (demoEmail, demoRole) => {
     setEmail(demoEmail);
-    setPassword("Password@123");
+    setPassword("");
     setDemoModalOpen(false);
     toast.success(`Demo credentials filled for ${demoRole}`);
   };
@@ -239,9 +239,9 @@ export default function LoginPage() {
         return;
       }
 
-      // 3. Verify password
-      const validPassword = matchedMember.password || "Password@123";
-      if (password !== validPassword && password !== "Password@123") {
+      // 3. Verify password — must match the member's stored password exactly
+      const validPassword = matchedMember.password;
+      if (!validPassword || password !== validPassword) {
         toast.error("Invalid email or password");
         return;
       }
@@ -784,8 +784,7 @@ export default function LoginPage() {
                 admin@leadgen.pro
               </div>
               <div className="text-[11px] text-slate-400">
-                Demo Default Password:{" "}
-                <code className="font-bold text-white bg-slate-800 px-1 py-0.5 rounded">Password@123</code>
+                Contact your organization's Master Admin to reset your password.
               </div>
             </div>
           </div>
@@ -795,12 +794,10 @@ export default function LoginPage() {
               size="sm"
               className="bg-cyan-600 hover:bg-cyan-500 text-white"
               onClick={() => {
-                setPassword("Password@123");
                 setForgotModalOpen(false);
-                toast.success("Demo password restored: Password@123");
               }}
             >
-              Reset to Default (Password@123)
+              Close
             </Button>
           </div>
         </DialogContent>
