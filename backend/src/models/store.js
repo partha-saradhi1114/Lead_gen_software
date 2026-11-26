@@ -393,19 +393,24 @@ class LeadGenStore {
   }
 
   addBatch(batch, rows = []) {
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const uploadedOn = batch.uploadedOn || todayIso;
     const fresh = rows.map((r, i) => ({
       ...r,
       id: this.state.nextId + i,
       status: "pending",
       uploadedBy: batch.uploadedBy || batch.researcher || "Research Analyst",
       uploaderName: batch.uploadedBy || batch.researcher || "Research Analyst",
-      uploadedOn: batch.uploadedOn || TODAY,
+      uploadedOn,
       batchId: batch.id,
       category: r.category || batch.category || "Students / Education",
     }));
 
     this.state.leads = [...fresh, ...this.state.leads];
-    this.state.batches = [{ ...batch, draft: false, validRecords: fresh.length }, ...this.state.batches];
+    this.state.batches = [
+      { ...batch, uploadedOn, draft: false, validRecords: fresh.length },
+      ...this.state.batches,
+    ];
     this.state.nextId += fresh.length;
 
     this.persistState();

@@ -9,6 +9,7 @@ import {
   PersonCell,
 } from "@/components/dashboard/PerformanceTable";
 import { useLeadGen } from "@/lib/leadgen/store";
+import { getMemberCategory } from "@/lib/leadgen/data";
 import { cn } from "@/lib/utils";
 
 export default function TeamPage() {
@@ -58,7 +59,7 @@ export default function TeamPage() {
     header: "Category",
     render: (m) => (
       <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-foreground">
-        {m.category || m.department || "Student/Corporate training"}
+        {getMemberCategory(m)}
       </span>
     ),
   };

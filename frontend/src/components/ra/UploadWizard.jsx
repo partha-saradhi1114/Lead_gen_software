@@ -45,6 +45,7 @@ import {
   CURRENT_RA,
   LEAD_SOURCES,
   TODAY,
+  currentDate,
   batchIdFor,
   fmt,
   getResearcherCategories,
@@ -201,10 +202,10 @@ export function UploadWizard() {
     const valid = validated.filter((r) => r.status === "valid");
     let seq = 1;
     while (
-      state.batches.some((b) => b.id === batchIdFor(currentRa, TODAY, seq))
+      state.batches.some((b) => b.id === batchIdFor(currentRa, currentDate(), seq))
     )
       seq++;
-    const id = batchIdFor(currentRa, TODAY, seq);
+    const id = batchIdFor(currentRa, currentDate(), seq);
     setSubmitting(true);
     await new Promise((r) => setTimeout(r, 700));
 
@@ -244,7 +245,7 @@ export function UploadWizard() {
         id,
         fileName,
         category: batchCategory,
-        uploadedOn: TODAY,
+        uploadedOn: currentDate(),
         researcher: currentRa,
         totalRecords: rows.length,
         validRecords: valid.length,
@@ -261,6 +262,7 @@ export function UploadWizard() {
           fileName,
           category: batchCategory,
           uploadedBy: currentRa,
+          uploadedOn: currentDate(),
         },
         valid.map(toLead),
       )
@@ -893,11 +895,11 @@ function ManualLeadForm({
 
     let seq = 1;
     while (
-      state.batches.some((b) => b.id === batchIdFor(currentRa, TODAY, seq))
+      state.batches.some((b) => b.id === batchIdFor(currentRa, currentDate(), seq))
     ) {
       seq++;
     }
-    const batchId = batchIdFor(currentRa, TODAY, seq);
+    const batchId = batchIdFor(currentRa, currentDate(), seq);
 
     const resolvedCategory =
       formData.category === "Others"
@@ -927,7 +929,7 @@ function ManualLeadForm({
         id: batchId,
         fileName: "Single Lead Manual Entry",
         category: resolvedCategory,
-        uploadedOn: TODAY,
+        uploadedOn: currentDate(),
         researcher: currentRa,
         totalRecords: 1,
         validRecords: 1,
@@ -944,6 +946,7 @@ function ManualLeadForm({
           fileName: "Single Lead Manual Entry",
           category: resolvedCategory,
           uploadedBy: currentRa,
+          uploadedOn: currentDate(),
         },
         [leadRecord],
       )
@@ -1204,9 +1207,22 @@ function ManualLeadForm({
                 id="phone-number"
                 placeholder="e.g. +91 98480 12345"
                 value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData({ ...formData, phone: val });
+                  if (val.trim() && !isValidPhone(val)) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      phone:
+                        "Invalid phone number (enter a valid 10-digit mobile number)",
+                    }));
+                  } else {
+                    setErrors((prev) => {
+                      const { phone: _removed, ...rest } = prev;
+                      return rest;
+                    });
+                  }
+                }}
                 className={cn(errors.phone && "border-destructive")}
               />
               {errors.phone && (
