@@ -72558,11 +72558,74 @@
       "used": 0,
       "connected": 0,
       "interested": 0
+    },
+    {
+      "name": "Harry",
+      "allocated": 500,
+      "used": 2,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "vani",
+      "allocated": 500,
+      "used": 2,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "srinu",
+      "allocated": 500,
+      "used": 4,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "sree",
+      "allocated": 500,
+      "used": 4,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "meghana",
+      "allocated": 500,
+      "used": 4,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "kavya",
+      "allocated": 500,
+      "used": 2,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "deekshith",
+      "allocated": 500,
+      "used": 2,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "dinesh",
+      "allocated": 500,
+      "used": 2,
+      "connected": 0,
+      "interested": 0
+    },
+    {
+      "name": "gouri",
+      "allocated": 500,
+      "used": 2,
+      "connected": 0,
+      "interested": 0
     }
   ],
   "credits": {
     "allocated": 3500,
-    "used": 1320
+    "used": 1344
   },
   "team": [
     {
@@ -77989,19 +78052,35 @@
       "bde": "srinu",
       "assignedOn": "2026-11-26",
       "stage": "New",
-      "unlocked": false,
+      "unlocked": true,
       "followUp": null,
       "activity": [
         {
           "on": "2026-11-26",
           "text": "Lead assigned by Master Admin to srinu"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
         }
       ]
     },
     {
       "leadId": "6b07c73fb5bf0886e335e485",
-      "bde": "madhu",
-      "assignedOn": "2026-11-26",
+      "bde": "srinu",
+      "assignedOn": "2026-11-27",
       "stage": "New",
       "unlocked": false,
       "followUp": null,
@@ -78017,12 +78096,20 @@
       "bde": "sree",
       "assignedOn": "2026-11-26",
       "stage": "New",
-      "unlocked": false,
+      "unlocked": true,
       "followUp": null,
       "activity": [
         {
           "on": "2026-11-26",
           "text": "Lead assigned by Master Admin to sree"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
         }
       ]
     },
@@ -78039,11 +78126,411 @@
           "text": "Lead assigned by Master Admin to Sidhu"
         }
       ]
+    },
+    {
+      "leadId": "6b081696873a1e70511431e3",
+      "bde": "billa",
+      "assignedOn": "2026-11-27",
+      "stage": "New",
+      "unlocked": true,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-27",
+          "text": "Lead assigned by Master Admin to Nitya"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        }
+      ]
+    },
+    {
+      "leadId": "6b081938873a1e70511431f0",
+      "bde": "billa",
+      "assignedOn": "2026-11-27",
+      "stage": "New",
+      "unlocked": true,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-27",
+          "text": "Lead assigned by Master Admin to Harry"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        }
+      ]
+    },
+    {
+      "leadId": "6b09237a5ca9190e741464ac",
+      "bde": "meghana",
+      "assignedOn": "2026-11-27",
+      "stage": "New",
+      "unlocked": true,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-27",
+          "text": "Lead assigned by Master Admin to varshini"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        }
+      ]
+    },
+    {
+      "leadId": "6b0820ea496b9ee04cb18eed",
+      "bde": "srinu",
+      "assignedOn": "2026-11-27",
+      "stage": "New",
+      "unlocked": true,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-27",
+          "text": "Lead assigned by Master Admin to vani"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        }
+      ]
+    },
+    {
+      "leadId": "6b06c7ea45d49be53f81070d",
+      "bde": "Nitya",
+      "assignedOn": "2026-11-27",
+      "stage": "New",
+      "unlocked": false,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-27",
+          "text": "Lead assigned by Master Admin to vamshi"
+        }
+      ]
+    },
+    {
+      "leadId": "6b06c77a45d49be53f81070a",
+      "bde": "kavya",
+      "assignedOn": "2026-11-27",
+      "stage": "New",
+      "unlocked": true,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-27",
+          "text": "Lead assigned by Master Admin to ghana"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        }
+      ]
+    },
+    {
+      "leadId": "6b0801b72aa1415b1479c5dc",
+      "bde": "deekshith",
+      "assignedOn": "2026-11-27",
+      "stage": "New",
+      "unlocked": true,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-27",
+          "text": "Lead assigned by Master Admin to dinesh"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        }
+      ]
+    },
+    {
+      "leadId": "6b07d4c8b5bf0886e335e490",
+      "bde": "srinu",
+      "assignedOn": "2026-11-27",
+      "stage": "New",
+      "unlocked": false,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-27",
+          "text": "Lead assigned by Master Admin to srinu"
+        }
+      ]
+    },
+    {
+      "leadId": "6b0801b72aa1415b1479c5dc",
+      "bde": "dinesh",
+      "assignedOn": "2026-11-18",
+      "stage": "New",
+      "unlocked": true,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        }
+      ]
+    },
+    {
+      "leadId": "6b081753873a1e70511431ed",
+      "bde": "gouri",
+      "assignedOn": "2026-11-27",
+      "stage": "New",
+      "unlocked": true,
+      "followUp": null,
+      "activity": [
+        {
+          "on": "2026-11-27",
+          "text": "Lead assigned by Master Admin to billa"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        },
+        {
+          "on": "2026-11-18",
+          "text": "Contact unlocked (1 credit)"
+        }
+      ]
     }
   ],
   "dateRange": "Last 30 Days",
   "nextId": 4289,
   "creditLog": [
+    {
+      "on": "2026-11-18",
+      "bde": "gouri",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b081753873a1e70511431ed",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "gouri",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b081753873a1e70511431ed",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "dinesh",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b0801b72aa1415b1479c5dc",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "dinesh",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b0801b72aa1415b1479c5dc",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "deekshith",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b0801b72aa1415b1479c5dc",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "deekshith",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b0801b72aa1415b1479c5dc",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "kavya",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b06c77a45d49be53f81070a",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "kavya",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b06c77a45d49be53f81070a",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "meghana",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b09237a5ca9190e741464ac",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "meghana",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b09237a5ca9190e741464ac",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "sree",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b081696873a1e70511431e3",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "sree",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b081696873a1e70511431e3",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "meghana",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b081696873a1e70511431e3",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "meghana",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b081696873a1e70511431e3",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "sree",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b06c14646754153109e239a",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "sree",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b06c14646754153109e239a",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "srinu",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b056e58ed720bd08729d6df",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "srinu",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b056e58ed720bd08729d6df",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "srinu",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b056e58ed720bd08729d6df",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "srinu",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b056e58ed720bd08729d6df",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "vani",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b0820ea496b9ee04cb18eed",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "vani",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b0820ea496b9ee04cb18eed",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Harry",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b081938873a1e70511431f0",
+      "note": "Unlocked contact"
+    },
+    {
+      "on": "2026-11-18",
+      "bde": "Harry",
+      "kind": "Used",
+      "amount": 1,
+      "leadId": "6b081938873a1e70511431f0",
+      "note": "Unlocked contact"
+    },
     {
       "on": "2026-11-18",
       "bde": "madhu",

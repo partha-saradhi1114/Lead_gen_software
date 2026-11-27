@@ -129,6 +129,11 @@ const leadSchema = new mongoose.Schema(
     assignedName: {
       type: String,
     },
+    assignedBdes: [
+      {
+        type: String,
+      },
+    ],
     assignedOn: {
       type: Date,
     },

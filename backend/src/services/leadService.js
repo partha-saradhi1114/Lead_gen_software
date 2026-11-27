@@ -30,6 +30,11 @@ function mapLead(l) {
           return String(u);
         })
       : [],
+    assignedBdes: Array.isArray(obj.assignedBdes)
+      ? obj.assignedBdes
+      : obj.assignedName
+        ? [obj.assignedName]
+        : [],
   };
 }
 
@@ -54,7 +59,12 @@ export const leadService = {
         filter.$or = [{ uploaderName: query.researcher }, { uploadedBy: query.researcher }];
       }
       if (query.assignedBde && query.assignedBde !== "all") {
-        filter.$or = [{ assignedName: query.assignedBde }, { assignedTo: query.assignedBde }];
+        const bdeReg = new RegExp(`^${query.assignedBde}$`, "i");
+        filter.$or = [
+          { assignedName: bdeReg },
+          { assignedTo: query.assignedBde },
+          { assignedBdes: bdeReg },
+        ];
       }
       if (query.search) {
         const reg = new RegExp(query.search, "i");
@@ -186,13 +196,24 @@ export const leadService = {
         const user = await User.findOne({ name: bdeName, role: "bde" });
         const objectIds = leadIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
         if (objectIds.length > 0) {
-          const result = await Lead.updateMany(
+          // Add BDE to assignedBdes for all matching leads, update assignedOn
+          await Lead.updateMany(
             { _id: { $in: objectIds } },
+            {
+              $set: { assignedOn: new Date() },
+              $addToSet: { assignedBdes: bdeName },
+            }
+          );
+          // Only set assignedName/assignedTo if the lead is not yet assigned to anyone
+          const result = await Lead.updateMany(
+            {
+              _id: { $in: objectIds },
+              $or: [{ assignedName: { $exists: false } }, { assignedName: null }, { assignedName: "" }],
+            },
             {
               $set: {
                 assignedTo: user ? user._id : null,
                 assignedName: bdeName,
-                assignedOn: new Date(),
               },
             }
           );
