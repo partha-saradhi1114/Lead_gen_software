@@ -45,6 +45,7 @@ import {
   CURRENT_RA,
   LEAD_SOURCES,
   TODAY,
+  currentDate,
   batchIdFor,
   fmt,
   getResearcherCategories,
@@ -201,17 +202,17 @@ export function UploadWizard() {
     const valid = validated.filter((r) => r.status === "valid");
     let seq = 1;
     while (
-      state.batches.some((b) => b.id === batchIdFor(currentRa, TODAY, seq))
+      state.batches.some((b) => b.id === batchIdFor(currentRa, currentDate(), seq))
     )
       seq++;
-    const id = batchIdFor(currentRa, TODAY, seq);
+    const id = batchIdFor(currentRa, currentDate(), seq);
     setSubmitting(true);
     await new Promise((r) => setTimeout(r, 700));
 
     const toLead = (r) => {
       const v = r.values;
       const category =
-        v.category || assignedCategories[0] || "Healthcare & Pharma";
+        v.category || assignedCategories[0] || "Student/Corporate training";
       return {
         company: v.company,
         category,
@@ -236,7 +237,7 @@ export function UploadWizard() {
     const batchCategory =
       valid[0]?.values?.category ||
       assignedCategories[0] ||
-      "Healthcare & Pharma";
+      "Student/Corporate training";
 
     dispatch({
       type: "submitBatch",
@@ -244,7 +245,7 @@ export function UploadWizard() {
         id,
         fileName,
         category: batchCategory,
-        uploadedOn: TODAY,
+        uploadedOn: currentDate(),
         researcher: currentRa,
         totalRecords: rows.length,
         validRecords: valid.length,
@@ -261,6 +262,7 @@ export function UploadWizard() {
           fileName,
           category: batchCategory,
           uploadedBy: currentRa,
+          uploadedOn: currentDate(),
         },
         valid.map(toLead),
       )
@@ -802,9 +804,15 @@ function ManualLeadForm({
   onSwitchToBulk,
 }) {
   const { state, dispatch } = useLeadGen();
+  const categoryOptions = [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ];
   const [formData, setFormData] = useState({
     company: "",
-    category: assignedCategories[0] || "Healthcare & Pharma",
+    category: "Student/Corporate training",
     contact: "",
     email: "",
     phone: "",
@@ -815,6 +823,7 @@ function ManualLeadForm({
     linkedin: "",
     description: "",
   });
+  const [customCategory, setCustomCategory] = useState("");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(null);
@@ -836,7 +845,7 @@ function ManualLeadForm({
   const resetForm = () => {
     setFormData({
       company: "",
-      category: assignedCategories[0] || "Healthcare & Pharma",
+      category: "Student/Corporate training",
       contact: "",
       email: "",
       phone: "",
@@ -847,6 +856,7 @@ function ManualLeadForm({
       linkedin: "",
       description: "",
     });
+    setCustomCategory("");
     setErrors({});
     setSuccess(null);
   };
@@ -855,6 +865,9 @@ function ManualLeadForm({
     const errs = {};
     if (!formData.company.trim()) errs.company = "Company Name is mandatory";
     if (!formData.category.trim()) errs.category = "Category is mandatory";
+    if (formData.category === "Others" && !customCategory.trim()) {
+      errs.customCategory = "Please enter a custom category name";
+    }
     if (!formData.contact.trim()) errs.contact = "Contact Person is mandatory";
     if (!formData.country.trim()) errs.country = "Country is mandatory";
     if (!formData.phone.trim()) errs.phone = "Phone Number is mandatory";
@@ -882,15 +895,20 @@ function ManualLeadForm({
 
     let seq = 1;
     while (
-      state.batches.some((b) => b.id === batchIdFor(currentRa, TODAY, seq))
+      state.batches.some((b) => b.id === batchIdFor(currentRa, currentDate(), seq))
     ) {
       seq++;
     }
-    const batchId = batchIdFor(currentRa, TODAY, seq);
+    const batchId = batchIdFor(currentRa, currentDate(), seq);
+
+    const resolvedCategory =
+      formData.category === "Others"
+        ? customCategory.trim()
+        : formData.category.trim();
 
     const leadRecord = {
       company: formData.company.trim(),
-      category: formData.category.trim(),
+      category: resolvedCategory,
       contact: formData.contact.trim(),
       email: formData.email.trim() || "",
       phone: formData.phone.trim(),
@@ -910,8 +928,8 @@ function ManualLeadForm({
       batch: {
         id: batchId,
         fileName: "Single Lead Manual Entry",
-        category: formData.category.trim(),
-        uploadedOn: TODAY,
+        category: resolvedCategory,
+        uploadedOn: currentDate(),
         researcher: currentRa,
         totalRecords: 1,
         validRecords: 1,
@@ -926,8 +944,9 @@ function ManualLeadForm({
         {
           id: batchId,
           fileName: "Single Lead Manual Entry",
-          category: formData.category.trim(),
+          category: resolvedCategory,
           uploadedBy: currentRa,
+          uploadedOn: currentDate(),
         },
         [leadRecord],
       )
@@ -1035,15 +1054,23 @@ function ManualLeadForm({
               </Label>
               <Select
                 value={formData.category}
-                onValueChange={(val) =>
-                  setFormData({ ...formData, category: val })
-                }
+                onValueChange={(val) => {
+                  setFormData({ ...formData, category: val });
+                  if (val !== "Others") setCustomCategory("");
+                  if (errors.category || errors.customCategory) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      category: undefined,
+                      customCategory: undefined,
+                    }));
+                  }
+                }}
               >
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Select assigned category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {assignedCategories.map((cat) => (
+                  {categoryOptions.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}
                     </SelectItem>
@@ -1059,6 +1086,38 @@ function ManualLeadForm({
                 Only your assigned categories are selectable.
               </p>
             </div>
+
+            {formData.category === "Others" && (
+              <div className="space-y-1.5 sm:col-span-2 lg:col-span-3">
+                <Label htmlFor="custom-category" className="text-xs font-semibold">
+                  Custom Category <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="custom-category"
+                  placeholder="Type custom category name (e.g. Fintech, Real Estate, Retail)"
+                  value={customCategory}
+                  onChange={(e) => {
+                    setCustomCategory(e.target.value);
+                    if (errors.customCategory) {
+                      setErrors((prev) => ({
+                        ...prev,
+                        customCategory: undefined,
+                      }));
+                    }
+                  }}
+                  autoFocus
+                  className={cn(errors.customCategory && "border-destructive")}
+                />
+                {errors.customCategory && (
+                  <p className="text-[11px] text-destructive font-medium">
+                    {errors.customCategory}
+                  </p>
+                )}
+                <p className="text-[10px] text-muted-foreground">
+                  Enter custom category or industry domain for this lead.
+                </p>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <Label htmlFor="country" className="text-xs font-semibold">
@@ -1148,9 +1207,22 @@ function ManualLeadForm({
                 id="phone-number"
                 placeholder="e.g. +91 98480 12345"
                 value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData({ ...formData, phone: val });
+                  if (val.trim() && !isValidPhone(val)) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      phone:
+                        "Invalid phone number (enter a valid 10-digit mobile number)",
+                    }));
+                  } else {
+                    setErrors((prev) => {
+                      const { phone: _removed, ...rest } = prev;
+                      return rest;
+                    });
+                  }
+                }}
                 className={cn(errors.phone && "border-destructive")}
               />
               {errors.phone && (

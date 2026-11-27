@@ -405,8 +405,13 @@ export const leadService = {
           phone: member.phone || "",
           password: member.password,
           role: roleSlug,
+          category:
+            member.category ||
+            member.department ||
+            "Student/Corporate training",
           department:
             member.department ||
+            member.category ||
             (roleSlug === "bde"
               ? "Business Development"
               : "Market Research"),

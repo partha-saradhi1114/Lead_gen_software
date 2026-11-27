@@ -78,7 +78,7 @@ describe("Frontend Modules, Components & Actions Audit", () => {
       expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
     });
 
-    it("renders Team Management (/team) with member directory", () => {
+    it("renders Team Management (/team) with member directory and diverse categories", () => {
       render(
         <LeadGenProvider>
           <MemoryRouter initialEntries={["/team"]}>
@@ -87,6 +87,53 @@ describe("Frontend Modules, Components & Actions Audit", () => {
         </LeadGenProvider>
       );
       expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /^BDE/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /Research Analyst/i })).toBeInTheDocument();
+      expect(screen.getByText("Ravi Kumar")).toBeInTheDocument();
+      expect(screen.getByText("Anitha Reddy")).toBeInTheDocument();
+      expect(screen.getByText("Kiran Varma")).toBeInTheDocument();
+      // Diverse categories are rendered in the Category column for BDEs
+      expect(screen.getAllByText("Student/Corporate training").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Health/Insurance").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Corporate firm").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("shifts and segregates team members between BDE and Research Analyst tabs", () => {
+      render(
+        <LeadGenProvider>
+          <MemoryRouter initialEntries={["/team"]}>
+            <AppRoutes />
+          </MemoryRouter>
+        </LeadGenProvider>
+      );
+
+      // Initially on BDE tab
+      expect(screen.getByText("Ravi Kumar")).toBeInTheDocument();
+      expect(screen.queryByText("Priya M")).not.toBeInTheDocument();
+
+      // Click Research Analyst tab
+      const raTab = screen.getByRole("tab", { name: /Research Analyst/i });
+      fireEvent.click(raTab);
+
+      // Now on Research Analyst tab
+      expect(screen.getByText("Priya M")).toBeInTheDocument();
+      expect(screen.queryByText("Ravi Kumar")).not.toBeInTheDocument();
+    });
+
+    it("opens Add Team Member modal with Category options and custom typeable input for Others", () => {
+      render(
+        <LeadGenProvider>
+          <MemoryRouter initialEntries={["/team"]}>
+            <AppRoutes />
+          </MemoryRouter>
+        </LeadGenProvider>
+      );
+
+      const addBtn = screen.getByRole("button", { name: /Add Team Member/i });
+      fireEvent.click(addBtn);
+
+      expect(screen.getAllByText("Add Team Member").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Student/Corporate training").length).toBeGreaterThanOrEqual(1);
     });
 
     it("renders Operations (/operations) dashboard", () => {

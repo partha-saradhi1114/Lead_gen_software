@@ -6,24 +6,92 @@ export const LEAD_SOURCES = [
   "Cold Call",
 ];
 export const LEAD_CATEGORIES = [
-  "Students / Education",
-  "IT & Upskilling",
-  "Corporate Training",
-  "Healthcare & Pharma",
-  "General Enquiries",
+  "Student/Corporate training",
+  "Health/Insurance",
+  "Corporate firm",
+  "Others",
 ];
 export const BDE_CATEGORIES = {
-  "Ravi Kumar": "Students / Education",
-  "Anitha Reddy": "IT & Upskilling",
-  "Kiran Varma": "Corporate Training",
-  "Megha S": "Healthcare & Pharma",
+  "Ravi Kumar": "Student/Corporate training",
+  "Anitha Reddy": "Health/Insurance",
+  "Kiran Varma": "Corporate firm",
+  "Megha S": "Health/Insurance",
+  "Sidhu": "Corporate firm",
+  "meghana": "Health/Insurance",
+  "sree": "Student/Corporate training",
+  "anthony": "Corporate firm",
+  "Harry": "Health/Insurance",
+  "srinu": "Corporate firm",
+  "Suresh Reddy": "Corporate firm",
 };
+export function getMemberCategory(member) {
+  if (!member) return "Student/Corporate training";
+  if (
+    member.category &&
+    typeof member.category === "string" &&
+    member.category.trim() &&
+    member.category.trim() !== "Student/Corporate training"
+  ) {
+    return member.category.trim();
+  }
+  if (member.name && BDE_CATEGORIES[member.name]) {
+    return BDE_CATEGORIES[member.name];
+  }
+  if (
+    member.category &&
+    typeof member.category === "string" &&
+    member.category.trim()
+  ) {
+    return member.category.trim();
+  }
+  if (
+    member.department &&
+    typeof member.department === "string" &&
+    ["Student/Corporate training", "Health/Insurance", "Corporate firm", "Others"].includes(member.department.trim())
+  ) {
+    return member.department.trim();
+  }
+  const categories = [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+  ];
+  const hash = (member.name || "")
+    .split("")
+    .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return categories[hash % categories.length];
+}
 export const RESEARCHER_CATEGORIES = {
-  "Priya M": ["Healthcare & Pharma", "Students / Education"],
-  "Arjun K": ["IT & Upskilling", "Healthcare & Pharma"],
-  "Neha R": ["Corporate Training", "IT & Upskilling"],
-  "Sneha T": ["Healthcare & Pharma", "General Enquiries"],
-  "Rahul P": ["Students / Education", "General Enquiries"],
+  "Priya M": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
+  "Arjun K": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
+  "Neha R": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
+  "Sneha T": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
+  "Rahul P": [
+    "Student/Corporate training",
+    "Health/Insurance",
+    "Corporate firm",
+    "Others",
+  ],
 };
 export function getResearcherCategories(researcher = CURRENT_RA) {
   return RESEARCHER_CATEGORIES[researcher] ?? LEAD_CATEGORIES;
@@ -269,6 +337,15 @@ export function makeLead(r, id, status, uploadedOn, uploadedBy, category) {
 }
 
 export const TODAY = "2026-11-18";
+
+/** Returns the real current local date as an ISO string (YYYY-MM-DD). Use for runtime actions (submissions, approvals, etc.). */
+export function currentDate() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 export function buildSeedLeads() {
   const r = mulberry32(20261118);
@@ -546,7 +623,8 @@ export const SEED_TEAM = [
     email: "priya.m@leadgen.pro",
     phone: "+91 90000 11111",
     role: "Research Analyst",
-    department: "Market Research",
+    category: "Health/Insurance",
+    department: "Health/Insurance",
     status: "Active",
   },
   {
@@ -554,7 +632,8 @@ export const SEED_TEAM = [
     email: "arjun.k@leadgen.pro",
     phone: "+91 90000 22222",
     role: "Research Analyst",
-    department: "Lead Generation",
+    category: "Corporate firm",
+    department: "Corporate firm",
     status: "Active",
   },
   {
@@ -562,7 +641,8 @@ export const SEED_TEAM = [
     email: "neha.r@leadgen.pro",
     phone: "+91 90000 33333",
     role: "Research Analyst",
-    department: "Market Research",
+    category: "Student/Corporate training",
+    department: "Student/Corporate training",
     status: "Active",
   },
   {
@@ -570,7 +650,8 @@ export const SEED_TEAM = [
     email: "ravi.kumar@leadgen.pro",
     phone: "+91 90000 44444",
     role: "BDE",
-    department: "Business Development",
+    category: "Student/Corporate training",
+    department: "Student/Corporate training",
     status: "Active",
   },
   {
@@ -578,7 +659,8 @@ export const SEED_TEAM = [
     email: "anitha.reddy@leadgen.pro",
     phone: "+91 90000 55555",
     role: "BDE",
-    department: "Sales & Outreach",
+    category: "Health/Insurance",
+    department: "Health/Insurance",
     status: "Active",
   },
   {
@@ -586,7 +668,8 @@ export const SEED_TEAM = [
     email: "kiran.varma@leadgen.pro",
     phone: "+91 90000 66666",
     role: "BDE",
-    department: "Business Development",
+    category: "Corporate firm",
+    department: "Corporate firm",
     status: "Active",
   },
   {
@@ -594,7 +677,8 @@ export const SEED_TEAM = [
     email: "megha.s@leadgen.pro",
     phone: "+91 90000 77777",
     role: "BDE",
-    department: "Client Acquisition",
+    category: "Health/Insurance",
+    department: "Health/Insurance",
     status: "Active",
   },
 ];

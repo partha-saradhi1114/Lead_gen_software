@@ -1,4 +1,4 @@
-import { makeLead, TODAY } from "./data";
+import { makeLead, TODAY, currentDate } from "./data";
 import { bdeReducer } from "./bde";
 
 export function leadGenReducer(state, action) {
@@ -16,12 +16,12 @@ export function leadGenReducer(state, action) {
           ...(existingSettings.general || {}),
           workspaceName:
             existingSettings.general?.workspaceName &&
-            existingSettings.general?.workspaceName !== "Lead Generation Software" &&
-            incomingSettings.general?.workspaceName === "Lead Generation Software"
+              existingSettings.general?.workspaceName !== "Lead Generation Software" &&
+              incomingSettings.general?.workspaceName === "Lead Generation Software"
               ? existingSettings.general.workspaceName
               : incomingSettings.general?.workspaceName ||
-                existingSettings.general?.workspaceName ||
-                "Lead Generation Software",
+              existingSettings.general?.workspaceName ||
+              "Lead Generation Software",
         },
         credits: {
           ...(incomingSettings.credits || {}),
@@ -56,7 +56,7 @@ export function leadGenReducer(state, action) {
         ...state,
         leads: state.leads.map((l) =>
           (ids.has(l.id) || ids.has(String(l.id))) && l.status === "pending"
-            ? { ...l, status: "approved", reviewedOn: TODAY }
+            ? { ...l, status: "approved", reviewedOn: currentDate() }
             : l,
         ),
       };
@@ -74,11 +74,11 @@ export function leadGenReducer(state, action) {
         leads: state.leads.map((l) =>
           (ids.has(l.id) || ids.has(String(l.id))) && l.status === "pending"
             ? {
-                ...l,
-                status: "rejected",
-                rejectionReason: reason,
-                reviewedOn: TODAY,
-              }
+              ...l,
+              status: "rejected",
+              rejectionReason: reason,
+              reviewedOn: currentDate(),
+            }
             : l,
         ),
       };
@@ -127,7 +127,7 @@ export function leadGenReducer(state, action) {
         },
         creditLog: [
           {
-            on: TODAY,
+            on: currentDate(),
             bde: action.bde,
             kind: "Allocated",
             amount: action.amount,
@@ -184,11 +184,11 @@ export function leadGenReducer(state, action) {
         leads: (state.leads || []).map((l) =>
           ids.has(l.id) || ids.has(String(l.id))
             ? {
-                ...l,
-                assignedName: action.bde,
-                assignedTo: action.bde,
-                assignedOn: todayIso,
-              }
+              ...l,
+              assignedName: action.bde,
+              assignedTo: action.bde,
+              assignedOn: todayIso,
+            }
             : l,
         ),
         assignments: newAssignments,
@@ -197,11 +197,16 @@ export function leadGenReducer(state, action) {
     case "addMember": {
       const m = action.member;
       if (!m.name.trim() || !m.email.trim()) return state;
+      const finalCat =
+        m.category?.trim() || m.department?.trim() || "Student/Corporate training";
       const cleanMember = {
         name: m.name.trim(),
         email: m.email.trim(),
         phone: m.phone?.trim() || "",
         role: m.role || "BDE",
+        category: finalCat,
+        department: finalCat,
+        status: m.status || "Active",
       };
       const existingIdx = state.team.findIndex(
         (tm) => tm.email?.toLowerCase() === cleanMember.email.toLowerCase(),
@@ -209,23 +214,23 @@ export function leadGenReducer(state, action) {
       const newTeam =
         existingIdx >= 0
           ? state.team.map((tm, idx) =>
-              idx === existingIdx ? cleanMember : tm,
-            )
+            idx === existingIdx ? cleanMember : tm,
+          )
           : [...state.team, cleanMember];
 
       const bdeExists = state.bdes.some((b) => b.name === cleanMember.name);
       const bdes =
         cleanMember.role === "BDE" && !bdeExists
           ? [
-              ...state.bdes,
-              {
-                name: cleanMember.name,
-                allocated: 500,
-                used: 0,
-                connected: 0,
-                interested: 0,
-              },
-            ]
+            ...state.bdes,
+            {
+              name: cleanMember.name,
+              allocated: 500,
+              used: 0,
+              connected: 0,
+              interested: 0,
+            },
+          ]
           : state.bdes;
       return {
         ...state,
@@ -267,20 +272,20 @@ export function leadGenReducer(state, action) {
         leads: state.leads.map((l) =>
           l.id === action.id && l.status === "rejected"
             ? {
-                ...l,
-                ...action.changes,
-                status: "pending",
-                history: [
-                  ...(l.history ?? []),
-                  {
-                    reason: l.rejectionReason ?? "Rejected",
-                    rejectedOn: l.reviewedOn ?? TODAY,
-                  },
-                ],
-                rejectionReason: undefined,
-                reviewedOn: undefined,
-                resubmittedOn: TODAY,
-              }
+              ...l,
+              ...action.changes,
+              status: "pending",
+              history: [
+                ...(l.history ?? []),
+                {
+                  reason: l.rejectionReason ?? "Rejected",
+                  rejectedOn: l.reviewedOn ?? currentDate(),
+                },
+              ],
+              rejectionReason: undefined,
+              reviewedOn: undefined,
+              resubmittedOn: currentDate(),
+            }
             : l,
         ),
       };
@@ -368,7 +373,7 @@ export function batchStatus(batch, c) {
   const countObj = c || { pending: 0, approved: 0, rejected: 0 };
   const total = countObj.pending + countObj.approved + countObj.rejected;
   if (total === 0 || countObj.pending === total)
-    return batch?.uploadedOn === TODAY ? "Uploaded" : "Under Review";
+    return batch?.uploadedOn === currentDate() ? "Uploaded" : "Under Review";
   if (countObj.approved === total) return "Approved";
   if (countObj.rejected === total) return "Rejected";
   return "Partially Approved";

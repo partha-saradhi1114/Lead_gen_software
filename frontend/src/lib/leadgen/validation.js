@@ -203,11 +203,10 @@ export const phoneDigits = (p) =>
 
 export const isValidPhone = (p) => {
   const clean = String(p ?? "").trim();
-  const digits = clean.replace(/\D/g, "");
-  return (
-    /^[6-9]\d{9}$/.test(phoneDigits(clean)) ||
-    (digits.length >= 7 && digits.length <= 15)
-  );
+  if (!clean) return false;
+  if (/[a-zA-Z]/.test(clean)) return false;
+  const stripped = phoneDigits(clean);
+  return /^[6-9]\d{9}$/.test(stripped);
 };
 
 export const isValidEmail = (e) =>
@@ -350,7 +349,8 @@ export function validateRows(rows, existing, allowedCategories = null) {
     }
 
     if (v.category && allowedSet) {
-      if (!allowedSet.has(v.category.toLowerCase().trim())) {
+      const catLower = v.category.toLowerCase().trim();
+      if (!allowedSet.has(catLower) && !allowedSet.has("others")) {
         errors.push(
           `Category "${v.category}" is not in assigned categories (${allowedCategories.join(", ")})`,
         );
