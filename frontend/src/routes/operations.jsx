@@ -54,10 +54,11 @@ export default function OperationsPage() {
   const interestedCount = leads.filter((l) =>
     ["interested", "converted"].includes(String(l.stage || "").toLowerCase()),
   ).length;
-  const followUpCount = leads.filter((l) =>
-    ["follow-up", "follow_up", "followup"].includes(
-      String(l.stage || "").toLowerCase(),
-    ),
+  const followUpCount = leads.filter(
+    (l) =>
+      ["follow-up", "follow_up", "followup"].includes(
+        String(l.stage || "").toLowerCase(),
+      ) || Boolean(l.followUpDate),
   ).length;
 
   return (

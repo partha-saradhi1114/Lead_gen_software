@@ -30,8 +30,15 @@ export function UpdateLeadDialog({ row, onClose, dispatch, bde }) {
   useEffect(() => {
     if (row) {
       setStage(row.stage === "New" ? "Contacted" : row.stage);
-      setNote("");
-      setFollowUpOn("");
+      setNote(row.followUp?.note || row.lead?.notes || "");
+      const existingDate = row.followUp?.on || row.lead?.followUpDate || "";
+      const datePart =
+        typeof existingDate === "string"
+          ? existingDate.split("T")[0]
+          : existingDate instanceof Date && !isNaN(existingDate.getTime())
+            ? existingDate.toISOString().split("T")[0]
+            : "";
+      setFollowUpOn(datePart);
     }
   }, [row]);
 

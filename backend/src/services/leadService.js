@@ -21,6 +21,15 @@ function mapLead(l) {
     description: obj.description || obj.notes || "",
     uploadedOn: obj.uploadedOn ? new Date(obj.uploadedOn).toISOString().split("T")[0] : "",
     reviewedOn: obj.reviewedOn ? new Date(obj.reviewedOn).toISOString().split("T")[0] : null,
+    followUpDate: obj.followUpDate ? new Date(obj.followUpDate).toISOString().split("T")[0] : undefined,
+    unlockedBy: Array.isArray(obj.unlockedBy)
+      ? obj.unlockedBy.map((u) => {
+          if (u && typeof u === "object") {
+            return u.name || u._id?.toString() || String(u);
+          }
+          return String(u);
+        })
+      : [],
   };
 }
 
@@ -394,7 +403,7 @@ export const leadService = {
           name: member.name,
           email: member.email.toLowerCase(),
           phone: member.phone || "",
-          password: member.password || "Password@123",
+          password: member.password,
           role: roleSlug,
           category:
             member.category ||
@@ -417,18 +426,31 @@ export const leadService = {
   },
 
   async unlockLead(leadId, bdeName) {
-    const storeLead = leadStore.unlockLead(leadId, bdeName);
+    let storeLead = null;
+    try {
+      storeLead = leadStore.unlockLead(leadId, bdeName);
+    } catch {
+      // In-memory store might not have this lead if it was added directly in MongoDB
+    }
 
     if (getDbStatus() && mongoose.Types.ObjectId.isValid(leadId)) {
       try {
         const lead = await Lead.findById(leadId);
-        const user = await User.findOne({ name: bdeName, role: "bde" });
+        const user = await User.findOne({
+          name: new RegExp(`^${bdeName}$`, "i"),
+          role: "bde",
+        });
         if (lead && user && user.credits >= 1) {
           user.credits -= 1;
-          user.creditsUsed += 1;
+          user.creditsUsed = (user.creditsUsed || 0) + 1;
           await user.save();
 
-          if (!lead.unlockedBy.includes(user._id)) {
+          lead.unlockedBy = lead.unlockedBy || [];
+          const userIdStr = user._id.toString();
+          const alreadyUnlocked = lead.unlockedBy.some(
+            (u) => (u._id ? u._id.toString() : u.toString()) === userIdStr
+          );
+          if (!alreadyUnlocked) {
             lead.unlockedBy.push(user._id);
             await lead.save();
           }
@@ -443,24 +465,48 @@ export const leadService = {
             leadCompany: lead.company,
             description: `Unlocked lead ${lead.company} (-1 credit)`,
           });
+
+          if (!storeLead) {
+            storeLead = mapLead(lead);
+          }
         }
       } catch (err) {
         console.warn("[leadService.unlockLead] Mongo error:", err.message);
       }
     }
 
+    if (!storeLead) {
+      throw new Error("Lead not found");
+    }
+
     return storeLead;
   },
 
   async updateLead(leadId, updates) {
-    const storeLead = leadStore.updateLead(leadId, updates);
+    let storeLead = null;
+    try {
+      storeLead = leadStore.updateLead(leadId, updates);
+    } catch {
+      // In-memory store might not have this lead if it was added directly in MongoDB
+    }
 
     if (getDbStatus() && mongoose.Types.ObjectId.isValid(leadId)) {
       try {
-        await Lead.findByIdAndUpdate(leadId, { $set: updates }, { new: true });
+        const mongoLead = await Lead.findByIdAndUpdate(
+          leadId,
+          { $set: updates },
+          { new: true }
+        );
+        if (!storeLead && mongoLead) {
+          storeLead = mapLead(mongoLead);
+        }
       } catch (err) {
         console.warn("[leadService.updateLead] Mongo error:", err.message);
       }
+    }
+
+    if (!storeLead) {
+      throw new Error("Lead not found");
     }
 
     return storeLead;
@@ -476,7 +522,7 @@ export const leadService = {
     if (getDbStatus()) {
       try {
         const [leads, batches, bdeUsers, allUsers] = await Promise.all([
-          Lead.find().sort({ createdAt: -1 }),
+          Lead.find().populate("unlockedBy", "name email").sort({ createdAt: -1 }),
           Batch.find().sort({ uploadedOn: -1 }),
           User.find({ role: "bde" }),
           User.find().select("-password"),
@@ -485,16 +531,30 @@ export const leadService = {
         if (leads.length > 0) {
           let totalAllocated = 0;
           let totalUsed = 0;
-          const bdes = bdeUsers.map((b) => {
+
+          const bdeMap = new Map();
+          (state.bdes || []).forEach((b) => {
+            bdeMap.set(b.name.toLowerCase(), {
+              name: b.name,
+              allocated: b.allocated || 500,
+              used: b.used || 0,
+            });
+          });
+
+          bdeUsers.forEach((b) => {
             const allocated = (b.credits || 0) + (b.creditsUsed || 0);
             const used = b.creditsUsed || 0;
-            totalAllocated += allocated;
-            totalUsed += used;
-            return {
+            bdeMap.set(b.name.toLowerCase(), {
               name: b.name,
-              allocated,
+              allocated: allocated || 500,
               used,
-            };
+            });
+          });
+
+          const bdes = Array.from(bdeMap.values()).map((b) => {
+            totalAllocated += b.allocated;
+            totalUsed += b.used;
+            return b;
           });
 
           const seedPhones = {

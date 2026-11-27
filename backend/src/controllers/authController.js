@@ -141,9 +141,9 @@ export const login = async (req, res) => {
       );
 
     if (candidate) {
-      // Validate password in demo / fallback mode
-      const validPassword = candidate.password || "Password@123";
-      if (password !== validPassword && password !== "Password@123") {
+      // Validate password in demo / fallback mode — must match stored password exactly
+      const validPassword = candidate.password;
+      if (!validPassword || password !== validPassword) {
         return res.status(401).json({
           success: false,
           message: "Invalid email or password",
