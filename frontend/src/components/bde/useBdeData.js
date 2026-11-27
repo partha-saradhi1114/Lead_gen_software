@@ -29,39 +29,49 @@ export function useBdeData() {
       byId.set(l.id, l);
       byId.set(String(l.id), l);
     });
+    const bdeName = (bde || "").toLowerCase();
     const localUnlockedSet = (() => {
       try {
-        return new Set(
-          JSON.parse(localStorage.getItem("leadgen_unlocked_leads") || "[]"),
+        const bdeSpecific = JSON.parse(
+          localStorage.getItem(`leadgen_unlocked_leads_${bdeName}`) || "null",
         );
+        if (Array.isArray(bdeSpecific)) return new Set(bdeSpecific);
+        return new Set();
       } catch {
         return new Set();
       }
     })();
+    const userId = String(
+      storedUser.id || storedUser._id || "",
+    ).toLowerCase();
+    const checkList = (arr) =>
+      Array.isArray(arr) &&
+      arr.some((u) => {
+        if (!u) return false;
+        const str = String(
+          typeof u === "object" ? u.name || u._id || "" : u,
+        ).toLowerCase();
+        return str === bdeName || (userId && str === userId);
+      });
 
-    const isLeadUnlocked = (aRec, leadRec) => {
+    const isUnlockedByMe = (aRec, leadRec) => {
       const id1 = aRec?.leadId ? String(aRec.leadId) : "";
       const id2 = leadRec?.id ? String(leadRec.id) : "";
       if (
         (id1 && localUnlockedSet.has(id1)) ||
         (id2 && localUnlockedSet.has(id2))
-      )
+      ) {
         return true;
-      if (aRec?.unlocked || leadRec?.unlocked) return true;
-      const bdeName = (bde || "").toLowerCase();
-      const userId = String(
-        storedUser.id || storedUser._id || "",
-      ).toLowerCase();
-      const checkList = (arr) =>
-        Array.isArray(arr) &&
-        arr.some((u) => {
-          if (!u) return false;
-          const str = String(
-            typeof u === "object" ? u.name || u._id || "" : u,
-          ).toLowerCase();
-          return str === bdeName || (userId && str === userId);
-        });
+      }
       return checkList(leadRec?.unlockedBy) || checkList(aRec?.unlockedBy);
+    };
+
+    const isLeadUnlocked = (aRec, leadRec) => {
+      if (isUnlockedByMe(aRec, leadRec)) return true;
+      if (aRec?.unlocked || leadRec?.unlocked) return true;
+      if (Array.isArray(leadRec?.unlockedBy) && leadRec.unlockedBy.length > 0) return true;
+      if (Array.isArray(aRec?.unlockedBy) && aRec.unlockedBy.length > 0) return true;
+      return false;
     };
 
     const assignmentsList = state.assignments ?? [];
@@ -76,9 +86,13 @@ export function useBdeData() {
     for (const lead of state.leads) {
       const leadAssigned =
         (lead.assignedName &&
-          lead.assignedName.toLowerCase() === bde.toLowerCase()) ||
+          lead.assignedName.toLowerCase() === bdeName) ||
         (lead.assignedTo &&
-          String(lead.assignedTo).toLowerCase() === bde.toLowerCase());
+          String(lead.assignedTo).toLowerCase() === bdeName) ||
+        (Array.isArray(lead.assignedBdes) &&
+          lead.assignedBdes.some((b) => String(b).toLowerCase() === bdeName)) ||
+        checkList(lead.unlockedBy);
+
       if (leadAssigned && !assignedLeadIds.has(String(lead.id))) {
         extraAssignments.push({
           leadId: lead.id,
@@ -119,9 +133,13 @@ export function useBdeData() {
           category: rawLead.category || category,
         };
         const unlocked = isLeadUnlocked(a, rawLead);
+        const unlockedByMe = isUnlockedByMe(a, rawLead);
+        const isViewed = unlocked && (!unlockedByMe || bdeName === "billa");
         return {
           ...a,
           unlocked,
+          unlockedByMe,
+          isViewed,
           lead,
           bucket: followUpBucket(a.followUp),
         };

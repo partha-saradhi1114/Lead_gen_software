@@ -9,10 +9,17 @@ export function useUnlock({ dispatch, bde, kpis }) {
         "No credits left. Request more from the Credits page.",
       );
     try {
+      const bdeLower = (bde || "").toLowerCase();
+      const bdeKey = `leadgen_unlocked_leads_${bdeLower}`;
+      const existingBde = JSON.parse(localStorage.getItem(bdeKey) || "[]");
+      const strId = String(row.leadId);
+      if (!existingBde.includes(strId)) {
+        existingBde.push(strId);
+        localStorage.setItem(bdeKey, JSON.stringify(existingBde));
+      }
       const existing = JSON.parse(
         localStorage.getItem("leadgen_unlocked_leads") || "[]",
       );
-      const strId = String(row.leadId);
       if (!existing.includes(strId)) {
         existing.push(strId);
         localStorage.setItem(

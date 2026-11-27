@@ -112,7 +112,7 @@ export function bdeReducer(state, action) {
     const lead = (state.leads || []).find(
       (l) => String(l.id) === String(action.leadId),
     );
-    if (lead && (lead.assignedName === action.bde || lead.assignedTo === action.bde)) {
+    if (lead && (lead.assignedName === action.bde || lead.assignedTo === action.bde || (Array.isArray(lead.assignedBdes) && lead.assignedBdes.includes(action.bde)))) {
       const isUnlocked = Array.isArray(lead.unlockedBy)
         ? lead.unlockedBy.includes(action.bde)
         : Boolean(lead.unlocked);
@@ -332,10 +332,12 @@ export function selectBdeKpis(state, bde) {
   let localUnlockedCount = 0;
   try {
     if (typeof window !== "undefined") {
-      const list = JSON.parse(
-        localStorage.getItem("leadgen_unlocked_leads") || "[]",
+      const bdeSpecific = JSON.parse(
+        localStorage.getItem(`leadgen_unlocked_leads_${bdeLower}`) || "null",
       );
-      if (Array.isArray(list)) localUnlockedCount = list.length;
+      if (Array.isArray(bdeSpecific)) {
+        localUnlockedCount = bdeSpecific.length;
+      }
     }
   } catch {}
 

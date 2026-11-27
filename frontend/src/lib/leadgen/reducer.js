@@ -153,7 +153,9 @@ export function leadGenReducer(state, action) {
             ? Number(rawId)
             : rawId;
         const existingIdx = newAssignments.findIndex(
-          (a) => a.leadId === id || a.leadId === String(id),
+          (a) =>
+            (a.leadId === id || a.leadId === String(id)) &&
+            a.bde?.toLowerCase() === action.bde?.toLowerCase(),
         );
         if (existingIdx >= 0) {
           newAssignments[existingIdx] = {
@@ -181,16 +183,26 @@ export function leadGenReducer(state, action) {
 
       return {
         ...state,
-        leads: (state.leads || []).map((l) =>
-          ids.has(l.id) || ids.has(String(l.id))
-            ? {
-              ...l,
-              assignedName: action.bde,
-              assignedTo: action.bde,
-              assignedOn: todayIso,
+        leads: (state.leads || []).map((l) => {
+          if (ids.has(l.id) || ids.has(String(l.id))) {
+            const bdeList = Array.isArray(l.assignedBdes)
+              ? [...l.assignedBdes]
+              : l.assignedName
+                ? [l.assignedName]
+                : [];
+            if (!bdeList.map((x) => x.toLowerCase()).includes(action.bde.toLowerCase())) {
+              bdeList.push(action.bde);
             }
-            : l,
-        ),
+            return {
+              ...l,
+              assignedName: l.assignedName || action.bde,
+              assignedTo: l.assignedTo || action.bde,
+              assignedBdes: bdeList,
+              assignedOn: todayIso,
+            };
+          }
+          return l;
+        }),
         assignments: newAssignments,
       };
     }

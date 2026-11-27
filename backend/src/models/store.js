@@ -288,10 +288,19 @@ class LeadGenStore {
     this.state.leads = this.state.leads.map((l) => {
       if (idSet.has(l.id) || idSet.has(String(l.id))) {
         count++;
+        const bdeList = Array.isArray(l.assignedBdes)
+          ? [...l.assignedBdes]
+          : l.assignedName
+            ? [l.assignedName]
+            : [];
+        if (!bdeList.map((x) => x.toLowerCase()).includes(bde.toLowerCase())) {
+          bdeList.push(bde);
+        }
         return {
           ...l,
           assignedTo: bde,
           assignedName: bde,
+          assignedBdes: bdeList,
           assignedOn: todayIso,
         };
       }
@@ -301,7 +310,11 @@ class LeadGenStore {
     // Also update assignments list for BDE view
     this.state.assignments = this.state.assignments || [];
     for (const leadId of leadIds) {
-      const matchIdx = this.state.assignments.findIndex((a) => a.leadId === leadId || a.leadId === Number(leadId));
+      const matchIdx = this.state.assignments.findIndex(
+        (a) =>
+          String(a.leadId) === String(leadId) &&
+          a.bde?.toLowerCase() === bde?.toLowerCase()
+      );
       if (matchIdx >= 0) {
         this.state.assignments[matchIdx] = {
           ...this.state.assignments[matchIdx],
