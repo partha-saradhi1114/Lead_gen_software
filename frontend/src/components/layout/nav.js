@@ -1,4 +1,5 @@
 import {
+  Bell,
   BarChart3,
   CheckCircle2,
   FolderUp,
@@ -71,6 +72,12 @@ export const NAV_ITEMS = [
     url: "/settings",
     icon: Settings,
     subtitle: "Workspace preferences",
+  },
+  {
+    title: "Notifications",
+    url: "/notifications",
+    icon: Bell,
+    subtitle: "System alerts and team notifications",
   },
 ];
 
@@ -145,6 +152,12 @@ export const BDE_NAV_ITEMS = [
     url: "/bde/credits",
     icon: Coins,
     subtitle: "Balance, usage and top-up requests",
+  },
+  {
+    title: "Notifications",
+    url: "/bde/notifications",
+    icon: Bell,
+    subtitle: "Admin reminders and activity alerts",
   },
 ];
 

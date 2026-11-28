@@ -26,7 +26,7 @@ import { useLeadGen } from "@/lib/leadgen/store";
 import { formatDate } from "@/lib/leadgen/data";
 
 export default function OperationsPage() {
-  const { state } = useLeadGen();
+  const { state, dispatch } = useLeadGen();
   const [bdeFilter, setBdeFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -228,6 +228,15 @@ export default function OperationsPage() {
                         variant="outline"
                         className="gap-1 text-[11px]"
                         onClick={() => {
+                          dispatch({
+                            type: "bdeRemindCall",
+                            leadId: lead.id,
+                            bde: lead.assignedName,
+                            company: lead.company,
+                            contact: lead.contact,
+                            notes: lead.notes,
+                            followUpDate: lead.followUpDate,
+                          });
                           toast.success(
                             `Follow-up reminder sent to ${lead.assignedName || "team"}`,
                           );

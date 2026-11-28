@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Bell,
@@ -39,6 +39,7 @@ import {
   CURRENT_RA,
   NOTIFICATIONS,
   getNotificationsForUser,
+  getStoredReadNotificationIds,
   formatDate,
 } from "@/lib/leadgen/data";
 import { cn } from "@/lib/utils";
@@ -64,7 +65,17 @@ export function AppHeader() {
   const [from, setFrom] = useState("2026-11-01");
   const [to, setTo] = useState("2026-11-18");
   const [customLabel, setCustomLabel] = useState(null);
-  const [readIds, setReadIds] = useState(() => new Set());
+  const [readIds, setReadIds] = useState(() => getStoredReadNotificationIds());
+
+  useEffect(() => {
+    const handleReadChange = () => {
+      setReadIds(getStoredReadNotificationIds());
+    };
+    window.addEventListener("leadgen_notifications_read_change", handleReadChange);
+    return () => {
+      window.removeEventListener("leadgen_notifications_read_change", handleReadChange);
+    };
+  }, []);
 
   const navigate = useNavigate();
   const role = roleForPath(pathname);
@@ -99,7 +110,7 @@ export function AppHeader() {
     return getNotificationsForUser(role, displayName);
   }, [role, displayName]);
 
-  const unreadCount = activeNotifications.filter((n) => !readIds.has(n.id)).length;
+  const unreadCount = activeNotifications.filter((n) => !readIds.has(String(n.id))).length;
 
   const displayRole =
     storedUser.role === "admin" || storedUser.role === "Master Admin"
@@ -221,93 +232,26 @@ export function AppHeader() {
           </DropdownMenu>
         )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="relative size-9"
-              aria-label="Notifications"
-            >
-              <Bell className="text-muted-foreground" />
-              {unreadCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex size-4.5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                  {unreadCount}
-                </span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 p-0">
-            <div className="flex items-center justify-between border-b px-3 py-2.5">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-semibold">Notifications</span>
-                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                  {role === "ra" ? "Researcher" : role === "bde" ? "BDE" : "Master"}
-                </span>
-              </div>
-              <button
-                className="text-xs font-medium text-primary hover:underline disabled:text-muted-foreground disabled:no-underline"
-                disabled={unreadCount === 0}
-                onClick={() => {
-                  setReadIds((prev) => {
-                    const next = new Set(prev);
-                    activeNotifications.forEach((n) => next.add(n.id));
-                    return next;
-                  });
-                }}
-              >
-                Mark all as read
-              </button>
-            </div>
-            <div className="py-1 max-h-[320px] overflow-y-auto">
-              {activeNotifications.length === 0 ? (
-                <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-                  No notifications for your queue.
-                </div>
-              ) : (
-                activeNotifications.map((n) => {
-                  const isUnread = !readIds.has(n.id);
-                  return (
-                    <DropdownMenuItem
-                      key={n.id}
-                      className="items-start gap-2.5 px-3 py-2 cursor-pointer"
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        setReadIds((prev) => {
-                          const next = new Set(prev);
-                          next.add(n.id);
-                          return next;
-                        });
-                      }}
-                    >
-                      <span
-                        className={cn(
-                          "mt-1.5 size-2 shrink-0 rounded-full",
-                          TONE[n.tone] || "bg-primary",
-                        )}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div
-                          className={cn(
-                            "text-[13px] leading-snug",
-                            isUnread
-                              ? "font-semibold text-foreground"
-                              : "text-muted-foreground",
-                          )}
-                        >
-                          {n.title}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {n.time}
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
-                  );
-                })
-              )}
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="outline"
+          size="icon"
+          className="relative size-9 cursor-pointer"
+          aria-label="Notifications"
+          onClick={() => {
+            if (role === "admin") {
+              navigate("/notifications");
+            } else {
+              navigate("/bde/notifications");
+            }
+          }}
+        >
+          <Bell className="text-muted-foreground" />
+          {unreadCount > 0 && (
+            <span className="absolute -right-1 -top-1 flex size-4.5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse">
+              {unreadCount}
+            </span>
+          )}
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

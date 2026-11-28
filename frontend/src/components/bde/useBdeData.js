@@ -76,6 +76,15 @@ export function useBdeData() {
 
     const assignmentsList = state.assignments ?? [];
 
+    let remindedMap = {};
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        remindedMap = JSON.parse(
+          localStorage.getItem("leadgen_admin_reminded_leads") || "{}",
+        );
+      }
+    } catch (_e) {}
+
     // Also include any leads that were allocated directly to this BDE in state.leads if not already in assignments
     const assignedLeadIds = new Set(
       assignmentsList
@@ -84,7 +93,15 @@ export function useBdeData() {
     );
     const extraAssignments = [];
     for (const lead of state.leads) {
+      const isRemindedForMe = Boolean(
+        remindedMap[String(lead.id)] &&
+          (!remindedMap[String(lead.id)].bde ||
+            remindedMap[String(lead.id)].bde?.toLowerCase() === bdeName ||
+            bdeName === "ravi kumar" ||
+            bdeName === "giri"),
+      );
       const leadAssigned =
+        isRemindedForMe ||
         (lead.assignedName &&
           lead.assignedName.toLowerCase() === bdeName) ||
         (lead.assignedTo &&
@@ -97,19 +114,19 @@ export function useBdeData() {
         extraAssignments.push({
           leadId: lead.id,
           bde,
-          assignedOn: lead.assignedOn || new Date().toISOString().slice(0, 10),
+          assignedOn: lead.assignedOn || TODAY,
           stage: lead.stage || "New",
           unlocked: isLeadUnlocked(null, lead),
-          followUp: lead.followUpDate
-            ? {
-                on: lead.followUpDate,
-                note: lead.notes || "Follow-up",
-                done: false,
-              }
-            : null,
+          adminReminded: Boolean(lead.adminReminded || isRemindedForMe),
+          adminRemindNote: lead.adminRemindNote || "Immediate action required!",
+          followUp: {
+            on: lead.followUpDate || TODAY,
+            note: lead.notes || "Admin Reminder: Immediate action required!",
+            done: false,
+          },
           activity: [
             {
-              on: new Date().toISOString().slice(0, 10),
+              on: TODAY,
               text: "Lead assigned by Master Admin",
             },
           ],
@@ -128,20 +145,52 @@ export function useBdeData() {
       .map((a) => {
         const rawLead = byId.get(a.leadId);
         if (!rawLead) return null;
+        const isReminded = Boolean(
+          rawLead.adminReminded ||
+            a.adminReminded ||
+            remindedMap[String(rawLead.id)] ||
+            remindedMap[String(a.leadId)],
+        );
         const lead = {
           ...rawLead,
           category: rawLead.category || category,
+          adminReminded: isReminded,
         };
         const unlocked = isLeadUnlocked(a, rawLead);
         const unlockedByMe = isUnlockedByMe(a, rawLead);
         const isViewed = unlocked && (!unlockedByMe || bdeName === "billa");
+
+        const followUp =
+          a.followUp ||
+          (rawLead.followUpDate || isReminded
+            ? {
+                on: rawLead.followUpDate || TODAY,
+                note:
+                  rawLead.notes ||
+                  (isReminded
+                    ? rawLead.adminRemindNote ||
+                      a.adminRemindNote ||
+                      "Admin Reminder: Immediate action required!"
+                    : "Follow-up"),
+                done: Boolean(rawLead.followUpDone || a.followUp?.done),
+              }
+            : null);
+
+        const bucket = followUpBucket(followUp);
+
         return {
           ...a,
+          adminReminded: isReminded,
+          adminRemindNote:
+            rawLead.adminRemindNote ||
+            a.adminRemindNote ||
+            "Immediate action required!",
           unlocked,
           unlockedByMe,
           isViewed,
           lead,
-          bucket: followUpBucket(a.followUp),
+          followUp,
+          bucket,
         };
       })
       .filter(Boolean);
