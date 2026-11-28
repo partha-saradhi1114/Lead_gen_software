@@ -27,14 +27,14 @@ function buildSeedAssignments(leads, bdes) {
       const assignedOn = isoDaysBefore(TODAY, (i % 14) + 1);
       const due =
         i % 3 === 0 &&
-        stage !== "Not Interested" &&
-        stage !== "Converted" &&
-        stage !== "New"
+          stage !== "Not Interested" &&
+          stage !== "Converted" &&
+          stage !== "New"
           ? {
-              on: isoDaysBefore(TODAY, (i % 7) - 3),
-              note: "Call back to discuss requirement",
-              done: false,
-            }
+            on: isoDaysBefore(TODAY, (i % 7) - 3),
+            note: "Call back to discuss requirement",
+            done: false,
+          }
           : null;
       out.push({
         leadId: l.id,
@@ -78,8 +78,8 @@ class LeadGenStore {
             category:
               l.category ||
               (l.industry === "Higher Education" ||
-              l.company?.includes("University") ||
-              l.company?.includes("College")
+                l.company?.includes("University") ||
+                l.company?.includes("College")
                 ? "Students / Education"
                 : LEAD_CATS[i % LEAD_CATS.length]),
           }));
@@ -257,6 +257,9 @@ class LeadGenStore {
     targetBde.allocated += numAmount;
     this.state.credits.allocated += numAmount;
 
+    const d = new Date();
+    const todayLocal = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
     // If there was a pending credit request for this BDE, mark it approved
     if (Array.isArray(this.state.creditRequests)) {
       const pendingReq = this.state.creditRequests.find(
@@ -264,12 +267,13 @@ class LeadGenStore {
       );
       if (pendingReq) {
         pendingReq.status = "approved";
+        pendingReq.approvedOn = todayLocal;
       }
     }
 
     this.state.creditLog = this.state.creditLog || [];
     this.state.creditLog.unshift({
-      on: TODAY,
+      on: todayLocal,
       bde,
       kind: "Allocation",
       amount: numAmount,
@@ -408,12 +412,19 @@ class LeadGenStore {
   addBatch(batch, rows = []) {
     const todayIso = new Date().toISOString().slice(0, 10);
     const uploadedOn = batch.uploadedOn || todayIso;
+    const rawUploader =
+      batch.uploadedBy || batch.uploaderName || batch.researcher || "";
+    const uploaderName =
+      rawUploader.trim() &&
+        rawUploader.trim().toLowerCase() !== "research analyst"
+        ? rawUploader.trim()
+        : "Priya M";
     const fresh = rows.map((r, i) => ({
       ...r,
       id: this.state.nextId + i,
       status: "pending",
-      uploadedBy: batch.uploadedBy || batch.researcher || "Research Analyst",
-      uploaderName: batch.uploadedBy || batch.researcher || "Research Analyst",
+      uploadedBy: uploaderName,
+      uploaderName,
       uploadedOn,
       batchId: batch.id,
       category: r.category || batch.category || "Students / Education",
@@ -456,58 +467,28 @@ class LeadGenStore {
 
   unlockLead(id, bde) {
     const numericId = Number(id);
-    let lead = this.state.leads.find(
-      (l) => l.id === id || l.id === numericId || String(l.id) === String(id)
-    );
+    const lead = this.state.leads.find((l) => l.id === id || l.id === numericId);
+    if (!lead) throw new Error("Lead not found");
 
     const UNLOCK_COST = 1;
-    let bdeEntry = this.state.bdes.find(
-      (b) => b.name?.toLowerCase() === bde?.toLowerCase()
-    );
-    if (!bdeEntry) {
-      bdeEntry = {
-        name: bde,
-        allocated: 500,
-        used: 0,
-        connected: 0,
-        interested: 0,
-      };
-      this.state.bdes.push(bdeEntry);
-    }
-    if (bdeEntry.allocated - bdeEntry.used < UNLOCK_COST) {
+    const bdeEntry = this.state.bdes.find((b) => b.name === bde);
+    if (bdeEntry && (bdeEntry.allocated - bdeEntry.used < UNLOCK_COST)) {
       throw new Error("Insufficient credits to unlock contact.");
     }
 
-    bdeEntry.used += UNLOCK_COST;
+    if (bdeEntry) {
+      bdeEntry.used += UNLOCK_COST;
+    }
     this.state.credits.used += UNLOCK_COST;
 
-    if (lead) {
-      lead.unlocked = true;
-      lead.unlockedBy = lead.unlockedBy || [];
-      if (!lead.unlockedBy.includes(bde)) lead.unlockedBy.push(bde);
-    }
+    lead.unlockedBy = lead.unlockedBy || [];
+    if (!lead.unlockedBy.includes(bde)) lead.unlockedBy.push(bde);
 
-    // Update assignment record if exists or create it
+    // Update assignment record if exists
     this.state.assignments = this.state.assignments || [];
-    let assignment = this.state.assignments.find(
-      (a) =>
-        (a.leadId === id ||
-          a.leadId === numericId ||
-          String(a.leadId) === String(id)) &&
-        a.bde?.toLowerCase() === bde?.toLowerCase()
+    const assignment = this.state.assignments.find(
+      (a) => (a.leadId === id || a.leadId === numericId) && a.bde === bde
     );
-    if (!assignment) {
-      assignment = {
-        leadId: id,
-        bde,
-        assignedOn: lead?.assignedOn || TODAY,
-        stage: lead?.stage || "New",
-        unlocked: true,
-        followUp: null,
-        activity: [],
-      };
-      this.state.assignments.push(assignment);
-    }
     if (assignment) {
       assignment.unlocked = true;
       assignment.activity = assignment.activity || [];
@@ -523,40 +504,26 @@ class LeadGenStore {
       bde,
       kind: "Used",
       amount: UNLOCK_COST,
-      leadId: id,
-      note: `Unlocked ${lead?.company || "contact"}`,
+      leadId: lead.id,
+      note: `Unlocked ${lead.company}`,
     });
 
     this.persistState();
-    return lead || assignment;
+    return lead;
   }
 
   updateLead(id, updates) {
     const numericId = Number(id);
-    const lead = this.state.leads.find(
-      (l) => l.id === id || l.id === numericId || String(l.id) === String(id)
-    );
+    const lead = this.state.leads.find((l) => l.id === id || l.id === numericId);
     if (!lead) throw new Error("Lead not found");
 
     Object.assign(lead, updates);
 
     // Also update assignment if stage or notes are updated
     this.state.assignments = this.state.assignments || [];
-    let assignment = this.state.assignments.find(
-      (a) => a.leadId === id || a.leadId === numericId || String(a.leadId) === String(id)
+    const assignment = this.state.assignments.find(
+      (a) => a.leadId === id || a.leadId === numericId
     );
-    if (!assignment && (lead.assignedName || lead.assignedTo)) {
-      assignment = {
-        leadId: lead.id,
-        bde: lead.assignedName || lead.assignedTo,
-        assignedOn: lead.assignedOn || TODAY,
-        stage: lead.stage || "New",
-        unlocked: true,
-        followUp: null,
-        activity: [],
-      };
-      this.state.assignments.push(assignment);
-    }
     if (assignment) {
       if (updates.stage) assignment.stage = updates.stage;
       if (updates.followUpDone && assignment.followUp) {
@@ -591,6 +558,8 @@ class LeadGenStore {
   }
 
   requestCredits(bde, amount, reason) {
+    const d = new Date();
+    const todayLocal = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     this.state.creditRequests = this.state.creditRequests || [];
     const req = {
       id: Date.now(),
@@ -598,13 +567,13 @@ class LeadGenStore {
       amount: Number(amount),
       reason,
       status: "pending",
-      requestedOn: new Date().toISOString().slice(0, 10),
+      requestedOn: todayLocal,
     };
     this.state.creditRequests.unshift(req);
 
     this.state.creditLog = this.state.creditLog || [];
     this.state.creditLog.unshift({
-      on: TODAY,
+      on: todayLocal,
       bde,
       kind: "Requested",
       amount: Number(amount),

@@ -101,8 +101,9 @@ export function UploadWizard() {
     (storedUser.role === "ra" ||
       storedUser.role === "Research Analyst" ||
       storedUser.role === "researcher") &&
-    storedUser.name
-      ? storedUser.name
+    storedUser.name &&
+    storedUser.name.trim().toLowerCase() !== "research analyst"
+      ? storedUser.name.trim()
       : CURRENT_RA;
 
   const assignedCategories = useMemo(

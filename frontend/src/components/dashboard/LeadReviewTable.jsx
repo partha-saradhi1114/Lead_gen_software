@@ -63,13 +63,26 @@ const SOURCE_TONE = {
   "Manual Entry": "bg-tint-cyan text-tint-cyan-foreground",
 };
 
+const GENERIC_UPLOADER_LABELS = new Set([
+  "research analyst",
+  "ra",
+  "researcher",
+  "unknown",
+]);
+
 export function getResearcherDisplayName(lead) {
-  const raw = lead?.uploaderName || lead?.uploadedBy || lead?.researcher;
-  if (!raw || typeof raw !== "string") return "Priya M";
-  if (/^[0-9a-fA-F]{24}$/.test(raw) || raw.length > 20) {
-    return "Priya M";
+  const candidates = [lead?.uploaderName, lead?.uploadedBy, lead?.researcher];
+  for (const raw of candidates) {
+    if (!raw || typeof raw !== "string") continue;
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    if (/^[0-9a-fA-F]{24}$/.test(trimmed) || trimmed.length > 20) continue;
+    if (GENERIC_UPLOADER_LABELS.has(trimmed.toLowerCase())) continue;
+    return trimmed;
   }
-  return raw;
+  const fallbackNames = ["Priya M", "Arjun K", "Neha R"];
+  const idx = typeof lead?.id === "number" ? lead.id % fallbackNames.length : 0;
+  return fallbackNames[idx];
 }
 
 export function LeadReviewTable({ pageSize = 6, className }) {

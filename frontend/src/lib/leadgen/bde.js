@@ -1,4 +1,4 @@
-import { TODAY, isoDaysBefore } from "./data";
+import { TODAY, currentDate, isoDaysBefore } from "./data";
 
 /** Sample signed-in BDE until real roles arrive with the backend. */
 export const CURRENT_BDE = "Ravi Kumar";
@@ -429,7 +429,7 @@ export function bdeReducer(state, action) {
         ...state,
         creditLog: [
           {
-            on: TODAY,
+            on: currentDate(),
             bde: action.bde,
             kind: "Requested",
             amount: action.amount,

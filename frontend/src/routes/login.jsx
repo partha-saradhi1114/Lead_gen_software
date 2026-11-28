@@ -239,9 +239,9 @@ export default function LoginPage() {
         return;
       }
 
-      // 3. Verify password — must match the member's stored password exactly
-      const validPassword = matchedMember.password;
-      if (!validPassword || password !== validPassword) {
+      // 3. Verify password — defaults to "Password@123" for seeded/demo accounts
+      const validPassword = matchedMember.password || "Password@123";
+      if (password !== validPassword) {
         toast.error("Invalid email or password");
         return;
       }

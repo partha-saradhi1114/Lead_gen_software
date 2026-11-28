@@ -175,16 +175,37 @@ export function LeadGenProvider({ children }) {
           Array.isArray(serverState.leads) &&
           serverState.leads.length > 0
         ) {
+          const batchUploaderById = new Map();
+          if (Array.isArray(serverState.batches)) {
+            for (const b of serverState.batches) {
+              const bid = b.id || b.batchId;
+              const bName = [b.uploaderName, b.uploadedBy, b.researcher].find(
+                (v) =>
+                  typeof v === "string" &&
+                  v.trim() &&
+                  !/^[0-9a-fA-F]{24}$/.test(v.trim()) &&
+                  !["research analyst", "ra", "researcher", "unknown"].includes(
+                    v.trim().toLowerCase(),
+                  ),
+              );
+              if (bid && bName) batchUploaderById.set(bid, bName.trim());
+            }
+          }
+
+          const isValidUploaderName = (val) =>
+            typeof val === "string" &&
+            val.trim().length > 0 &&
+            !/^[0-9a-fA-F]{24}$/.test(val.trim()) &&
+            !["research analyst", "ra", "researcher", "unknown"].includes(
+              val.trim().toLowerCase(),
+            );
+
           const sanitizedLeads = serverState.leads.map((l, idx) => {
-            const isRawId =
-              typeof l.uploadedBy === "string" &&
-              /^[0-9a-fA-F]{24}$/.test(l.uploadedBy);
-            const isRawUploader =
-              typeof l.uploaderName === "string" &&
-              /^[0-9a-fA-F]{24}$/.test(l.uploaderName);
             const cleanName =
-              (!isRawUploader && l.uploaderName) ||
-              (!isRawId && l.uploadedBy) ||
+              (isValidUploaderName(l.uploaderName) && l.uploaderName.trim()) ||
+              (isValidUploaderName(l.uploadedBy) && l.uploadedBy.trim()) ||
+              (isValidUploaderName(l.researcher) && l.researcher.trim()) ||
+              (l.batchId && batchUploaderById.get(l.batchId)) ||
               ["Priya M", "Arjun K", "Neha R"][idx % 3];
 
             const category =
