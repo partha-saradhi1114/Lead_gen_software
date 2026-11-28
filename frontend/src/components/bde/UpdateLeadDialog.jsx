@@ -13,23 +13,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { BDE_STAGES } from "@/lib/leadgen/bde";
+import { SearchableStageSelect } from "@/components/bde/SearchableStageSelect";
+import { BDE_STAGES, normalizeStage } from "@/lib/leadgen/bde";
 import { TODAY, formatDate } from "@/lib/leadgen/data";
 
 export function UpdateLeadDialog({ row, onClose, dispatch, bde }) {
-  const [stage, setStage] = useState("Contacted");
+  const [stage, setStage] = useState("Connected – Interested");
   const [note, setNote] = useState("");
   const [followUpOn, setFollowUpOn] = useState("");
   useEffect(() => {
     if (row) {
-      setStage(row.stage === "New" ? "Contacted" : row.stage);
+      const norm = normalizeStage(row.stage);
+      setStage(norm === "New" ? "Connected – Interested" : norm);
       setNote(row.followUp?.note || row.lead?.notes || "");
       const existingDate = row.followUp?.on || row.lead?.followUpDate || "";
       const datePart =
@@ -77,19 +72,8 @@ export function UpdateLeadDialog({ row, onClose, dispatch, bde }) {
         </DialogHeader>
         <div className="grid gap-3">
           <div className="grid gap-1.5">
-            <Label>Stage</Label>
-            <Select value={stage} onValueChange={setStage}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {BDE_STAGES.filter((s) => s !== "New").map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Stage / Call Disposition</Label>
+            <SearchableStageSelect value={stage} onChange={setStage} />
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="bde-note">Call notes</Label>

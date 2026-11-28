@@ -827,6 +827,120 @@ function ManualLeadForm({
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(null);
+  const fileInputRef = useRef(null);
+  const [readingFile, setReadingFile] = useState(false);
+  const [autoFilledFile, setAutoFilledFile] = useState(null);
+
+  const handleAutoFillFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fileError = checkFile(file);
+    if (fileError) {
+      toast.error(fileError);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setReadingFile(true);
+    try {
+      const aoa = await readSheetFile(file);
+      if (!Array.isArray(aoa) || aoa.length === 0) {
+        toast.error("File is empty");
+        return;
+      }
+
+      const { rows } = rowsFromSheet(aoa);
+      let first = rows?.[0]?.values;
+      let totalRows = rows?.length || 0;
+
+      // Fallback: If no standard headers found, inspect first rows of aoa directly
+      if (!first) {
+        const r0 = aoa[0] || [];
+        const r1 = aoa[1] || [];
+        const isHeader = r0.some(
+          (c) =>
+            typeof c === "string" &&
+            /name|company|contact|phone|email/i.test(c),
+        );
+        const targetRow = isHeader && aoa.length > 1 ? r1 : r0;
+
+        if (targetRow && targetRow.length > 0) {
+          first = {
+            company: targetRow[0] || "",
+            category: targetRow[1] || "",
+            contact: targetRow[2] || "",
+            email: targetRow[3] || "",
+            phone: targetRow[4] || "",
+            website: targetRow[5] || "",
+            country: targetRow[6] || "India",
+            stateCity: targetRow[7] || "",
+            companyAddress: targetRow[8] || "",
+            linkedin: targetRow[9] || "",
+            description: targetRow[10] || "",
+          };
+          totalRows = isHeader ? Math.max(1, aoa.length - 1) : aoa.length;
+        }
+      }
+
+      if (!first || !Object.values(first).some(Boolean)) {
+        toast.error("No valid lead data found in this file.");
+        return;
+      }
+
+      // Auto-match category if present
+      let cat = formData.category;
+      let customCat = "";
+      if (first.category) {
+        const trimmedCat = String(first.category).trim();
+        const matched = categoryOptions.find(
+          (c) => c.toLowerCase() === trimmedCat.toLowerCase(),
+        );
+        if (matched) {
+          cat = matched;
+        } else {
+          cat = "Others";
+          customCat = trimmedCat;
+        }
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        company: String(first.company || "").trim() || prev.company,
+        category: cat,
+        contact: String(first.contact || "").trim() || prev.contact,
+        email: String(first.email || "").trim() || prev.email,
+        phone: String(first.phone || "").trim() || prev.phone,
+        website: String(first.website || "").trim() || prev.website,
+        country: String(first.country || "").trim() || prev.country || "India",
+        stateCity: String(first.stateCity || "").trim() || prev.stateCity,
+        companyAddress:
+          String(first.companyAddress || "").trim() || prev.companyAddress,
+        linkedin: String(first.linkedin || "").trim() || prev.linkedin,
+        description:
+          String(first.description || "").trim() || prev.description,
+      }));
+
+      if (customCat) setCustomCategory(customCat);
+      setErrors({});
+      setAutoFilledFile({
+        name: file.name,
+        totalRows,
+      });
+
+      toast.success(
+        `Auto-filled details from "${file.name}". You can review or edit before submitting.`,
+      );
+    } catch (err) {
+      console.error("[Auto-fill] File read error:", err);
+      toast.error(
+        "Could not parse file. Ensure it is a valid Excel or CSV file.",
+      );
+    } finally {
+      setReadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const phoneDuplicate = useMemo(() => {
     if (!formData.phone || formData.phone.trim().length < 7) return null;
@@ -859,6 +973,8 @@ function ManualLeadForm({
     setCustomCategory("");
     setErrors({});
     setSuccess(null);
+    setAutoFilledFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const validate = () => {
@@ -1018,8 +1134,74 @@ function ManualLeadForm({
       <PanelHeader
         title="Single Lead Entry Form"
         subtitle="Enter lead details based on the Lead Management Plan specifications"
+        actions={
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              className="hidden"
+              onChange={handleAutoFillFile}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={readingFile}
+              onClick={() => fileInputRef.current?.click()}
+              className="h-8 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 hover:border-primary transition-all shadow-2xs"
+            >
+              {readingFile ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <FileSpreadsheet className="size-3.5" />
+              )}
+              {readingFile
+                ? "Reading file..."
+                : "Auto-fill from File (Excel/CSV)"}
+            </Button>
+          </div>
+        }
       />
       <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
+        {/* Auto-fill feedback banner */}
+        {autoFilledFile && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs animate-in fade-in-50">
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <Sparkles className="size-4" />
+              </div>
+              <div>
+                <span className="font-semibold text-foreground">
+                  Auto-filled from {autoFilledFile.name}
+                </span>
+                {autoFilledFile.totalRows > 1 && (
+                  <span className="ml-2 text-muted-foreground">
+                    (Loaded lead 1 of {autoFilledFile.totalRows}. Want to upload all in bulk?{" "}
+                    <button
+                      type="button"
+                      onClick={onSwitchToBulk}
+                      className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
+                    >
+                      Switch to Bulk Upload
+                    </button>
+                    )
+                  </span>
+                )}
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={resetForm}
+              className="h-7 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <RotateCcw className="mr-1 size-3" />
+              Clear / Reset Form
+            </Button>
+          </div>
+        )}
         {/* Company & Category Section */}
         <div>
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold border-b pb-1.5 text-foreground">

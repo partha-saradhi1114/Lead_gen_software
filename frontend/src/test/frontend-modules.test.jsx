@@ -200,6 +200,16 @@ describe("Frontend Modules, Components & Actions Audit", () => {
         </LeadGenProvider>
       );
       expect(screen.queryByText("Page not found")).not.toBeInTheDocument();
+
+      const manualBtn = screen.getByRole("button", {
+        name: /Manual Single Lead Entry/i,
+      });
+      fireEvent.click(manualBtn);
+
+      expect(screen.getByText("Single Lead Entry Form")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Auto-fill from File/i }),
+      ).toBeInTheDocument();
     });
 
     it("renders RA Uploads history (/ra/uploads)", () => {

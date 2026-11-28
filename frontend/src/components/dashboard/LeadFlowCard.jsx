@@ -66,7 +66,13 @@ export function LeadFlowCard() {
   leads.forEach((l) => {
     const s = String(l.stage || "").toLowerCase();
     if (s === "connected") stagesCount.connected++;
-    else if (s === "out-of-coverage" || s === "out_of_coverage")
+    else if (
+      s === "out-of-coverage" ||
+      s === "out_of_coverage" ||
+      s === "temporarily unavailable" ||
+      s === "temporarily_unavailable" ||
+      s === "temporarily-unavailable"
+    )
       stagesCount.outOfCoverage++;
     else if (s === "interested" || s === "converted") stagesCount.interested++;
     else if (
@@ -75,7 +81,14 @@ export function LeadFlowCard() {
       s === "rejected"
     )
       stagesCount.notInterested++;
-    else if (s === "follow-up" || s === "follow_up") stagesCount.followUp++;
+    else if (
+      s === "follow-up" ||
+      s === "follow_up" ||
+      s === "awaiting response" ||
+      s === "awaiting_response" ||
+      s === "awaiting-response"
+    )
+      stagesCount.followUp++;
   });
 
   const totalStageLeads = Object.values(stagesCount).reduce((a, b) => a + b, 0);

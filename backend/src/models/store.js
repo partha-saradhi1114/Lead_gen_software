@@ -18,7 +18,7 @@ function buildSeedAssignments(leads, bdes) {
   const approved = leads.filter((l) => l.status === "approved");
   const out = [];
   const pattern = [
-    "New", "New", "Contacted", "Connected", "Interested", "Not Interested", "Contacted", "Converted", "New", "Connected",
+    "New", "New", "Awaiting Response", "Connected", "Interested", "Not Interested", "Temporarily Unavailable", "Converted", "New", "Connected",
   ];
   bdes.forEach((b, bi) => {
     const mine = approved.slice(bi * 48, bi * 48 + 48);

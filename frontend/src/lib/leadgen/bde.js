@@ -2,27 +2,152 @@ import { TODAY, isoDaysBefore } from "./data";
 
 /** Sample signed-in BDE until real roles arrive with the backend. */
 export const CURRENT_BDE = "Ravi Kumar";
-export const BDE_STAGES = [
-  "New",
-  "Contacted",
-  "Connected",
-  "Interested",
-  "Not Interested",
-  "Converted",
+
+export const BDE_STAGE_GROUPS = [
+  {
+    name: "Interested & Pipeline Progress",
+    stages: [
+      "Connected – Interested",
+      "Meeting Scheduled",
+      "Demo Required",
+      "Proposal / Quotation Sent",
+      "Negotiation",
+      "Decision Pending",
+      "Approval Pending",
+      "Budget Pending",
+      "Requirement Pending",
+      "Payment Pending",
+    ],
+  },
+  {
+    name: "Follow-up & Channel Preference",
+    stages: [
+      "Call Back Requested",
+      "Follow-up Required",
+      "Asked to Contact via WhatsApp",
+      "Email Details Requested",
+      "Waiting for Response",
+      "Processing",
+    ],
+  },
+  {
+    name: "Call Connectivity & Reachability",
+    stages: [
+      "No Answer",
+      "Switched Off",
+      "Not Reachable",
+      "Busy",
+      "Call Disconnected",
+      "Out of Coverage",
+      "Contact Person Unavailable",
+    ],
+  },
+  {
+    name: "Successful Conversion",
+    stages: ["Converted"],
+  },
+  {
+    name: "Disqualified & Lost",
+    stages: [
+      "Connected – Not Interested",
+      "Lost",
+      "Rejected",
+      "Contact Person Changed",
+      "Do Not Contact",
+      "Duplicate Lead",
+      "No Current Requirement",
+      "Already Using Competitor",
+      "Budget Issue",
+      "Wrong Number",
+      "Number Does Not Exist",
+      "Invalid Lead",
+    ],
+  },
 ];
+
+export const BDE_DISPOSITIONS = BDE_STAGE_GROUPS.flatMap((g) => g.stages);
+
+export const BDE_STAGES = ["New", ...BDE_DISPOSITIONS];
+
 /** Revealing a lead's phone and email costs one credit. */
 export const UNLOCK_COST = 1;
 
-const RANK = {
-  New: 0,
-  Contacted: 1,
-  Connected: 2,
-  Interested: 3,
-  Converted: 4,
-  "Not Interested": 2,
-};
-const isConnected = (s) => RANK[s] >= 2;
-const isInterested = (s) => s === "Interested" || s === "Converted";
+export function normalizeStage(s) {
+  if (!s) return "New";
+  const str = String(s).trim().toLowerCase();
+  if (str === "new") return "New";
+  if (str === "interested") return "Interested";
+  if (str === "connected") return "Connected";
+  if (
+    str === "connected - interested" ||
+    str === "connected – interested"
+  )
+    return "Connected – Interested";
+  if (
+    str === "connected - not interested" ||
+    str === "connected – not interested" ||
+    str === "not interested" ||
+    str === "not_interested"
+  )
+    return "Connected – Not Interested";
+  if (str === "converted" || str === "closed" || str === "closed won")
+    return "Converted";
+
+  // Check exact case-insensitive match against all 36 dispositions
+  const matched = BDE_DISPOSITIONS.find(
+    (d) =>
+      d.toLowerCase() === str ||
+      d.toLowerCase().replace(/–|-/g, " ") === str.replace(/–|-/g, " "),
+  );
+  if (matched) return matched;
+
+  // Legacy mappings
+  if (
+    str === "awaiting response" ||
+    str === "awaiting_response" ||
+    str === "waiting for response"
+  )
+    return "Waiting for Response";
+  if (
+    str === "temporarily unavailable" ||
+    str === "temporarily_unavailable" ||
+    str === "out of coverage" ||
+    str === "out-of-coverage"
+  )
+    return "Out of Coverage";
+  if (str === "contacted")
+    return "Connected";
+
+  return s;
+}
+
+const INTERESTED_STAGES = new Set([
+  "Connected – Interested",
+  "Interested",
+  "Meeting Scheduled",
+  "Demo Required",
+  "Proposal / Quotation Sent",
+  "Negotiation",
+  "Decision Pending",
+  "Approval Pending",
+  "Budget Pending",
+  "Requirement Pending",
+  "Payment Pending",
+  "Converted",
+]);
+
+const CONNECTED_STAGES = new Set([
+  ...INTERESTED_STAGES,
+  "Connected",
+  "Connected – Not Interested",
+  "Call Back Requested",
+  "Asked to Contact via WhatsApp",
+  "Email Details Requested",
+  "Contact Person Changed",
+]);
+
+const isConnected = (s) => CONNECTED_STAGES.has(normalizeStage(s));
+const isInterested = (s) => INTERESTED_STAGES.has(normalizeStage(s));
 
 /** Deterministic assignments: approved leads handed to each BDE. */
 export function buildSeedAssignments(leads, bdes) {
@@ -31,14 +156,14 @@ export function buildSeedAssignments(leads, bdes) {
   const pattern = [
     "New",
     "New",
-    "Contacted",
-    "Connected",
-    "Interested",
-    "Not Interested",
-    "Contacted",
+    "Call Back Requested",
+    "Connected – Interested",
+    "Meeting Scheduled",
+    "Connected – Not Interested",
+    "Waiting for Response",
     "Converted",
     "New",
-    "Connected",
+    "Follow-up Required",
   ];
   bdes.forEach((b, bi) => {
     const mine = approved.slice(bi * 48, bi * 48 + 48);
@@ -202,7 +327,17 @@ export function bdeReducer(state, action) {
       };
     }
     case "bdeUpdate": {
-      if (!a || !a.unlocked || !BDE_STAGES.includes(action.stage)) return state;
+      const normStage = normalizeStage(action.stage);
+      if (
+        !a ||
+        !a.unlocked ||
+        (!BDE_STAGES.includes(action.stage) &&
+          !BDE_STAGES.includes(normStage) &&
+          action.stage !== "Interested" &&
+          action.stage !== "Connected")
+      )
+        return state;
+      const finalStage = action.stage || normStage;
       const followUp = action.followUpOn
         ? {
             on: action.followUpOn,
@@ -211,17 +346,17 @@ export function bdeReducer(state, action) {
           }
         : a.followUp;
       const newlyConnected =
-        !isConnected(a.stage) && isConnected(action.stage) ? 1 : 0;
+        !isConnected(a.stage) && isConnected(finalStage) ? 1 : 0;
       const newlyInterested =
-        !isInterested(a.stage) && isInterested(action.stage) ? 1 : 0;
+        !isInterested(a.stage) && isInterested(finalStage) ? 1 : 0;
       const s = touch(state, a.leadId, a.bde, (x) => ({
         ...x,
-        stage: action.stage,
+        stage: finalStage,
         followUp,
         activity: [
           ...x.activity,
-          ...(action.stage !== x.stage
-            ? [{ on: TODAY, text: `Marked ${action.stage}` }]
+          ...(finalStage !== x.stage
+            ? [{ on: TODAY, text: `Marked ${finalStage}` }]
             : []),
           ...(action.note?.trim()
             ? [{ on: TODAY, text: action.note.trim() }]
@@ -237,7 +372,7 @@ export function bdeReducer(state, action) {
           String(l.id) === String(action.leadId)
             ? {
                 ...l,
-                stage: action.stage ?? l.stage,
+                stage: finalStage ?? l.stage,
                 notes: action.note !== undefined ? action.note : l.notes,
                 followUpDate:
                   action.followUpOn !== undefined
@@ -347,11 +482,11 @@ export function selectBdeKpis(state, bde) {
   const count = (fn) => mine.filter(fn).length;
   return {
     assigned: mine.length,
-    fresh: count((a) => a.stage === "New"),
+    fresh: count((a) => normalizeStage(a.stage) === "New"),
     unlocked: Math.max(count((a) => a.unlocked), localUnlockedCount),
     connected: count((a) => isConnected(a.stage)),
     interested: count((a) => isInterested(a.stage)),
-    converted: count((a) => a.stage === "Converted"),
+    converted: count((a) => normalizeStage(a.stage) === "Converted"),
     overdue: count((a) => followUpBucket(a.followUp) === "overdue"),
     today: count((a) => followUpBucket(a.followUp) === "today"),
     upcoming: count((a) => followUpBucket(a.followUp) === "upcoming"),

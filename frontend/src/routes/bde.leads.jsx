@@ -8,7 +8,7 @@ import { StageBadge, mask } from "@/components/bde/StageBadge";
 import { UpdateLeadDialog } from "@/components/bde/UpdateLeadDialog";
 import { useBdeData } from "@/components/bde/useBdeData";
 import { useUnlock } from "@/components/bde/useUnlock";
-import { BDE_STAGES, UNLOCK_COST } from "@/lib/leadgen/bde";
+import { BDE_STAGES, UNLOCK_COST, normalizeStage } from "@/lib/leadgen/bde";
 import { INDUSTRIES, fmt, formatDate } from "@/lib/leadgen/data";
 
 export default function BdeLeads() {
@@ -79,7 +79,9 @@ export default function BdeLeads() {
     const s = q.trim().toLowerCase();
     return rows.filter(
       (r) =>
-        (stage === "all" || r.stage === stage) &&
+        (stage === "all" ||
+          r.stage === stage ||
+          normalizeStage(r.stage) === stage) &&
         (industry === "all" || r.lead.industry === industry) &&
         (!s ||
           (r.lead?.company || "").toLowerCase().includes(s) ||

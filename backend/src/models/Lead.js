@@ -146,7 +146,6 @@ const leadSchema = new mongoose.Schema(
     ],
     stage: {
       type: String,
-      enum: ["new", "connected", "interested", "not-interested", "out-of-coverage", "follow-up"],
       default: "new",
     },
     followUpDate: {

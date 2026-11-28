@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { StageBadge } from "@/components/bde/StageBadge";
 import { useBdeData } from "@/components/bde/useBdeData";
-import { BDE_STAGES } from "@/lib/leadgen/bde";
+import { BDE_STAGES, normalizeStage } from "@/lib/leadgen/bde";
 import { fmt, formatDate, pct } from "@/lib/leadgen/data";
 
 export default function BdeDashboard() {
@@ -53,7 +53,7 @@ export default function BdeDashboard() {
           value={fmt(kpis.assigned)}
           icon={Users}
           tone="blue"
-          hint={`${fmt(kpis.fresh)} not yet contacted`}
+          hint={`${fmt(kpis.fresh)} new / uncontacted`}
         />
         <KpiCard
           label="Connected"
@@ -163,12 +163,25 @@ export default function BdeDashboard() {
               </Button>
             }
           />
-          <div className="space-y-2.5 px-4 pb-4">
-            {BDE_STAGES.map((s) => {
-              const n = rows.filter((r) => r.stage === s).length;
+          <div className="max-h-80 overflow-y-auto scrollbar-thin space-y-2.5 px-4 pb-4">
+            {BDE_STAGES.filter(
+              (s) =>
+                rows.some(
+                  (r) => normalizeStage(r.stage) === s || r.stage === s,
+                ) ||
+                [
+                  "New",
+                  "Connected – Interested",
+                  "Meeting Scheduled",
+                  "Converted",
+                ].includes(s),
+            ).map((s) => {
+              const n = rows.filter(
+                (r) => normalizeStage(r.stage) === s || r.stage === s,
+              ).length;
               return (
                 <div key={s} className="flex items-center gap-3">
-                  <div className="w-28 shrink-0">
+                  <div className="w-44 shrink-0 truncate">
                     <StageBadge stage={s} />
                   </div>
                   <Progress value={pct(n, rows.length)} className="h-1.5" />
