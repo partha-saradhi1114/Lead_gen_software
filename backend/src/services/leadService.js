@@ -9,9 +9,21 @@ import { CreditTransaction } from "../models/CreditTransaction.js";
 // Helper to convert Mongo document into standard frontend shape
 function mapLead(l) {
   const obj = l.toObject ? l.toObject() : l;
+  const populatedUploader =
+    obj.uploadedBy && typeof obj.uploadedBy === "object" && obj.uploadedBy.name
+      ? obj.uploadedBy.name
+      : null;
+  const rawUploaderName =
+    obj.uploaderName &&
+    obj.uploaderName.trim().toLowerCase() !== "research analyst"
+      ? obj.uploaderName.trim()
+      : null;
+  const uploaderName = rawUploaderName || populatedUploader || obj.uploaderName;
   return {
     ...obj,
     id: obj._id ? obj._id.toString() : obj.id,
+    uploadedBy: populatedUploader || (typeof obj.uploadedBy === "string" ? obj.uploadedBy : uploaderName),
+    uploaderName,
     category: obj.category || "Students / Education",
     country: obj.country || "India",
     stateCity: obj.stateCity || obj.location || "",
@@ -21,15 +33,6 @@ function mapLead(l) {
     description: obj.description || obj.notes || "",
     uploadedOn: obj.uploadedOn ? new Date(obj.uploadedOn).toISOString().split("T")[0] : "",
     reviewedOn: obj.reviewedOn ? new Date(obj.reviewedOn).toISOString().split("T")[0] : null,
-    followUpDate: obj.followUpDate ? new Date(obj.followUpDate).toISOString().split("T")[0] : undefined,
-    unlockedBy: Array.isArray(obj.unlockedBy)
-      ? obj.unlockedBy.map((u) => {
-          if (u && typeof u === "object") {
-            return u.name || u._id?.toString() || String(u);
-          }
-          return String(u);
-        })
-      : [],
   };
 }
 
@@ -66,7 +69,11 @@ export const leadService = {
 
       const [total, leads] = await Promise.all([
         Lead.countDocuments(filter),
-        Lead.find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit),
+        Lead.find(filter)
+          .populate("uploadedBy", "name email")
+          .sort({ createdAt: -1 })
+          .skip(offset)
+          .limit(limit),
       ]);
 
       return {
@@ -217,10 +224,20 @@ export const leadService = {
       try {
         const batchId = batchInfo.id || `BATCH-${Date.now()}`;
         const category = batchInfo.category || "Students / Education";
+        const rawUploader =
+          batchInfo.uploadedBy ||
+          batchInfo.uploaderName ||
+          batchInfo.researcher ||
+          "";
+        const uploaderName =
+          rawUploader.trim() &&
+          rawUploader.trim().toLowerCase() !== "research analyst"
+            ? rawUploader.trim()
+            : "Priya M";
         const batch = await Batch.create({
           batchId,
           fileName: batchInfo.fileName || "leads_upload.xlsx",
-          uploaderName: batchInfo.uploadedBy || "Research Analyst",
+          uploaderName,
           category,
           totalRows: rows.length,
           pendingCount: rows.length,
@@ -244,7 +261,7 @@ export const leadService = {
           source: r.source || "Excel Upload",
           category: r.category || category,
           batchId,
-          uploaderName: batchInfo.uploadedBy || "Research Analyst",
+          uploaderName,
           status: "pending",
           stage: "new",
         }));
@@ -396,14 +413,14 @@ export const leadService = {
         const roleSlug = member.role.toLowerCase().includes("admin")
           ? "admin"
           : member.role.toLowerCase().includes("ra") || member.role.toLowerCase().includes("analyst")
-          ? "ra"
-          : "bde";
+            ? "ra"
+            : "bde";
 
         await User.create({
           name: member.name,
           email: member.email.toLowerCase(),
           phone: member.phone || "",
-          password: member.password,
+          password: member.password || "Password@123",
           role: roleSlug,
           category:
             member.category ||
@@ -426,31 +443,18 @@ export const leadService = {
   },
 
   async unlockLead(leadId, bdeName) {
-    let storeLead = null;
-    try {
-      storeLead = leadStore.unlockLead(leadId, bdeName);
-    } catch {
-      // In-memory store might not have this lead if it was added directly in MongoDB
-    }
+    const storeLead = leadStore.unlockLead(leadId, bdeName);
 
     if (getDbStatus() && mongoose.Types.ObjectId.isValid(leadId)) {
       try {
         const lead = await Lead.findById(leadId);
-        const user = await User.findOne({
-          name: new RegExp(`^${bdeName}$`, "i"),
-          role: "bde",
-        });
+        const user = await User.findOne({ name: bdeName, role: "bde" });
         if (lead && user && user.credits >= 1) {
           user.credits -= 1;
-          user.creditsUsed = (user.creditsUsed || 0) + 1;
+          user.creditsUsed += 1;
           await user.save();
 
-          lead.unlockedBy = lead.unlockedBy || [];
-          const userIdStr = user._id.toString();
-          const alreadyUnlocked = lead.unlockedBy.some(
-            (u) => (u._id ? u._id.toString() : u.toString()) === userIdStr
-          );
-          if (!alreadyUnlocked) {
+          if (!lead.unlockedBy.includes(user._id)) {
             lead.unlockedBy.push(user._id);
             await lead.save();
           }
@@ -465,48 +469,24 @@ export const leadService = {
             leadCompany: lead.company,
             description: `Unlocked lead ${lead.company} (-1 credit)`,
           });
-
-          if (!storeLead) {
-            storeLead = mapLead(lead);
-          }
         }
       } catch (err) {
         console.warn("[leadService.unlockLead] Mongo error:", err.message);
       }
     }
 
-    if (!storeLead) {
-      throw new Error("Lead not found");
-    }
-
     return storeLead;
   },
 
   async updateLead(leadId, updates) {
-    let storeLead = null;
-    try {
-      storeLead = leadStore.updateLead(leadId, updates);
-    } catch {
-      // In-memory store might not have this lead if it was added directly in MongoDB
-    }
+    const storeLead = leadStore.updateLead(leadId, updates);
 
     if (getDbStatus() && mongoose.Types.ObjectId.isValid(leadId)) {
       try {
-        const mongoLead = await Lead.findByIdAndUpdate(
-          leadId,
-          { $set: updates },
-          { new: true }
-        );
-        if (!storeLead && mongoLead) {
-          storeLead = mapLead(mongoLead);
-        }
+        await Lead.findByIdAndUpdate(leadId, { $set: updates }, { new: true });
       } catch (err) {
         console.warn("[leadService.updateLead] Mongo error:", err.message);
       }
-    }
-
-    if (!storeLead) {
-      throw new Error("Lead not found");
     }
 
     return storeLead;
@@ -522,7 +502,10 @@ export const leadService = {
     if (getDbStatus()) {
       try {
         const [leads, batches, bdeUsers, allUsers] = await Promise.all([
-          Lead.find().populate("unlockedBy", "name email").sort({ createdAt: -1 }),
+          Lead.find()
+            .populate("unlockedBy", "name email")
+            .populate("uploadedBy", "name email")
+            .sort({ createdAt: -1 }),
           Batch.find().sort({ uploadedOn: -1 }),
           User.find({ role: "bde" }),
           User.find().select("-password"),
@@ -531,30 +514,16 @@ export const leadService = {
         if (leads.length > 0) {
           let totalAllocated = 0;
           let totalUsed = 0;
-
-          const bdeMap = new Map();
-          (state.bdes || []).forEach((b) => {
-            bdeMap.set(b.name.toLowerCase(), {
-              name: b.name,
-              allocated: b.allocated || 500,
-              used: b.used || 0,
-            });
-          });
-
-          bdeUsers.forEach((b) => {
+          const bdes = bdeUsers.map((b) => {
             const allocated = (b.credits || 0) + (b.creditsUsed || 0);
             const used = b.creditsUsed || 0;
-            bdeMap.set(b.name.toLowerCase(), {
+            totalAllocated += allocated;
+            totalUsed += used;
+            return {
               name: b.name,
-              allocated: allocated || 500,
+              allocated,
               used,
-            });
-          });
-
-          const bdes = Array.from(bdeMap.values()).map((b) => {
-            totalAllocated += b.allocated;
-            totalUsed += b.used;
-            return b;
+            };
           });
 
           const seedPhones = {
