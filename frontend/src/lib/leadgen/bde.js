@@ -257,10 +257,115 @@ export function bdeReducer(state, action) {
         ),
       };
     }
+    case "bdeRemindCall": {
+      const bdeTarget =
+        action.bde && action.bde !== "Unassigned"
+          ? action.bde
+          : action.assignedName || CURRENT_BDE;
+      const leadIdStr = String(action.leadId);
+      const notifId = `remind_${leadIdStr}`;
+
+      const newNotif = {
+        id: notifId,
+        role: "bde",
+        targetUser: bdeTarget,
+        title: `Immediate action required: Follow up with ${action.company || "lead"}!`,
+        message: `Admin requested an immediate call with ${action.company || "lead"} (${action.contact || ""}).`,
+        time: "Just now",
+        tone: "red",
+        urgent: true,
+        leadId: action.leadId,
+        company: action.company,
+        createdAt: new Date().toISOString(),
+      };
+
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          const storedNotifs = JSON.parse(
+            localStorage.getItem("leadgen_custom_notifications") || "[]",
+          );
+          // DEDUPLICATE: Filter out any existing reminder for this lead so it NEVER duplicates
+          const dedupedStored = storedNotifs.filter(
+            (n) => String(n.leadId) !== leadIdStr && String(n.id) !== notifId,
+          );
+          dedupedStored.unshift(newNotif);
+          localStorage.setItem(
+            "leadgen_custom_notifications",
+            JSON.stringify(dedupedStored),
+          );
+
+          const remindedLeads = JSON.parse(
+            localStorage.getItem("leadgen_admin_reminded_leads") || "{}",
+          );
+          remindedLeads[leadIdStr] = {
+            bde: bdeTarget,
+            remindedAt: new Date().toISOString(),
+            company: action.company,
+            contact: action.contact,
+          };
+          localStorage.setItem(
+            "leadgen_admin_reminded_leads",
+            JSON.stringify(remindedLeads),
+          );
+        }
+      } catch (_e) {}
+
+      const s = touch(state, action.leadId, bdeTarget, (x) => ({
+        ...x,
+        adminReminded: true,
+        adminRemindedAt: new Date().toISOString(),
+        followUp: x.followUp || {
+          on: action.followUpDate || TODAY,
+          note: action.notes || "Admin Reminder: Immediate action required!",
+          done: false,
+        },
+        activity: [
+          ...(x.activity || []),
+          {
+            on: TODAY,
+            text: "Admin follow-up reminder sent. Immediate action required!",
+          },
+        ],
+      }));
+
+      // Deduplicate state notifications as well
+      const cleanNotifications = (state.notifications || []).filter(
+        (n) => String(n.leadId) !== leadIdStr && String(n.id) !== notifId,
+      );
+
+      return {
+        ...s,
+        leads: (state.leads || []).map((l) =>
+          String(l.id) === leadIdStr
+            ? {
+                ...l,
+                adminReminded: true,
+                adminRemindedAt: new Date().toISOString(),
+                adminRemindNote: "Immediate action required!",
+                followUpDate: l.followUpDate || action.followUpDate || TODAY,
+              }
+            : l,
+        ),
+        notifications: [newNotif, ...cleanNotifications],
+      };
+    }
     case "bdeCompleteFollowUp": {
       if (!a?.followUp || a.followUp.done) return state;
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          const remindedLeads = JSON.parse(
+            localStorage.getItem("leadgen_admin_reminded_leads") || "{}",
+          );
+          delete remindedLeads[String(action.leadId)];
+          localStorage.setItem(
+            "leadgen_admin_reminded_leads",
+            JSON.stringify(remindedLeads),
+          );
+        }
+      } catch (_e) {}
       const s = touch(state, a.leadId, a.bde, (x) => ({
         ...x,
+        adminReminded: false,
         followUp: { ...x.followUp, done: true, doneOn: TODAY },
         activity: [
           ...x.activity,

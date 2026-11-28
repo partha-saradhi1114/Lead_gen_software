@@ -846,6 +846,37 @@ export const NOTIFICATIONS = [
   },
 ];
 
+export function getStoredReadNotificationIds() {
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      const stored = JSON.parse(
+        localStorage.getItem("leadgen_read_notification_ids") || "[]",
+      );
+      if (Array.isArray(stored)) return new Set(stored.map(String));
+    }
+  } catch (_e) {}
+  return new Set();
+}
+
+export function saveStoredReadNotificationIds(idsSet) {
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      const arr = Array.from(idsSet).map(String);
+      localStorage.setItem("leadgen_read_notification_ids", JSON.stringify(arr));
+      window.dispatchEvent(
+        new CustomEvent("leadgen_notifications_read_change", { detail: arr }),
+      );
+    }
+  } catch (_e) {}
+}
+
+export function markNotificationsAsRead(idList) {
+  const current = getStoredReadNotificationIds();
+  idList.forEach((id) => current.add(String(id)));
+  saveStoredReadNotificationIds(current);
+  return current;
+}
+
 /**
  * Returns notifications scoped to the logged-in role and individual persona.
  * - Master Admin sees all macro / supervisory team notifications across all users.
@@ -854,9 +885,35 @@ export const NOTIFICATIONS = [
  */
 export function getNotificationsForUser(role, userName) {
   const normalizedRole = (role || "").toLowerCase();
+  const normalizedUser = (userName || "").toLowerCase();
+
+  let customNotifs = [];
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      customNotifs = JSON.parse(
+        localStorage.getItem("leadgen_custom_notifications") || "[]",
+      );
+    }
+  } catch (_e) {}
+
+  const rawNotifs =
+    Array.isArray(customNotifs) && customNotifs.length > 0
+      ? [...customNotifs, ...NOTIFICATIONS]
+      : NOTIFICATIONS;
+
+  // Deduplicate notifications so that each lead reminder or alert is never shown more than once
+  const seenKeys = new Set();
+  const allNotifs = [];
+  for (const n of rawNotifs) {
+    const key = n.leadId ? `lead_${n.leadId}` : String(n.id);
+    if (!seenKeys.has(key)) {
+      seenKeys.add(key);
+      allNotifs.push(n);
+    }
+  }
 
   if (normalizedRole === "admin" || normalizedRole.includes("admin")) {
-    return NOTIFICATIONS.filter((n) => n.role === "admin");
+    return allNotifs.filter((n) => n.role === "admin");
   }
 
   if (
@@ -864,15 +921,15 @@ export function getNotificationsForUser(role, userName) {
     normalizedRole.includes("research") ||
     normalizedRole.includes("analyst")
   ) {
-    const userMatches = NOTIFICATIONS.filter(
+    const userMatches = allNotifs.filter(
       (n) =>
         n.role === "ra" &&
         n.targetUser &&
-        n.targetUser.toLowerCase() === (userName || "").toLowerCase(),
+        n.targetUser.toLowerCase() === normalizedUser,
     );
     if (userMatches.length > 0) return userMatches;
     // Default fallback to Priya M's RA notifications or role-wide ra notifications
-    return NOTIFICATIONS.filter(
+    return allNotifs.filter(
       (n) => n.role === "ra" && (!n.targetUser || n.targetUser === CURRENT_RA),
     );
   }
@@ -882,21 +939,30 @@ export function getNotificationsForUser(role, userName) {
     normalizedRole.includes("business") ||
     normalizedRole.includes("executive")
   ) {
-    const userMatches = NOTIFICATIONS.filter(
+    const userMatches = allNotifs.filter(
       (n) =>
         n.role === "bde" &&
         n.targetUser &&
-        n.targetUser.toLowerCase() === (userName || "").toLowerCase(),
+        n.targetUser.toLowerCase() === normalizedUser,
     );
-    if (userMatches.length > 0) return userMatches;
+    if (normalizedUser === "ravi kumar" || normalizedUser === "anitha reddy") {
+      return userMatches;
+    }
+    if (userMatches.length > 0) {
+      const fallback = NOTIFICATIONS.filter(
+        (n) =>
+          n.role === "bde" && (!n.targetUser || n.targetUser === "Ravi Kumar"),
+      );
+      return [...userMatches, ...fallback];
+    }
     // Default fallback to Ravi Kumar's BDE notifications or role-wide bde notifications
-    return NOTIFICATIONS.filter(
+    return allNotifs.filter(
       (n) =>
         n.role === "bde" && (!n.targetUser || n.targetUser === "Ravi Kumar"),
     );
   }
 
-  return NOTIFICATIONS.filter((n) => n.role === "admin");
+  return allNotifs.filter((n) => n.role === "admin");
 }
 
 export function formatDate(iso) {

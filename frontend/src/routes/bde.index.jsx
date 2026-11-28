@@ -21,8 +21,14 @@ import { fmt, formatDate, pct } from "@/lib/leadgen/data";
 export default function BdeDashboard() {
   const { kpis, rows, category, bde } = useBdeData();
   const due = rows
-    .filter((r) => r.bucket === "overdue" || r.bucket === "today")
-    .sort((a, b) => (a.followUp.on < b.followUp.on ? -1 : 1))
+    .filter((r) => r.adminReminded || r.bucket === "overdue" || r.bucket === "today")
+    .sort((a, b) => {
+      if (a.adminReminded && !b.adminReminded) return -1;
+      if (!a.adminReminded && b.adminReminded) return 1;
+      const aDate = a.followUp?.on || "9999";
+      const bDate = b.followUp?.on || "9999";
+      return aDate < bDate ? -1 : 1;
+    })
     .slice(0, 6);
 
   return (
@@ -121,31 +127,62 @@ export default function BdeDashboard() {
             }
           />
           <ul className="divide-y px-4 pb-3">
-            {due.map((r) => (
-              <li key={r.leadId} className="flex items-center gap-3 py-2">
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] font-semibold">
-                    {r.lead.company}
-                  </div>
-                  <div className="truncate text-[11px] text-muted-foreground">
-                    {r.lead.contact} · {r.followUp.note}
-                  </div>
-                </div>
-                <StageBadge stage={r.stage} />
-                <span
-                  className={
-                    "whitespace-nowrap text-[11px] font-semibold " +
-                    (r.bucket === "overdue"
-                      ? "text-destructive"
-                      : "text-primary")
-                  }
+            {due.map((r) => {
+              const isReminded = Boolean(r.adminReminded);
+              return (
+                <li
+                  key={r.leadId}
+                  className={`flex items-center gap-3 py-2 px-2 rounded-lg transition-colors ${
+                    isReminded
+                      ? "bg-red-50/70 border border-red-200/80 my-1"
+                      : ""
+                  }`}
                 >
-                  {r.bucket === "overdue"
-                    ? `Overdue · ${formatDate(r.followUp.on)}`
-                    : "Today"}
-                </span>
-              </li>
-            ))}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="truncate text-[13px] font-semibold text-foreground">
+                        {r.lead.company}
+                      </span>
+                      {isReminded && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 border border-red-300 px-2 py-0.5 text-[10px] font-bold text-red-700 shadow-xs">
+                          ⚠️ Immediate action required!
+                        </span>
+                      )}
+                    </div>
+                    <div className="truncate text-[11px] text-muted-foreground mt-0.5">
+                      {r.lead.contact} · {r.followUp?.note || r.lead.notes || "Call requested by Admin"}
+                    </div>
+                  </div>
+                  <StageBadge stage={r.stage} />
+                  <span
+                    className={
+                      "whitespace-nowrap text-[11px] font-semibold " +
+                      (isReminded || r.bucket === "overdue"
+                        ? "text-destructive"
+                        : "text-primary")
+                    }
+                  >
+                    {isReminded
+                      ? "Immediate !"
+                      : r.bucket === "overdue"
+                        ? `Overdue · ${formatDate(r.followUp?.on)}`
+                        : "Today"}
+                  </span>
+                  {isReminded && (
+                    <Button
+                      asChild
+                      size="xs"
+                      variant="destructive"
+                      className="h-6 text-[11px] px-2 gap-1 font-semibold"
+                    >
+                      <Link to="/bde/follow-ups">
+                        <PhoneCall className="size-3" /> Call
+                      </Link>
+                    </Button>
+                  )}
+                </li>
+              );
+            })}
             {due.length === 0 && (
               <li className="py-6 text-center text-xs text-muted-foreground">
                 You're all caught up.

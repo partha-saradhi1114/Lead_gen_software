@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import {
@@ -14,7 +15,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useLeadGen } from "@/lib/leadgen/store";
-import { fmt } from "@/lib/leadgen/data";
+import { fmt, getNotificationsForUser, getStoredReadNotificationIds } from "@/lib/leadgen/data";
 import { NAV_BY_ROLE, findNavItem, roleForPath } from "./nav";
 import { CURRENT_BDE, selectBdeKpis } from "@/lib/leadgen/bde";
 
@@ -59,12 +60,30 @@ export function AppSidebar() {
       ? storedUser.name
       : CURRENT_RA;
 
+  const [readIds, setReadIds] = useState(() => getStoredReadNotificationIds());
+
+  useEffect(() => {
+    const handleReadChange = () => {
+      setReadIds(getStoredReadNotificationIds());
+    };
+    window.addEventListener("leadgen_notifications_read_change", handleReadChange);
+    return () => {
+      window.removeEventListener("leadgen_notifications_read_change", handleReadChange);
+    };
+  }, []);
+
   const bdeDue =
     role === "bde"
       ? (({ overdue, today }) => overdue + today)(
           selectBdeKpis(state, currentBdeName),
         )
       : 0;
+  const bdeNotifs =
+    role === "bde" ? getNotificationsForUser("bde", currentBdeName) : [];
+  const bdeUnreadCount = bdeNotifs.filter((n) => !readIds.has(String(n.id))).length;
+  const adminNotifs =
+    role === "admin" ? getNotificationsForUser("admin", "Sriram") : [];
+  const adminUnreadCount = adminNotifs.filter((n) => !readIds.has(String(n.id))).length;
   const activeUrl = findNavItem(pathname)?.url;
   const raRejected = ra
     ? state.leads.filter(
@@ -111,6 +130,16 @@ export function AppSidebar() {
                     {item.url === "/bde/follow-ups" && bdeDue > 0 && (
                       <SidebarMenuBadge className="rounded-full bg-destructive px-1.5 text-[10px] font-semibold text-destructive-foreground peer-data-[active=true]/menu-button:text-destructive-foreground">
                         {fmt(bdeDue)}
+                      </SidebarMenuBadge>
+                    )}
+                    {item.url === "/bde/notifications" && bdeUnreadCount > 0 && (
+                      <SidebarMenuBadge className="rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground peer-data-[active=true]/menu-button:text-destructive-foreground animate-pulse">
+                        {fmt(bdeUnreadCount)}
+                      </SidebarMenuBadge>
+                    )}
+                    {item.url === "/notifications" && adminUnreadCount > 0 && (
+                      <SidebarMenuBadge className="rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground peer-data-[active=true]/menu-button:text-destructive-foreground animate-pulse">
+                        {fmt(adminUnreadCount)}
                       </SidebarMenuBadge>
                     )}
                     {item.url === "/leads-review" &&

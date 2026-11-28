@@ -93,4 +93,37 @@ describe("BDE rules", () => {
     expect(lead.stage).toBe("Interested");
     expect(lead.notes).toBe("Meeting scheduled");
   });
+
+  it("handles bdeRemindCall to flag lead as admin-reminded with urgent notification", () => {
+    let s = seed();
+    const id = firstNew(s).leadId;
+    s = leadGenReducer(s, {
+      type: "bdeRemindCall",
+      leadId: id,
+      bde: "giri",
+      company: "gandhihospitals",
+      contact: "naresh",
+    });
+
+    const lead = s.leads.find((l) => l.id === id);
+    expect(lead.adminReminded).toBe(true);
+    expect(lead.adminRemindNote).toBe("Immediate action required!");
+
+    expect(s.notifications.length).toBeGreaterThan(0);
+    const notif = s.notifications[0];
+    expect(notif.targetUser).toBe("giri");
+    expect(notif.title).toContain("Immediate action required");
+    expect(notif.tone).toBe("red");
+
+    // Multiple dispatches should deduplicate notifications and never duplicate
+    s = leadGenReducer(s, {
+      type: "bdeRemindCall",
+      leadId: id,
+      bde: "giri",
+      company: "gandhihospitals",
+      contact: "naresh",
+    });
+    const idNotifs = s.notifications.filter((n) => n.leadId === id);
+    expect(idNotifs.length).toBe(1);
+  });
 });

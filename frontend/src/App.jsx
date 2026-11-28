@@ -21,6 +21,7 @@ import TeamPage from "./routes/team";
 import OperationsPage from "./routes/operations";
 import ReportsPage from "./routes/reports";
 import SettingsPage from "./routes/settings";
+import AdminNotificationsPage from "./routes/notifications";
 
 // Research Analyst (RA) routes
 import RaDashboard from "./routes/ra.index";
@@ -36,6 +37,7 @@ import BdeDashboard from "./routes/bde.index";
 import BdeLeads from "./routes/bde.leads";
 import BdeCredits from "./routes/bde.credits";
 import BdeFollowUps from "./routes/bde.follow-ups";
+import BdeNotifications from "./routes/bde.notifications";
 
 // Login route
 import LoginPage from "./routes/login";
@@ -196,6 +198,7 @@ export function AppRoutes() {
         <Route path="/operations" element={<RoleRoute allowedRoles={["admin"]}><OperationsPage /></RoleRoute>} />
         <Route path="/reports" element={<RoleRoute allowedRoles={["admin"]}><ReportsPage /></RoleRoute>} />
         <Route path="/settings" element={<RoleRoute allowedRoles={["admin"]}><SettingsPage /></RoleRoute>} />
+        <Route path="/notifications" element={<RoleRoute allowedRoles={["admin"]}><AdminNotificationsPage /></RoleRoute>} />
 
         {/* Research Analyst (RA) */}
         <Route path="/ra" element={<RoleRoute allowedRoles={["ra", "admin"]}><RaDashboard /></RoleRoute>} />
@@ -211,6 +214,7 @@ export function AppRoutes() {
         <Route path="/bde/leads" element={<RoleRoute allowedRoles={["bde", "admin"]}><BdeLeads /></RoleRoute>} />
         <Route path="/bde/credits" element={<RoleRoute allowedRoles={["bde", "admin"]}><BdeCredits /></RoleRoute>} />
         <Route path="/bde/follow-ups" element={<RoleRoute allowedRoles={["bde", "admin"]}><BdeFollowUps /></RoleRoute>} />
+        <Route path="/bde/notifications" element={<RoleRoute allowedRoles={["bde", "admin"]}><BdeNotifications /></RoleRoute>} />
       </Route>
 
       {/* 404 Catch-All */}
